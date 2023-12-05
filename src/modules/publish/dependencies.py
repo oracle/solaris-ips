@@ -32,7 +32,7 @@ import re
 import six
 
 from collections import namedtuple
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 import pkg.actions as actions
 import pkg.client.api as api
@@ -703,9 +703,9 @@ def make_paths(file_dep):
 
     rps = file_dep.attrs.get(paths_prefix, [""])
     files = file_dep.attrs[files_prefix]
-    if isinstance(files, six.string_types):
+    if isinstance(files, str):
         files = [files]
-    if isinstance(rps, six.string_types):
+    if isinstance(rps, str):
         rps = [rps]
     return [os.path.join(rp, f) for rp in rps for f in files]
 
@@ -1086,7 +1086,7 @@ def merge_deps(dest, src):
         elif v != dest.attrs[k]:
             # For now, just merge the values. Duplicate values
             # will be removed in a later step.
-            if isinstance(v, six.string_types):
+            if isinstance(v, str):
                 v = [v]
             if isinstance(dest.attrs[k], list):
                 dest.attrs[k].extend(v)

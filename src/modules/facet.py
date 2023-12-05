@@ -526,9 +526,5 @@ class Facets(dict):
         return self.__inherited_ro
 
 
-    if six.PY3:
-        def allow_action(self, action, publisher=None):
-            return _allow_facet(self, action, publisher=publisher)
-
-if six.PY2:
-    Facets.allow_action = types.MethodType(_allow_facet, None, Facets)
+    def allow_action(self, action, publisher=None):
+        return _allow_facet(self, action, publisher=publisher)

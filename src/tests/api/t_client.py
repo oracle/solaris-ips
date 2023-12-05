@@ -29,9 +29,9 @@ if __name__ == "__main__":
     testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import io
 import logging
 import os
-import six
 import sys
 import unittest
 
@@ -51,8 +51,8 @@ class TestSettings(pkg5unittest.Pkg5TestCase):
     def test_logging(self):
         global_settings.client_name = "TestSettings"
 
-        info_out = six.StringIO()
-        error_out = six.StringIO()
+        info_out = io.StringIO()
+        error_out = io.StringIO()
 
         log_fmt = logging.Formatter()
 

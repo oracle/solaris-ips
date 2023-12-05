@@ -35,7 +35,7 @@ import socket
 import sys
 import config
 
-from six.moves.urllib.request import urlopen
+from urllib.request import urlopen
 
 # Apache combined log pattern
 comb_log_pat = re.compile("(?P<ip>[\d\.]*) - - \[(?P<date>[^:]*):(?P<time>\S*) (?P<tz>[^\]]*)\] \"(?P<op>GET|POST|HEAD|\S*) (?P<uri>\S*) HTTP/(?P<httpver>[^\"]*)\" (?P<response>\d*) (?P<subcode>\d*|-) \"(?P<refer>[^\"]*)\" \"(?P<agent>[^\"]*)\" \"(?P<uuid>[^\"]*)\" \"(?P<intent>[^\"]*)\"")

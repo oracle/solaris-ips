@@ -28,7 +28,6 @@
 
 import copy
 import itertools
-import six
 import types
 
 from collections import namedtuple
@@ -49,11 +48,8 @@ class _Variants(dict):
 
     # allow_action is provided as a native function (see end of class
     # declaration).
-    if six.PY3:
-        def allow_action(self, action, publisher=None):
-            return _allow_variant(self, action, publisher=publisher)
-if six.PY2:
-    _Variants.allow_action = types.MethodType(_allow_variant, None, _Variants)
+    def allow_action(self, action, publisher=None):
+        return _allow_variant(self, action, publisher=publisher)
 
 
 class Variants(_Variants):

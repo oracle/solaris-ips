@@ -51,8 +51,8 @@ import zlib
 
 from pkg.actions import fromstr
 from pkg.digest import DEFAULT_HASH_FUNC
-from six.moves.urllib.parse import urlparse
-from six.moves.urllib.request import url2pathname
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 try:
     import pkg.sha512_t

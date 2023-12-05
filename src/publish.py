@@ -30,7 +30,6 @@ import getopt
 import gettext
 import locale
 import os
-import six
 import sys
 import traceback
 import warnings
@@ -68,7 +67,7 @@ strip_attrs = [
 def error(text, cmd=None):
     """Emit an error message prefixed by the command name """
 
-    if not isinstance(text, six.string_types):
+    if not isinstance(text, str):
         # Assume it's an object that can be stringified.
         text = str(text)
 
@@ -451,7 +450,7 @@ def trans_publish(repo_uri, fargs):
             basename = os.path.basename(a.attrs["path"])
             for pattern in timestamp_files:
                 if fnmatch.fnmatch(basename, pattern):
-                    if not isinstance(path, six.string_types):
+                    if not isinstance(path, str):
                         # Target is from bundle; can't
                         # apply timestamp now.
                         continue
@@ -846,9 +845,8 @@ if __name__ == "__main__":
 
     # Make all warnings be errors.
     warnings.simplefilter('error')
-    if six.PY3:
-        # disable ResourceWarning: unclosed file
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+    # disable ResourceWarning: unclosed file
+    warnings.filterwarnings("ignore", category=ResourceWarning)
 
     try:
         __ret = main_func()

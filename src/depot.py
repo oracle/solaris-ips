@@ -71,7 +71,6 @@ import os
 import os.path
 import OpenSSL.crypto as crypto
 import shlex
-import six
 import string
 import subprocess
 import sys
@@ -79,7 +78,7 @@ import tempfile
 
 from importlib import reload
 
-from six.moves.urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse
 
 import cherrypy
 

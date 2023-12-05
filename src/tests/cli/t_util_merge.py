@@ -39,8 +39,8 @@ import time
 import unittest
 import zlib
 
-from six.moves.urllib.parse import urlparse
-from six.moves.urllib.request import url2pathname
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
     # Cleanup after every test.

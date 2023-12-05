@@ -30,8 +30,8 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-from six.moves.urllib.parse import urlunparse
-from six.moves.urllib.request import pathname2url
+from urllib.parse import urlunparse
+from urllib.request import pathname2url
 
 import pkg.client.publisher as publisher
 import pkg.client.transport.transport as transport

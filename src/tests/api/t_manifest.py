@@ -26,7 +26,6 @@
 import unittest
 import tempfile
 import os
-import six
 import sys
 import types
 import itertools
@@ -145,10 +144,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 
         # Verify set_content with a Unicode string works.
         m = manifest.Manifest()
-        if six.PY2:
-            m.set_content(six.text_type(bstr, "utf-8"))
-        else:
-            m.set_content(bstr)
+        m.set_content(bstr)
         output = list(m.as_lines())[0].rstrip()
         self.assertEqual(bstr, output)
         self.assertTrue(isinstance(output, str))
@@ -408,10 +404,7 @@ dir mode=0755 owner=bin group=sys path=usr
         output1 = "".join(m1.as_lines())
 
         m2 = manifest.Manifest()
-        if six.PY2:
-            m2.set_content(six.text_type(bstr, "utf-8"), signatures=True)
-        else:
-            m2.set_content(bstr, signatures=True)
+        m2.set_content(bstr, signatures=True)
         output2 = "".join(m2.as_lines())
         self.assertEqualDiff(output1, output2)
         self.assertEqualDiff(m1.signatures, m2.signatures)

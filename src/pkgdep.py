@@ -598,9 +598,9 @@ if __name__ == "__main__":
     # sequences problems.
     # Make all warnings be errors.
     # warnings.simplefilter('error')
-    if six.PY3:
-        # disable ResourceWarning: unclosed file
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+
+    # disable ResourceWarning: unclosed file
+    warnings.filterwarnings("ignore", category=ResourceWarning)
 
     try:
         __ret = main_func()

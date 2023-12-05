@@ -34,13 +34,12 @@ import pkg.fmri
 from pkg.client.api_errors import ApiException
 from pkg.version import DotSequence, Version
 
+import configparser
 import logging
 import os
 import shutil
-import six
 import sys
-from six.moves import configparser
-from six.moves.urllib.parse import urlparse, quote
+from urllib.parse import urlparse, quote
 
 PKG_CLIENT_NAME = "pkglint"
 CLIENT_API_VERSION = 82
@@ -1204,7 +1203,7 @@ class LintEngine(object):
         if manifest and param_key in manifest:
             val = manifest[param_key]
         if val:
-            if isinstance(val, six.string_types):
+            if isinstance(val, str):
                 return val
             else:
                 return " ".join(val)

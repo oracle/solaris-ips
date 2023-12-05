@@ -37,7 +37,6 @@ import pkg.portable as portable
 import pkg.misc as misc
 import pkg.p5p
 import shutil
-import six
 import stat
 import tempfile
 import unittest
@@ -118,7 +117,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
         "tmp/foo.1", "tmp/README", "tmp/LICENSE", "tmp/LICENSE2", "tmp/quux"]
 
     def __seed_ta_dir(self, certs, dest_dir=None):
-        if isinstance(certs, six.string_types):
+        if isinstance(certs, str):
             certs = [certs]
         if not dest_dir:
             dest_dir = self.ta_dir
@@ -602,8 +601,7 @@ include_build=False), pkg_install=pkg_install)
         # Cleanup.
         self.image_destroy()
         # Change locale back to 'UTF-8' to not affect other test cases.
-        if six.PY3:
-            os.environ["LC_ALL"] = "en_US.UTF-8"
+        os.environ["LC_ALL"] = "en_US.UTF-8"
 
     def test_02_contents(self):
         """Verify that the contents operation works as expected for

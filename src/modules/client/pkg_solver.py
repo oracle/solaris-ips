@@ -35,8 +35,6 @@ from collections import defaultdict
 from functools import reduce
 
 import six
-# Imports from package six are not grouped: pylint: disable=C0412
-from six.moves import range
 
 import pkg.actions
 import pkg.catalog as catalog

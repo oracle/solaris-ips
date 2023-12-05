@@ -39,9 +39,6 @@ import time
 from collections import deque
 from functools import wraps
 
-# Redefining built-in 'range'; pylint: disable=W0622
-from six.moves import range
-
 import six
 
 import pkg.client.pkgdefs as pkgdefs

@@ -2139,7 +2139,7 @@ def __repo_diff(conf, pubs, xport, rpubs, rxport, tmp_dir, verbose, quiet,
                 for idx, cell in enumerate(td):
                     if not cell:
                         t_row.append("-")
-                    elif isinstance(cell, six.string_types):
+                    elif isinstance(cell, str):
                         t_row.append(cell)
                     elif isinstance(cell, dict):
                         t_row.append(ftemp.format(
@@ -2371,9 +2371,8 @@ if __name__ == "__main__":
 
     # Make all warnings be errors.
     warnings.simplefilter('error')
-    if six.PY3:
-        # disable ResourceWarning: unclosed file
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+    # disable ResourceWarning: unclosed file
+    warnings.filterwarnings("ignore", category=ResourceWarning)
 
     __retval = handle_errors(main_func)
     try:

@@ -27,7 +27,6 @@
 import pkg.no_site_packages
 import codecs
 import logging
-import six
 import sys
 import os
 import gettext
@@ -326,9 +325,8 @@ if __name__ == "__main__":
     gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
-    if six.PY3:
-        # disable ResourceWarning: unclosed file
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+    # disable ResourceWarning: unclosed file
+    warnings.filterwarnings("ignore", category=ResourceWarning)
     try:
         __ret = main_func()
     except (PipeError, KeyboardInterrupt):

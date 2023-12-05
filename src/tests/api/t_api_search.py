@@ -33,8 +33,8 @@ import shutil
 import tempfile
 import time
 import unittest
-from six.moves.urllib.error import HTTPError
-from six.moves.urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.request import urlopen
 
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors

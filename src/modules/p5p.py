@@ -30,10 +30,9 @@ import errno
 import tarfile as tf
 import os
 import shutil
-import six
 import sys
 import tempfile
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 import pkg
 import pkg.client.api_errors as apx
@@ -729,7 +728,7 @@ class Archive(object):
         """
 
         assert pfmri and mpath and fpath
-        if isinstance(pfmri, six.string_types):
+        if isinstance(pfmri, str):
             pfmri = pkg.fmri.PkgFmri(pfmri)
         assert pfmri.publisher
         self.__add_package(pfmri, mpath, fpath=fpath)
@@ -749,7 +748,7 @@ class Archive(object):
         """
 
         assert pfmri and repo
-        if isinstance(pfmri, six.string_types):
+        if isinstance(pfmri, str):
             pfmri = pkg.fmri.PkgFmri(pfmri)
         assert pfmri.publisher
         self.__add_package(pfmri, repo.manifest(pfmri), repo=repo)
@@ -937,7 +936,7 @@ class Archive(object):
 
         assert not self.__closed and "r" in self.__mode
         assert pfmri and path
-        if isinstance(pfmri, six.string_types):
+        if isinstance(pfmri, str):
             pfmri = pkg.fmri.PkgFmri(pfmri)
         assert pfmri.publisher
 
@@ -1131,7 +1130,7 @@ class Archive(object):
 
         assert not self.__closed and "r" in self.__mode
         assert pfmri
-        if isinstance(pfmri, six.string_types):
+        if isinstance(pfmri, str):
             pfmri = pkg.fmri.PkgFmri(pfmri)
         assert pfmri.publisher
 

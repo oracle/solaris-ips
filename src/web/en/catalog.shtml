@@ -19,11 +19,11 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 ##
 <%!
         import pkg.fmri
-        from six.moves.urllib.parse import quote
+        from urllib.parse import quote
 %>\
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\

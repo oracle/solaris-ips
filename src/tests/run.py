@@ -55,7 +55,6 @@ sys.path.insert(0, ".")
 import tempfile
 covdir = tempfile.mkdtemp(prefix=".coverage-", dir=os.getcwd())
 
-import six
 import getopt
 import pkg5testenv
 import warnings
@@ -110,9 +109,8 @@ if __name__ == "__main__":
         'renamed to CRLEntryExtensionOID',
         category=PendingDeprecationWarning)
 
-    if six.PY3:
-        # Suppress ResourceWarning: unclosed file.
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+    # Suppress ResourceWarning: unclosed file.
+    warnings.filterwarnings("ignore", category=ResourceWarning)
 
     try:
         #
@@ -245,11 +243,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
         return False
     def _istestmethod(name, obj):
         if name.startswith("test"):
-            if six.PY2 and isinstance(obj, types.MethodType):
-                return True
-            # There is no unbound methods in Python 3, instead they
-            # simply become functions.
-            elif six.PY3 and isinstance(obj, types.FunctionType):
+            if isinstance(obj, types.FunctionType):
                 return True
         return False
 

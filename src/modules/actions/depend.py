@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
 
@@ -359,7 +359,7 @@ class DependencyAction(generic.Action):
         # release and without it creating a dummy timestamp.
         # Instead we have to split it apart manually.
         #
-        if isinstance(pfmris, six.string_types):
+        if isinstance(pfmris, str):
             pfmris = [pfmris]
         inds = []
         pat = re.compile(r"pkg:///|pkg://[^/]*/|pkg:/")
@@ -511,7 +511,7 @@ class DependencyAction(generic.Action):
             self, fmri=fmri, raise_errors=False,
             required_attrs=required_attrs, single_attrs=single_attrs)
 
-        if (isinstance(dtype, six.string_types) and
+        if (isinstance(dtype, str) and
                 dtype not in known_types):
             errors.append(("type",
                            _("Unknown type '{0}' in depend action").

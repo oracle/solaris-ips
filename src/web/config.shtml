@@ -19,11 +19,11 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2008, 2010 Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2023, Oracle and/or its affiliates.
 ##
 <%!
         import re
-        from six.moves.urllib.parse import urlparse
+        from urllib.parse import urlparse
 %>\
 <%page args="g_vars"/>\
 ## Please note that the opensolaris.org and sun.com themes can not be used

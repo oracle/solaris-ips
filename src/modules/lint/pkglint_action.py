@@ -1391,7 +1391,7 @@ class PkgActionChecker(base.ActionChecker):
         if "fmri" not in action.attrs:
             return
         fmris = action.attrs["fmri"]
-        if isinstance(fmris, six.string_types):
+        if isinstance(fmris, str):
             fmris = [fmris]
 
         for fmri in fmris:

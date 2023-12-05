@@ -27,7 +27,6 @@ import pkg.no_site_packages
 import getopt
 import gettext
 import locale
-import six
 import sys
 import traceback
 import warnings
@@ -152,9 +151,8 @@ if __name__ == "__main__":
 
     # Make all warnings be errors.
     warnings.simplefilter('error')
-    if six.PY3:
-        # disable ResourceWarning: unclosed file
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+    # disable ResourceWarning: unclosed file
+    warnings.filterwarnings("ignore", category=ResourceWarning)
     try:
         exit_code = main_func()
     except (PipeError, KeyboardInterrupt):

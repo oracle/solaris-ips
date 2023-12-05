@@ -39,7 +39,6 @@ import os
 import stat
 import time
 import struct
-from six.moves import range
 import pkg.pkgsubprocess as subprocess
 
 # cpio magic numbers

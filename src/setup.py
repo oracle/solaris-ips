@@ -83,15 +83,6 @@ pwd = os.path.normpath(sys.path[0])
 # the version of pylint that we must have in order to run the pylint checks.
 req_pylint_version = "1.4.3"
 
-#
-# Unbuffer stdout and stderr.  This helps to ensure that subprocess output
-# is properly interleaved with output from this program.
-#
-# Can't have unbuffered text I/O in Python 3. This doesn't quite matter.
-if six.PY2:
-    sys.stdout = os.fdopen(sys.stdout.fileno(), "w", 0)
-    sys.stderr = os.fdopen(sys.stderr.fileno(), "w", 0)
-
 dist_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "dist_" + arch))
 build_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "build_" + arch))
 if "ROOT" in os.environ and os.environ["ROOT"] != "":
@@ -907,7 +898,7 @@ class install_data_func(_install_data):
                 self.outfiles.append(dir)
             else:
                 for file in files:
-                    if isinstance(file, six.string_types):
+                    if isinstance(file, str):
                         infile = file
                         outfile = os.path.join(dir,
                             os.path.basename(file))
@@ -1195,7 +1186,7 @@ class installfile(Command):
     def finalize_options(self):
         if self.mode is None:
             self.mode = 0o644
-        elif isinstance(self.mode, six.string_types):
+        elif isinstance(self.mode, str):
             try:
                 self.mode = int(self.mode, 8)
             except ValueError:
@@ -1240,7 +1231,7 @@ def syntax_check(filename):
     except py_compile.PyCompileError as e:
         res = ""
         for err in e.exc_value:
-            if isinstance(err, six.string_types):
+            if isinstance(err, str):
                 res += err + "\n"
                 continue
 

@@ -838,7 +838,7 @@ class History(object):
                     output = traceback.format_exc()
                     use_current_stack = False
 
-            if isinstance(error, six.string_types):
+            if isinstance(error, str):
                 output = error
             elif use_current_stack:
                 # Assume the current stack is more useful if

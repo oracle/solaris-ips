@@ -24,13 +24,13 @@
 # Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
-import six.moves.cPickle as pickle
 import datetime
 import fileinput
 import GeoIP
 import getopt
 import md5
 import os
+import pickle
 import re
 import sys
 import time

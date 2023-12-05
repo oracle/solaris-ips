@@ -42,7 +42,7 @@ import pkg.portable as portable
 import zlib
 
 from pkg.client.api_errors import ActionExecutionError
-from six.moves.urllib.parse import quote
+from urllib.parse import quote
 
 class LicenseAction(generic.Action):
     """Class representing a license packaging object."""

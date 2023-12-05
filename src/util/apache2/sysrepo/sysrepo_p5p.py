@@ -24,26 +24,25 @@
 import pkg.p5p
 
 import errno
+import http.client
 import os
 import shutil
 import rapidjson as json
-import six
 import sys
 import threading
 import traceback
-from six.moves import http_client
 from pkg.misc import force_str
 
 # redirecting stdout for proper WSGI portability
 sys.stdout = sys.stderr
 
-SERVER_OK_STATUS = "{0} {1}".format(http_client.OK, http_client.responses[http_client.OK])
-SERVER_ERROR_STATUS = "{0} {1}".format(http_client.INTERNAL_SERVER_ERROR,
-    http_client.responses[http_client.INTERNAL_SERVER_ERROR])
-SERVER_NOTFOUND_STATUS = "{0} {1}".format(http_client.NOT_FOUND,
-    http_client.responses[http_client.NOT_FOUND])
-SERVER_BADREQUEST_STATUS = "{0} {1}".format(http_client.BAD_REQUEST,
-    http_client.responses[http_client.BAD_REQUEST])
+SERVER_OK_STATUS = "{0} {1}".format(http.client.OK, http.client.responses[http.client.OK])
+SERVER_ERROR_STATUS = "{0} {1}".format(http.client.INTERNAL_SERVER_ERROR,
+    http.client.responses[http.client.INTERNAL_SERVER_ERROR])
+SERVER_NOTFOUND_STATUS = "{0} {1}".format(http.client.NOT_FOUND,
+    http.client.responses[http.client.NOT_FOUND])
+SERVER_BADREQUEST_STATUS = "{0} {1}".format(http.client.BAD_REQUEST,
+    http.client.responses[http.client.BAD_REQUEST])
 
 response_headers = [("content-type", "application/binary")]
 
@@ -318,12 +317,11 @@ class SysrepoP5p(object):
         try:
             pub, hsh, path = self._parse_query()
             self.p5p_path = self.environ[hsh]
-            if six.PY3:
-                # The pathname return from environ contains
-                # hex escaped sequences, but we need its unicode
-                # character to be able to find the file.
-                self.p5p_path = self.p5p_path.encode(
-                        "iso-8859-1").decode("utf-8")
+            # The pathname return from environ contains
+            # hex escaped sequences, but we need its unicode
+            # character to be able to find the file.
+            self.p5p_path = self.p5p_path.encode(
+                    "iso-8859-1").decode("utf-8")
             # In order to keep only one copy of the p5p index in
             # memory, we cache it locally, and reuse it any time
             # we're opening the same p5p file.  Before doing
@@ -425,7 +423,7 @@ application = AppWrapper(_application)
 
 if __name__ == "__main__":
     """A simple main function to allows us to test any given query/env"""
-    from six.moves.urllib.parse import unquote
+    from urllib.parse import unquote
 
     def start_response(status, response_headers, exc_info=None):
         """A dummy response function."""
@@ -454,7 +452,7 @@ if __name__ == "__main__":
     environ[hsh] = path
 
     for response in application(environ, start_response):
-        if isinstance(response, six.string_types):
+        if isinstance(response, str):
             print(response.rstrip())
         elif response:
             for line in response.readlines():

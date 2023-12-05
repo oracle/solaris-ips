@@ -25,7 +25,6 @@
 #
 
 import random
-from six.moves import range
 
 import pkg.misc as misc
 import pkg.client.publisher as pub

@@ -38,9 +38,8 @@ import stat
 import tempfile
 import unittest
 import six
-from six.moves import range
-from six.moves.urllib.error import HTTPError
-from six.moves.urllib.request import urlopen, Request, pathname2url
+from urllib.error import HTTPError
+from urllib.request import urlopen, Request, pathname2url
 
 from pkg import misc
 from pkg.actions import fromstr

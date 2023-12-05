@@ -33,7 +33,6 @@ import pkg.portable as portable
 import pkg.misc as misc
 import pkg.p5p
 import shutil
-import six
 import stat
 import tempfile
 import unittest
@@ -128,8 +127,7 @@ class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
         self.pkgsend_bulk(self.rurl, [
             getattr(self, p)
             for p in dir(self)
-            if p.startswith("pkg_") and isinstance(getattr(self, p),
-                six.string_types)
+            if p.startswith("pkg_") and isinstance(getattr(self, p), str)
         ])
 
     def __assert_varcet_matches_default(self, cmd, expected, errout=None,

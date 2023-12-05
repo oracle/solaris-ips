@@ -36,7 +36,6 @@ import six
 import tempfile
 from itertools import groupby, chain, product, repeat
 from operator import itemgetter
-from six.moves import zip
 
 import pkg.actions as actions
 import pkg.client.api_errors as apx
@@ -1030,7 +1029,7 @@ class Manifest(object):
         lineno = 0
         errors = []
 
-        if isinstance(content, six.string_types):
+        if isinstance(content, str):
             # Get an iterable for the string.
             content = content.splitlines()
 
@@ -1103,10 +1102,10 @@ class Manifest(object):
             except EnvironmentError as e:
                 raise apx._convert_error(e)
 
-        if six.PY3 and isinstance(content, bytes):
+        if isinstance(content, bytes):
             raise TypeError("content must be str, not bytes")
 
-        if isinstance(content, six.string_types):
+        if isinstance(content, str):
             if signatures:
                 # Generate manifest signature based upon
                 # input content, but only if signatures
@@ -1342,7 +1341,7 @@ class Manifest(object):
         # This must be an SHA-1 hash in order to interoperate with
         # older clients.
         sha_1 = hashlib.sha1()
-        if isinstance(mfstcontent, six.text_type):
+        if isinstance(mfstcontent, str):
             # Byte stream expected, so pass encoded.
             sha_1.update(mfstcontent.encode("utf-8"))
         else:
@@ -1490,16 +1489,10 @@ class Manifest(object):
             # allow you to be selective and various bits in
             # pkg.manifest assume you always filter on both so we
             # have to fake up a filter for facets.
-            if six.PY2:
-                nexcludes = [
-                    x for x in excludes
-                    if x.__func__ != facet._allow_facet
-                ]
-            else:
-                nexcludes = [
-                    x for x in excludes
-                    if x.__func__ != facet.Facets.allow_action
-                ]
+            nexcludes = [
+                x for x in excludes
+                if x.__func__ != facet.Facets.allow_action
+            ]
             # Excludes list must always have zero or 2+ items; so
             # fake second entry.
             nexcludes.append(lambda x, publisher: True)

@@ -26,7 +26,6 @@
 
 import logging
 import os
-import six
 import sys
 
 from pkg.lint.base import DuplicateLintedAttrException, linted

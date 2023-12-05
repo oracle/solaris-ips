@@ -34,7 +34,7 @@ import sys
 import time
 
 from an_report import *
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 after = None
 before = None
