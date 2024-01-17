@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -152,10 +152,10 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
         os.mkdir(lofs_dir)
         tmp_dir = os.path.join(self.test_root, "image0", "tmp_impl_dir")
         os.mkdir(tmp_dir)
-        os.system("mount -F lofs {0} {1}".format(tmp_dir, lofs_dir))
+        os.system("/usr/sbin/mount -F lofs {0} {1}".format(tmp_dir, lofs_dir))
         self.pkg("install implicit")
         self.pkg("uninstall implicit")
-        os.system("umount {0} ".format(lofs_dir))
+        os.system("/usr/sbin/umount {0} ".format(lofs_dir))
         os.rmdir(lofs_dir)
         os.rmdir(tmp_dir)
 
