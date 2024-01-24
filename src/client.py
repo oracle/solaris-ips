@@ -108,7 +108,7 @@ try:
         OP_STAGE_PLAN)
 except KeyboardInterrupt:
     import sys
-    sys.exit(1)
+    sys.exit(1)  # EXIT_OOPS
 
 CLIENT_API_VERSION = 83
 PKG_CLIENT_NAME = "pkg"
@@ -5907,7 +5907,7 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
             raise __e.wrapped
         __ret = handle_errors(_wrapper, non_wrap_print=False)
         s = ""
-        if __ret == 99:
+        if __ret == EXIT_FATAL:
             s += _("\n{err}{stacktrace}").format(
             err=__e, stacktrace=traceback_str)
 
@@ -5930,13 +5930,13 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
         error("the locale environment (LC_ALL, LC_CTYPE) must be"
               " a UTF-8 locale or C.")
         __ret = EXIT_OOPS
-    except:
+    except Exception:
         if _api_inst:
             _api_inst.abort(result=RESULT_FAILED_UNKNOWN)
         if non_wrap_print:
             traceback.print_exc()
             error(traceback_str)
-        __ret = 99
+        __ret = EXIT_FATAL
     return __ret
 
 

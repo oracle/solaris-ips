@@ -22,8 +22,6 @@
 # Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
-import pkg.no_site_packages
-
 # pkg.depotd - package repository daemon
 
 # XXX The prototype pkg.depotd combines both the version management server that
@@ -39,6 +37,53 @@ import pkg.no_site_packages
 # XXX Although we pushed the evaluation of next-version, etc. to the pull
 # client, we should probably provide a query API to do same on the server, for
 # dumb clients (like a notification service).
+
+try:
+    import pkg.no_site_packages
+    import getopt
+    import gettext
+    import locale
+    import logging
+    import os
+    import os.path
+    import OpenSSL.crypto as crypto
+    import shlex
+    import string
+    import subprocess
+    import sys
+    import tempfile
+
+    from importlib import reload
+
+    from urllib.parse import urlparse, urlunparse
+
+    import cherrypy
+
+    import cherrypy.process.servers
+    from cherrypy.process.plugins import Daemonizer
+    from cherrypy._cpdispatch import Dispatcher
+
+    from pkg.misc import msg, emsg, setlocale
+    from pkg.client.debugvalues import DebugValues
+
+    import pkg
+    import pkg.client.api_errors as api_errors
+    import pkg.config as cfg
+    import pkg.portable.util as os_util
+    import pkg.search_errors as search_errors
+    import pkg.server.depot as ds
+    import pkg.server.repository as sr
+
+    from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT
+except KeyboardInterrupt:
+    import sys
+    sys.exit(1)  # EXIT_OOPS
+
+try:
+    import portend
+except ImportError:
+    emsg("Python module: portend not found.")
+    sys.exit(EXIT_OOPS)
 
 # The default path for static and other web content.
 CONTENT_PATH_DEFAULT = "/usr/share/lib/pkg"
@@ -62,46 +107,6 @@ THREADS_MAX = 5000
 # the normal default of 10 seconds to accommodate clients with poor quality
 # connections.
 SOCKET_TIMEOUT_DEFAULT = 60
-
-import getopt
-import gettext
-import locale
-import logging
-import os
-import os.path
-import OpenSSL.crypto as crypto
-import shlex
-import string
-import subprocess
-import sys
-import tempfile
-
-from importlib import reload
-
-from urllib.parse import urlparse, urlunparse
-
-import cherrypy
-
-import cherrypy.process.servers
-from cherrypy.process.plugins import Daemonizer
-from cherrypy._cpdispatch import Dispatcher
-
-from pkg.misc import msg, emsg, setlocale
-from pkg.client.debugvalues import DebugValues
-
-import pkg
-import pkg.client.api_errors as api_errors
-import pkg.config as cfg
-import pkg.portable.util as os_util
-import pkg.search_errors as search_errors
-import pkg.server.depot as ds
-import pkg.server.repository as sr
-
-try:
-    import portend
-except ImportError:
-    emsg("Python module: portend not found.")
-    sys.exit(1)
 
 # Starting in CherryPy 3.2, its default dispatcher converts all punctuation to
 # underscore. Since publisher name can contain the hyphen symbol "-", in order
@@ -127,7 +132,7 @@ class LogSink(object):
         pass
 
 
-def usage(text=None, retcode=2, full=False):
+def usage(text=None, retcode=EXIT_BADOPT, full=False):
     """Optionally emit a usage message and then exit using the specified
     exit code."""
 
@@ -302,7 +307,7 @@ if __name__ == "__main__":
             if opt == "-a":
                 addresses.add(arg)
             elif opt == "-n":
-                sys.exit(0)
+                sys.exit(EXIT_OK)
             elif opt == "-d":
                 ivalues["pkg"]["inst_root"] = arg
             elif opt == "-p":
@@ -536,7 +541,7 @@ if __name__ == "__main__":
             "for option: {1}".format(arg, opt))
 
     if show_usage:
-        usage(retcode=0, full=True)
+        usage(retcode=EXIT_OK, full=True)
 
     if not dconf.get_property("pkg", "log_errors"):
         dconf.set_property("pkg", "log_errors", "stderr")
@@ -633,7 +638,7 @@ if __name__ == "__main__":
         except Exception as e:
             emsg("pkg.depotd: unable to bind to the specified "
                 "port: {0:d}. Reason: {1}".format(port, e))
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
     else:
         # Not applicable if we're not going to serve content
         dconf.set_property("pkg", "content_root", "")
@@ -691,7 +696,7 @@ if __name__ == "__main__":
                     "passphrase needed to decrypt the SSL "
                     "private key file: {1}".format(cmdline,
                     __e))
-                sys.exit(1)
+                sys.exit(EXIT_OOPS)
             return p.stdout.read().strip(b"\n")
 
         if ssl_dialog.startswith("exec:"):
@@ -727,12 +732,12 @@ if __name__ == "__main__":
         except EnvironmentError as _e:
             emsg("pkg.depotd: unable to read the SSL private key "
                 "file: {0}".format(_e))
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
         except crypto.Error as _e:
             emsg("pkg.depotd: authentication or cryptography "
                 "failure while attempting to decode\nthe SSL "
                 "private key file: {0}".format(_e))
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
         else:
             # Redirect the server to the decrypted key file.
             ssl_key_file = key_data.name
@@ -846,7 +851,7 @@ if __name__ == "__main__":
             pass
         except (api_errors.ApiException, sr.RepositoryError) as _e:
             emsg("pkg.depotd: {0}".format(_e))
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
 
     try:
         sort_file_max_size = dconf.get_property("pkg",
@@ -859,13 +864,13 @@ if __name__ == "__main__":
             writable_root=writable_root)
     except (RuntimeError, sr.RepositoryError) as _e:
         emsg("pkg.depotd: {0}".format(_e))
-        sys.exit(1)
+        sys.exit(EXIT_OOPS)
     except search_errors.IndexingException as _e:
         emsg("pkg.depotd: {0}".format(str(_e)), "INDEX")
-        sys.exit(1)
+        sys.exit(EXIT_OOPS)
     except api_errors.ApiException as _e:
         emsg("pkg.depotd: {0}".format(str(_e)))
-        sys.exit(1)
+        sys.exit(EXIT_OOPS)
 
     if not rebuild and not add_content and not repo.mirror and \
         not (repo.read_only and not repo.writable_root):
@@ -883,34 +888,34 @@ if __name__ == "__main__":
         except (sr.RepositoryError, search_errors.IndexingException,
             api_errors.ApiException) as e:
             emsg(str(e), "INDEX")
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
     elif rebuild:
         try:
             repo.rebuild(build_index=True)
         except sr.RepositoryError as e:
             emsg(str(e), "REBUILD")
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
         except (search_errors.IndexingException,
             api_errors.UnknownErrors,
             api_errors.PermissionsException) as e:
             emsg(str(e), "INDEX")
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
     elif add_content:
         try:
             repo.add_content()
             repo.refresh_index()
         except sr.RepositoryError as e:
             emsg(str(e), "ADD_CONTENT")
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
         except (search_errors.IndexingException,
             api_errors.UnknownErrors,
             api_errors.PermissionsException) as e:
             emsg(str(e), "INDEX")
-            sys.exit(1)
+            sys.exit(EXIT_OOPS)
 
     # Ready to start depot; exit now if requested.
     if exit_ready:
-        sys.exit(0)
+        sys.exit(EXIT_OK)
 
     # Next, initialize depot.
     if nasty:
@@ -974,4 +979,4 @@ if __name__ == "__main__":
         emsg("pkg.depotd: unknown error starting depot server, " \
             "illegal option value specified?")
         emsg(_e)
-        sys.exit(1)
+        sys.exit(EXIT_OOPS)

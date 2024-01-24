@@ -24,45 +24,45 @@
 # Copyright (c) 2013, 2023, Oracle and/or its affiliates.
 #
 
-import pkg.no_site_packages
-import errno
-import getopt
-import gettext
-import locale
-import logging
-import os
-import re
-import shutil
-import rapidjson as json
-import socket
-import sys
-import traceback
-import warnings
+try:
+    import pkg.no_site_packages
+    import errno
+    import getopt
+    import gettext
+    import locale
+    import logging
+    import os
+    import re
+    import shutil
+    import rapidjson as json
+    import socket
+    import sys
+    import traceback
+    import warnings
 
-from mako.template import Template
-from mako.lookup import TemplateLookup
-from OpenSSL.crypto import *
+    from mako.template import Template
+    from mako.lookup import TemplateLookup
+    from OpenSSL.crypto import *
 
-import pkg
-import pkg.client.api_errors as apx
-import pkg.catalog
-import pkg.config as cfg
-import pkg.misc as misc
-import pkg.portable as portable
-import pkg.p5i as p5i
-import pkg.server.repository as sr
-import pkg.smf as smf
+    import pkg
+    import pkg.client.api_errors as apx
+    import pkg.catalog
+    import pkg.config as cfg
+    import pkg.misc as misc
+    import pkg.portable as portable
+    import pkg.p5i as p5i
+    import pkg.server.repository as sr
+    import pkg.smf as smf
 
-from pkg.client import global_settings
-from pkg.client.debugvalues import DebugValues
-from pkg.misc import msg, PipeError
+    from pkg.client import global_settings
+    from pkg.client.debugvalues import DebugValues
+    from pkg.misc import msg, PipeError
+    from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT, EXIT_FATAL
+except KeyboardInterrupt:
+    import sys
+    sys.exit(1)  # EXIT_OOPS
 
 logger = global_settings.logger
-
-# exit codes
-EXIT_OK      = 0
-EXIT_OOPS    = 1
-EXIT_BADOPT  = 2
 
 DEPOT_HTTP_TEMPLATE = "depot_httpd.conf.mako"
 DEPOT_FRAGMENT_TEMPLATE = "depot.conf.mako"
@@ -966,16 +966,16 @@ def handle_errors(func, *args, **kwargs):
                 raise
             error("\n" + misc.out_of_memory())
             __ret = EXIT_OOPS
-    except SystemExit as __e:
-        raise __e
+    except SystemExit:
+        raise
     except (PipeError, KeyboardInterrupt):
         # Don't display any messages here to prevent possible further
         # broken pipe (EPIPE) errors.
         __ret = EXIT_OOPS
-    except:
+    except Exception:
         traceback.print_exc()
         error(traceback_str)
-        __ret = 99
+        __ret = EXIT_FATAL
     return __ret
 
 

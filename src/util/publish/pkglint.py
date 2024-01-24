@@ -24,29 +24,33 @@
 # Copyright (c) 2010, 2023, Oracle and/or its affiliates.
 #
 
-import pkg.no_site_packages
-import codecs
-import logging
-import sys
-import os
-import gettext
-import locale
-import traceback
-import warnings
-from optparse import OptionParser
+try:
+    import pkg.no_site_packages
+    import codecs
+    import logging
+    import sys
+    import os
+    import gettext
+    import locale
+    import traceback
+    import warnings
+    from optparse import OptionParser
 
-from pkg.client.api_errors import InvalidPackageErrors
-from pkg import VERSION
-from pkg.misc import PipeError
-from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT
+    from pkg.client.api_errors import InvalidPackageErrors
+    from pkg import VERSION
+    from pkg.misc import PipeError
+    from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT, EXIT_FATAL
 
-import pkg.lint.engine as engine
-import pkg.lint.log as log
-import pkg.fmri as fmri
-import pkg.manifest
-import pkg.misc as misc
-import pkg.client.api_errors as apx
-import pkg.client.transport.exception as tx
+    import pkg.lint.engine as engine
+    import pkg.lint.log as log
+    import pkg.fmri as fmri
+    import pkg.manifest
+    import pkg.misc as misc
+    import pkg.client.api_errors as apx
+    import pkg.client.transport.exception as tx
+except KeyboardInterrupt:
+    import sys
+    sys.exit(1)  # EXIT_OOPS
 
 logger = None
 
@@ -333,14 +337,14 @@ if __name__ == "__main__":
         # We don't want to display any messages here to prevent
         # possible further broken pipe (EPIPE) errors.
         __ret = EXIT_BADOPT
-    except SystemExit as __e:
-        __ret = __e.code
+    except SystemExit:
+        raise
     except (apx.InvalidDepotResponseException, tx.TransportFailures) as __e:
         error(__e)
         __ret = EXIT_BADOPT
-    except:
+    except Exception:
         traceback.print_exc()
         error(misc.get_traceback_message())
-        __ret = 99
+        __ret = EXIT_FATAL
 
     sys.exit(__ret)

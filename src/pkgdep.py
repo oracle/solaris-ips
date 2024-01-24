@@ -28,26 +28,30 @@
 # able to find Python dependencies in site-packages, so this is disabled
 # for now
 #import pkg.no_site_packages
-import errno
-import getopt
-import gettext
-import locale
-import os
-import six
-import sys
-import traceback
-import warnings
+try:
+    import errno
+    import getopt
+    import gettext
+    import locale
+    import os
+    import six
+    import sys
+    import traceback
+    import warnings
 
-import pkg
-import pkg.actions as actions
-import pkg.client.api as api
-import pkg.client.api_errors as api_errors
-import pkg.client.progress as progress
-import pkg.manifest as manifest
-import pkg.misc as misc
-import pkg.publish.dependencies as dependencies
-from pkg.misc import msg, emsg, PipeError
-from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT
+    import pkg
+    import pkg.actions as actions
+    import pkg.client.api as api
+    import pkg.client.api_errors as api_errors
+    import pkg.client.progress as progress
+    import pkg.manifest as manifest
+    import pkg.misc as misc
+    import pkg.publish.dependencies as dependencies
+    from pkg.misc import msg, emsg, PipeError
+    from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT, EXIT_FATAL
+except KeyboardInterrupt:
+    import sys
+    sys.exit(1)  # EXIT_OOPS
 
 CLIENT_API_VERSION = 82
 PKG_CLIENT_NAME = "pkgdepend"
@@ -626,10 +630,10 @@ if __name__ == "__main__":
         # We don't want to display any messages here to prevent
         # possible further broken pipe (EPIPE) errors.
         __ret = EXIT_OOPS
-    except SystemExit as _e:
-        raise _e
-    except:
+    except SystemExit:
+        raise
+    except Exception:
         traceback.print_exc()
         error(misc.get_traceback_message())
-        __ret = 99
+        __ret = EXIT_FATAL
     sys.exit(__ret)

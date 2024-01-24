@@ -66,33 +66,37 @@
 # change. It runs a catalog rebuild as the last step to regain catalog integrity
 # within the repo.
 
-import pkg.no_site_packages
-import getopt
-import gettext
-import locale
-import os
-import shutil
-import sys
-import tempfile
-import traceback
-import warnings
+try:
+    import pkg.no_site_packages
+    import getopt
+    import gettext
+    import locale
+    import os
+    import shutil
+    import sys
+    import tempfile
+    import traceback
+    import warnings
 
-from itertools import repeat
+    from itertools import repeat
 
-import pkg.actions as actions
-import pkg.client.api_errors as api_errors
-import pkg.client.pkgdefs as pkgdefs
-import pkg.client.progress as progress
-import pkg.client.publisher as publisher
-import pkg.client.transport.transport as transport
-import pkg.fmri as fmri
-import pkg.manifest as manifest
-import pkg.misc as misc
-import pkg.portable as portable
-import pkg.server.repository as sr
+    import pkg.actions as actions
+    import pkg.client.api_errors as api_errors
+    import pkg.client.pkgdefs as pkgdefs
+    import pkg.client.progress as progress
+    import pkg.client.publisher as publisher
+    import pkg.client.transport.transport as transport
+    import pkg.fmri as fmri
+    import pkg.manifest as manifest
+    import pkg.misc as misc
+    import pkg.portable as portable
+    import pkg.server.repository as sr
 
-from pkg.client import global_settings
-from pkg.misc import emsg, msg, PipeError, CMP_ALL, CMP_UNSIGNED
+    from pkg.client import global_settings
+    from pkg.misc import emsg, msg, PipeError, CMP_ALL, CMP_UNSIGNED
+except KeyboardInterrupt:
+    import sys
+    sys.exit(1)  # EXIT_OOPS
 
 PKG_CLIENT_NAME = "pkgsurf"
 
@@ -916,11 +920,11 @@ if __name__ == "__main__":
         error(api_errors._convert_error(_e))
         cleanup()
         __ret = pkgdefs.EXIT_OOPS
-    except SystemExit as _e:
+    except SystemExit:
         cleanup()
-        raise _e
-    except:
+        raise
+    except Exception:
         traceback.print_exc()
         error(misc.get_traceback_message())
-        __ret = 99
+        __ret = pkgdefs.EXIT_FATAL
     sys.exit(__ret)

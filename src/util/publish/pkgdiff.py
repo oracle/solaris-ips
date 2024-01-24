@@ -24,24 +24,30 @@
 # Copyright (c) 2009, 2023, Oracle and/or its affiliates.
 #
 
-import pkg.no_site_packages
-import getopt
-import gettext
-import locale
-import sys
-import traceback
-import warnings
-from functools import cmp_to_key
+try:
+    import pkg.no_site_packages
+    import getopt
+    import gettext
+    import locale
+    import sys
+    import traceback
+    import warnings
+    from functools import cmp_to_key
 
-import pkg.actions
-import pkg.variant as variant
-import pkg.client.api_errors as apx
-import pkg.manifest as manifest
-import pkg.misc as misc
-from pkg.misc import PipeError, CMP_UNSIGNED, CMP_ALL
-from collections import defaultdict
-from itertools import product
-from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT, EXIT_PARTIAL
+    import pkg.actions
+    import pkg.variant as variant
+    import pkg.client.api_errors as apx
+    import pkg.manifest as manifest
+    import pkg.misc as misc
+    from pkg.misc import PipeError, CMP_UNSIGNED, CMP_ALL
+    from collections import defaultdict
+    from itertools import product
+    from pkg.client.pkgdefs import (EXIT_OK, EXIT_OOPS, EXIT_BADOPT,
+        EXIT_PARTIAL, EXIT_FATAL)
+except KeyboardInterrupt:
+    import sys
+    sys.exit(1)  # EXIT_OOPS
+
 
 def usage(errmsg="", exitcode=EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more specific
@@ -374,11 +380,11 @@ if __name__ == "__main__":
         exit_code = main_func()
     except (PipeError, KeyboardInterrupt):
         exit_code = EXIT_OOPS
-    except SystemExit as __e:
-        exit_code = __e
-    except Exception as __e:
+    except SystemExit:
+        raise
+    except Exception:
         traceback.print_exc()
         error(misc.get_traceback_message(), exitcode=None)
-        exit_code = 99
+        exit_code = EXIT_FATAL
 
     sys.exit(exit_code)
