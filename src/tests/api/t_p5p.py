@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
-from __future__ import division
 from . import testutils
 if __name__ == "__main__":
     testutils.setup_environment("../../../proto")

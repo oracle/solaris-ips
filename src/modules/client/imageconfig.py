@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 import collections
@@ -351,9 +351,9 @@ class ImageConfig(cfg.FileConfig):
     def __publisher_iter(self):
         return self.__publishers.__iter__()
 
-    def __publisher_iteritems(self):
-        """Support iteritems on publishers"""
-        return six.iteritems(self.__publishers)
+    def __publisher_items(self):
+        """Support items() on publishers"""
+        return self.__publishers.items()
 
     def __publisher_keys(self):
         """Support keys() on publishers"""
@@ -738,8 +738,7 @@ class ImageConfig(cfg.FileConfig):
                     # the existing configuration.
                     secobj.remove_property(pname)
 
-            # pylint: disable=W1620
-            for key, val in pub.properties.iteritems():
+            for key, val in pub.properties.items():
                 if val == DEF_TOKEN:
                     continue
                 self.set_property(section,
@@ -1000,7 +999,7 @@ class ImageConfig(cfg.FileConfig):
 
     # properties so we can enforce rules
     publishers = DictProperty(__get_publisher, __set_publisher,
-        __del_publisher, __publisher_iteritems, __publisher_keys,
+        __del_publisher, __publisher_items, __publisher_keys,
         __publisher_values, __publisher_iter,
         doc="A dict mapping publisher prefixes to publisher objects",
         fgetdefault=__publisher_getdefault, )
@@ -1590,9 +1589,9 @@ class BlendedConfig(object):
     def __publisher_iter(self):
         return self.__publishers.__iter__()
 
-    def __publisher_iteritems(self):
-        """Support iteritems on publishers"""
-        return six.iteritems(self.__publishers)
+    def __publisher_items(self):
+        """Support items() on publishers"""
+        return self.__publishers.items()
 
     def __publisher_keys(self):
         """Support keys() on publishers"""
@@ -1605,6 +1604,6 @@ class BlendedConfig(object):
     # properties so we can enforce rules and manage two potentially
     # overlapping sets of publishers
     publishers = DictProperty(__get_publisher, __set_publisher,
-        __del_publisher, __publisher_iteritems, __publisher_keys,
+        __del_publisher, __publisher_items, __publisher_keys,
         __publisher_values, __publisher_iter,
         doc="A dict mapping publisher prefixes to publisher objects")

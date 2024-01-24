@@ -21,10 +21,8 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
-
-from __future__ import division
 
 import os
 import datetime
@@ -166,12 +164,10 @@ class RepoChooser(object):
             found_rs.append((rs, ruri))
             if ruri in origin_list:
                 n = num_origins - o_idx
-                # old-division; pylint: disable=W1619
                 rs.origin_factor = n / num_origins
                 o_idx += 1
             else:
                 n = num_mirrors - m_idx
-                # old-division; pylint: disable=W1619
                 rs.origin_factor = n / num_mirrors
                 m_idx += 1
             if origin_count > 0:
@@ -345,7 +341,6 @@ class RepoStats(object):
             else:
                 return 0.0
 
-        # old-division; pylint: disable=W1619
         return self.__connect_time / self.__connections
 
     @property
@@ -477,7 +472,6 @@ class RepoStats(object):
         # The constants were derived by live testing, and using
         # a simulated environment.
         #
-        # old-division; pylint: disable=W1619
         q = origin_order_bonus(self) + unused_bonus(self) + \
             (Cspeed * ((self.__bytes_xfr / (.001 + self.__seconds_xfr))
             / ospeed)**2) + \
@@ -511,7 +505,6 @@ class RepoStats(object):
         if self.__seconds_xfr == 0:
             return 0.0
 
-        # old-division; pylint: disable=W1619
         return self.__bytes_xfr / self.__seconds_xfr
 
     @property

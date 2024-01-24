@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -190,8 +190,6 @@ file NOHASH group=bin mode=0755 owner=root path={ksh_path} variant.opensolaris.z
 
     python_abs_text = """\
 #!/usr/bin/python
-
-from __future__ import absolute_import
 
 import os
 import sys

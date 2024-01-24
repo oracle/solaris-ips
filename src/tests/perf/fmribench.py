@@ -22,14 +22,12 @@
 
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 #
 # fmribench - benchmark fmri creation and other related operations
 #
-
-from __future__ import division
 
 import pkg.fmri as fmri
 import pkg.version as version

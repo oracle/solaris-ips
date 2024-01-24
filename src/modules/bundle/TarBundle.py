@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -55,8 +55,6 @@ class TarBundle(pkg.bundle.Bundle):
 
     def action(self, tarfile, tarinfo):
         if tarinfo.isreg():
-            # false positive
-            # file-builtin; pylint: disable=W1607
             return file.FileAction(tarfile.extractfile(tarinfo),
                 mode=oct(stat.S_IMODE(tarinfo.mode)),
                 owner=tarinfo.uname, group=tarinfo.gname,

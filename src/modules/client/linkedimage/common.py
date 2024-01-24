@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -2006,8 +2006,7 @@ class LinkedImage(object):
             failfast=False)
 
         # check if we support detach for these children.  we don't use
-        # iteritems() when walking lic_dict because we might modify
-        # lic_dict.
+        # items() when walking lic_dict because we might modify lic_dict.
         for lin in lic_dict:
             lip = self.__plugins[lin.lin_type]
             if lip.support_detach or force:
@@ -3747,7 +3746,7 @@ def _rterr(li=None, lic=None, lin=None, path=None, err=None,
         err = "Found saved temporal linked properties: {0}".format(
             ", ".join(saved_temporal_props))
     else:
-        assert err != None
+        assert err is not None
 
     if li:
         if li.ischild():

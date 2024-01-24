@@ -21,10 +21,8 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
-
-from __future__ import division
 
 import errno
 import http.client
@@ -911,7 +909,7 @@ class CurlTransportEngine(TransportEngine):
             hdl.setopt(pycurl.PROGRESSFUNCTION, treq.progfunc)
 
         proto = urlsplit(treq.url)[0]
-        if not proto in ("http", "https"):
+        if proto not in ("http", "https"):
             return
 
         if treq.read_filepath:

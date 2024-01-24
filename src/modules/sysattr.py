@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2015, 2024, Oracle and/or its affiliates.
 #
 
-from __future__ import unicode_literals
 import os
 from pkg._sysattr import lib, ffi
 

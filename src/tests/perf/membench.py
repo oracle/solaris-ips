@@ -21,14 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 #
 # membench - benchmark memory usage of various objects
 #
-
-from __future__ import division
 
 import pkg.fmri as fmri
 import pkg.version as version

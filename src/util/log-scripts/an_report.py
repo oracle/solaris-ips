@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
-from __future__ import division
 import cPickle as pickle
 import GeoIP
 import datetime
@@ -225,7 +224,7 @@ def report_by_date(data, title, summary_file = None):
 Total {0} requests: <b>{1:d}</b><br />
 Period: {2} - {3} ({4:d} days)<br />
 Average {5} requests per day: {6:.1f}</p>""".format(title, total, start_day, end_day,
-        days, title, total / days) # old-division; pylint: disable=W1619
+        days, title, total / days)
 
     ndays = int(str(days))
     sz = (chart_hz // ndays)
@@ -279,7 +278,7 @@ def report_by_country(data, title, summary_file = None):
     for i, n in (sorted(data.items(), key=lambda k_v: (k_v[1], k_v[0]))):
         total += n
         print(n, i, file=rf)
-        if i == None:
+        if i is None:
             continue
 
         if chart_ccs == "":
