@@ -21,10 +21,9 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
-from __future__ import division
 import datetime
 import pickle
 import time
@@ -90,7 +89,7 @@ for fn in sys.argv[1:]:
     for k in ebd:
         if k in merge_entries_by_date:
             for v in ebd[k]:
-                if not v in merge_entries_by_date[k]:
+                if v not in merge_entries_by_date[k]:
                     merge_entries_by_date[k].append(v)
 
         else:

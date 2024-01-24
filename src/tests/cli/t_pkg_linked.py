@@ -22,10 +22,8 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
-
-from __future__ import division
 
 from . import testutils
 if __name__ == "__main__":
@@ -275,20 +273,20 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         output_cb=None, env_arg=None):
         assert type(il) == list
         assert type(cmd) == str
-        assert args == None or type(args) == str
-        assert rv == None or type(rv) == int
-        assert rvdict == None or type(rvdict) == dict
-        assert rv == None or rvdict == None
+        assert args is None or type(args) == str
+        assert rv is None or type(rv) == int
+        assert rvdict is None or type(rvdict) == dict
+        assert rv is None or rvdict is None
 
-        if rv == None:
+        if rv is None:
             rv = EXIT_OK
-        if rvdict == None:
+        if rvdict is None:
             rvdict = {}
             for i in il:
                 rvdict[i] = rv
         assert (set(rvdict) | set(il)) == set(il)
 
-        if args == None:
+        if args is None:
             args = ""
 
         # we're updating one or more images, so make sure to reset all
@@ -307,20 +305,20 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         assert type(cl) == list
         assert i not in cl
         assert type(cmd) == str
-        assert args == None or type(args) == str
-        assert rv == None or type(rv) == int
-        assert rvdict == None or type(rvdict) == dict
-        assert rv == None or rvdict == None
+        assert args is None or type(args) == str
+        assert rv is None or type(rv) == int
+        assert rvdict is None or type(rvdict) == dict
+        assert rv is None or rvdict is None
 
-        if rv == None:
+        if rv is None:
             rv = EXIT_OK
-        if rvdict == None:
+        if rvdict is None:
             rvdict = {}
             for c in cl:
                 rvdict[c] = rv
         assert (set(rvdict) | set(cl)) == set(cl)
 
-        if args == None:
+        if args is None:
             args = ""
 
         # sync each child from parent
@@ -332,10 +330,10 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
     def _pkg_child_all(self, i, cmd, args=None, rv=EXIT_OK):
         assert type(i) == int
         assert type(cmd) == str
-        assert args == None or type(args) == str
+        assert args is None or type(args) == str
         assert type(rv) == int
 
-        if args == None:
+        if args is None:
             args = ""
         self._pkg([i], "{0} -a {1}".format(cmd, args), rv=rv)
 
@@ -343,10 +341,10 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         assert type(il) == list
         assert type(p) == int
         assert p not in il
-        assert args == None or type(args) == str
+        assert args is None or type(args) == str
         assert type(rv) == int
 
-        if args == None:
+        if args is None:
             args = ""
 
         for i in il:
@@ -357,19 +355,19 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
         assert type(i) == int
         assert type(cl) == list
         assert i not in cl
-        assert args == None or type(args) == str
-        assert rvdict == None or type(rvdict) == dict
-        assert rv == None or rvdict == None
+        assert args is None or type(args) == str
+        assert rvdict is None or type(rvdict) == dict
+        assert rv is None or rvdict is None
 
-        if rv == None:
+        if rv is None:
             rv = EXIT_OK
-        if rvdict == None:
+        if rvdict is None:
             rvdict = {}
             for c in cl:
                 rvdict[c] = rv
         assert (set(rvdict) | set(cl)) == set(cl)
 
-        if args == None:
+        if args is None:
             args = ""
 
         # attach each child to parent

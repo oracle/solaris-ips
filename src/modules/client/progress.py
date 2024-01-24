@@ -21,14 +21,12 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 #
 # Missing docstring; pylint: disable=C0111
 #
-
-from __future__ import division
 
 import inspect
 import itertools
@@ -196,8 +194,6 @@ class SpeedEstimator(object):
         # used to disable 'startup mode' if the d/l completes
         # very rapidly.  We'll always start giving the user an
         # estimate once ratiocomplete >= 50%.
-        # pylint is picky about this message:
-        # old-division; pylint: disable=W1619
         ratiocomplete = 0.0 if self.goalbytes == 0 else \
             self.__curtotal / self.goalbytes
 
@@ -256,8 +252,6 @@ class SpeedEstimator(object):
         if self.__donetime is None:
             return None
         try:
-            # pylint is picky about this message:
-            # old-division; pylint: disable=W1619
             return self.goalbytes / self.elapsed()
         except ZeroDivisionError:
             return None
@@ -512,10 +506,7 @@ class GoalTrackerItem(TrackerItem):
         i.e. 37 / 100 would yield 37.0"""
         if self.goalitems is None or self.goalitems == 0:
             return 0
-        # pylint is picky about this message:
-        # old-division; pylint: disable=W1619
-        return math.floor(100.0 *
-            self.items / self.goalitems)
+        return math.floor(100.0 * self.items / self.goalitems)
 
     def __str__(self):
         info = ""
@@ -2961,8 +2952,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
     def _dl_output(self, outspec):
         if not self._ptimer.time_to_print() and not outspec.first \
-            and not outspec.last and not "startpkg" in outspec.changed \
-            and not "endpkg" in outspec.changed:
+            and not outspec.last and "startpkg" not in outspec.changed \
+            and "endpkg" not in outspec.changed:
             return
 
         # The first time, emit header.
@@ -3274,8 +3265,6 @@ def test_progress_tracker(t, gofast=False):
                 pkggoalbytes += delta
             filelist.append(hunks)
 
-    # pylint is picky about this message:
-    # old-division; pylint: disable=W1619
     pauseperfile = approx_time / pkggoalfiles
 
     try:

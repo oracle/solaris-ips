@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a generic packaging object
@@ -136,7 +136,6 @@ class NSG(type):
         return pkg.actions.fromstr(state)
 
 
-# metaclass-assignment; pylint: disable=W1623
 class Action(six.with_metaclass(NSG, object)):
     """Class representing a generic packaging object.
 
@@ -182,6 +181,8 @@ class Action(six.with_metaclass(NSG, object)):
 
     # Python 3 will ignore the __metaclass__ field, but it's still useful
     # for class attribute access.
+    # Note that this is necessary for our current implementation of json
+    # encoder/decoder to work.
     __metaclass__ = NSG
 
     # __init__ is provided as a native function (see end of class

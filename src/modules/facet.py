@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 # basic facet support
@@ -158,69 +158,21 @@ class Facets(dict):
             rv = misc.cmp(self.__local, other.__local)
         return rv
 
-    # this __cmp__ is used as a helper function for the rich comparison
-    # methods.
-    # __cmp__ defined; pylint: disable=W1630
-    def __cmp__(self, other):
-        """Compare two Facets objects.  This comparison takes masked
-        values into account."""
-
-        # check if we're getting compared against something other than
-        # another Factes object.
-        if type(other) is not Facets:
-            return 1
-
-        # Check for effective facet value changes that could affect
-        # solver computations.
-        rv = self._cmp_values(other)
-        if rv != 0:
-            return rv
-
-        # Check for facet priority changes that could affect solver
-        # computations.  (Priority changes can occur when local or
-        # inherited facets are added or removed.)
-        rv = self._cmp_priority(other)
-        if rv != 0:
-            return rv
-
-        # There are no outwardly visible facet priority or value
-        # changes that could affect solver computations, but it's
-        # still possible that we're changing the set of local or
-        # inherited facets in a way that doesn't affect solver
-        # computations.  For example:  we could be adding a local
-        # facet with a value that is masked by an inherited facet, or
-        # having a facet transition from being inherited to being
-        # local without a priority or value change.  Check if this is
-        # the case.
-        rv = self._cmp_all_values(other)
-        return rv
-
     def __hash__(self):
         return hash(str(self))
 
     def __eq__(self, other):
-        """redefine in terms of __cmp__()"""
-        return (Facets.__cmp__(self, other) == 0)
+        if not isinstance(other, Facets):
+            return NotImplemented
+        # When comparing for equality, there is no need to work with __keylist
+        # or underlying main dict as those depend on __local and __inherited
+        # only. All we need to do is compare those two.
+        return (
+            self.__local == other.__local
+            and self.__inherited == other.__inherited
+        )
 
-    def __ne__(self, other):
-        """redefine in terms of __cmp__()"""
-        return (Facets.__cmp__(self, other) != 0)
-
-    def __ge__(self, other):
-        """redefine in terms of __cmp__()"""
-        return (Facets.__cmp__(self, other) >= 0)
-
-    def __gt__(self, other):
-        """redefine in terms of __cmp__()"""
-        return (Facets.__cmp__(self, other) > 0)
-
-    def __le__(self, other):
-        """redefine in terms of __cmp__()"""
-        return (Facets.__cmp__(self, other) <= 0)
-
-    def __lt__(self, other):
-        """redefine in terms of __cmp__()"""
-        return (Facets.__cmp__(self, other) < 0)
+    # Other rich comparison methods are unnecessary.
 
     def __repr__(self):
         s =  "<"
@@ -262,7 +214,7 @@ class Facets(dict):
         if not item.startswith("facet."):
             raise KeyError('key must start with "facet".')
 
-        if not (value == True or value == False):
+        if not isinstance(value, bool):
             raise ValueError("value must be boolean")
 
         keylist_sort = False
@@ -479,13 +431,8 @@ class Facets(dict):
             rv.append((value, src, masked))
         return rv
 
-    # pylint: disable=W1620
     def items(self):
-        return [a for a in self.iteritems()]
-
-    def iteritems(self): # return in sorted order for display
-        for k in self.__keylist:
-            yield k, self[k]
+        return [(k, self[k]) for k in self.__keylist]
 
     def copy(self):
         return Facets(self)
