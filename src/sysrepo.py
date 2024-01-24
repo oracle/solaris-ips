@@ -24,39 +24,44 @@
 # Copyright (c) 2011, 2023, Oracle and/or its affiliates.
 #
 
-import pkg.no_site_packages
-import atexit
-import errno
-import getopt
-import gettext
-import locale
-import logging
-import os
-import shutil
-import rapidjson as json
-import socket
-import stat
-import sys
-import traceback
-import warnings
+try:
+    import pkg.no_site_packages
+    import atexit
+    import errno
+    import getopt
+    import gettext
+    import locale
+    import logging
+    import os
+    import shutil
+    import rapidjson as json
+    import socket
+    import stat
+    import sys
+    import traceback
+    import warnings
 
-from mako.template import Template
-from urllib.error import URLError
-from urllib.parse import urlparse
-from urllib.request import build_opener, HTTPRedirectHandler
+    from mako.template import Template
+    from urllib.error import URLError
+    from urllib.parse import urlparse
+    from urllib.request import build_opener, HTTPRedirectHandler
 
-from pkg.client import global_settings
-from pkg.misc import msg, PipeError
+    from pkg.client import global_settings
+    from pkg.misc import msg, PipeError
 
-import pkg
-import pkg.catalog
-import pkg.client.api
-import pkg.client.progress as progress
-import pkg.client.api_errors as apx
-import pkg.digest as digest
-import pkg.misc as misc
-import pkg.portable as portable
-import pkg.p5p as p5p
+    import pkg
+    import pkg.catalog
+    import pkg.client.api
+    import pkg.client.progress as progress
+    import pkg.client.api_errors as apx
+    import pkg.digest as digest
+    import pkg.misc as misc
+    import pkg.portable as portable
+    import pkg.p5p as p5p
+    from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT, EXIT_FATAL
+except KeyboardInterrupt:
+    import sys
+    sys.exit(1)  # EXIT_OOPS
 
 logger = global_settings.logger
 orig_cwd = None
@@ -64,11 +69,6 @@ orig_cwd = None
 PKG_CLIENT_NAME = "pkg.sysrepo"
 CLIENT_API_VERSION = 82
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
-
-# exit codes
-EXIT_OK      = 0
-EXIT_OOPS    = 1
-EXIT_BADOPT  = 2
 
 # Default port used for http traffic.
 HTTP_PORT = 80
@@ -981,8 +981,8 @@ def handle_errors(func, *args, **kwargs):
                 raise
             error("\n" + misc.out_of_memory())
             __ret = EXIT_OOPS
-    except SystemExit as __e:
-        raise __e
+    except SystemExit:
+        raise
     except (PipeError, KeyboardInterrupt):
         # Don't display any messages here to prevent possible further
         # broken pipe (EPIPE) errors.
@@ -994,10 +994,10 @@ def handle_errors(func, *args, **kwargs):
             "{api}.").format(client=__e.received_version,
              api=__e.expected_version))
         __ret = EXIT_OOPS
-    except:
+    except Exception:
         traceback.print_exc()
         error(traceback_str)
-        __ret = 99
+        __ret = EXIT_FATAL
     return __ret
 
 

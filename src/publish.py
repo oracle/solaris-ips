@@ -24,32 +24,37 @@
 # Copyright (c) 2007, 2023, Oracle and/or its affiliates.
 #
 
-import pkg.no_site_packages
-import fnmatch
-import getopt
-import gettext
-import locale
-import os
-import sys
-import traceback
-import warnings
-import errno
-from pkg.client.pkgdefs import EXIT_OOPS, EXIT_OK, EXIT_PARTIAL, EXIT_BADOPT
+try:
+    import pkg.no_site_packages
+    import fnmatch
+    import getopt
+    import gettext
+    import locale
+    import os
+    import sys
+    import traceback
+    import warnings
+    import errno
+    from pkg.client.pkgdefs import (EXIT_OK, EXIT_OOPS, EXIT_BADOPT,
+        EXIT_PARTIAL, EXIT_FATAL)
 
-from importlib import reload
+    from importlib import reload
 
-import pkg.actions
-import pkg.bundle
-import pkg.client.api_errors as apx
-import pkg.fmri
-import pkg.manifest
-import pkg.misc as misc
-import pkg.publish.transaction as trans
-import pkg.client.transport.transport as transport
-import pkg.client.publisher as publisher
-from pkg.misc import msg, emsg, PipeError
-from pkg.client import global_settings
-from pkg.client.debugvalues import DebugValues
+    import pkg.actions
+    import pkg.bundle
+    import pkg.client.api_errors as apx
+    import pkg.fmri
+    import pkg.manifest
+    import pkg.misc as misc
+    import pkg.publish.transaction as trans
+    import pkg.client.transport.transport as transport
+    import pkg.client.publisher as publisher
+    from pkg.misc import msg, emsg, PipeError
+    from pkg.client import global_settings
+    from pkg.client.debugvalues import DebugValues
+except KeyboardInterrupt:
+    import sys
+    sys.exit(1)  # EXIT_OOPS
 
 nopub_actions = [ "unknown" ]
 
@@ -611,7 +616,7 @@ def trans_import(repo_uri, args, visitors=[]):
     except KeyError:
         print(_("No transaction ID specified in $PKG_TRANS_ID"),
             file=sys.stderr)
-        sys.exit(1)
+        sys.exit(EXIT_OOPS)
 
     opts, pargs = getopt.getopt(args, "T:", ["target="])
 
@@ -868,10 +873,10 @@ if __name__ == "__main__":
     except MemoryError:
         error("\n" + misc.out_of_memory())
         __ret = EXIT_OOPS
-    except SystemExit as _e:
-        raise _e
-    except:
+    except SystemExit:
+        raise
+    except Exception:
         traceback.print_exc()
         error(misc.get_traceback_message())
-        __ret = 99
+        __ret = EXIT_FATAL
     sys.exit(__ret)
