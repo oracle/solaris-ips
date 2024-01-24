@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import errno
@@ -182,12 +182,12 @@ class ImageInsufficentSpace(ApiException):
 
     def __str__(self):
         from pkg.misc import bytes_to_str
-        return _("Insufficient disk space available ({avail}) "
-            "for estimated need ({needed}) for {use}").format(
+        return _("Insufficient disk space available for {use}. Available "
+                 "space: {avail}. Estimated required: {needed}.").format(
             avail=bytes_to_str(self.avail),
             needed=bytes_to_str(self.needed),
             use=self.use
-           )
+        )
 
 
 class VersionException(ApiException):
@@ -941,7 +941,7 @@ class ImageBoundaryError(ApiException):
         error_list = [self.GENERIC, self.OUTSIDE_BE, self.RESERVED]
         s = ""
         for err_type in error_list:
-            if not err_type in self.actions:
+            if err_type not in self.actions:
                 continue
             if self.actions[err_type]:
                 if err_type == self.GENERIC:
@@ -998,7 +998,7 @@ class ImageBoundaryErrors(ApiException):
             for err in self.__errors:
                 # If err does not contain this error type
                 # we just ignore this.
-                if not err_type in err.actions or \
+                if err_type not in err.actions or \
                     not err.actions[err_type]:
                     continue
                 cur_errs.append(err)
@@ -1082,7 +1082,7 @@ class ActionExecutionError(ApiException):
         self.details = details
         self.error = error
         self.fmri = fmri
-        if use_errno == None:
+        if use_errno is None:
             # If details were provided, don't use errno unless
             # explicitly requested.
             use_errno = not details
@@ -2981,7 +2981,7 @@ class LinkedImageException(ApiException):
                 assert isinstance(e, LinkedImageException)
 
             # set default error return value
-            if exitrv == None:
+            if exitrv is None:
                 exitrv = pkgdefs.EXIT_OOPS
 
             self.lix_err = None
@@ -3025,7 +3025,7 @@ class LinkedImageException(ApiException):
                )
 
         if child_bad_img is not None:
-            if exitrv == None:
+            if exitrv is None:
                 exitrv = pkgdefs.EXIT_EACCESS
             if lin:
                 err = _("Can't initialize child image "
@@ -3038,7 +3038,7 @@ class LinkedImageException(ApiException):
                     "at path: {0}").format(child_bad_img)
 
         if child_diverged is not None:
-            if exitrv == None:
+            if exitrv is None:
                 exitrv = pkgdefs.EXIT_DIVERGED
             err = _("Linked image is diverged: {0}").format(
                 child_diverged)
@@ -3065,7 +3065,7 @@ class LinkedImageException(ApiException):
 
         if child_op_failed is not None:
             op, cpath, e = child_op_failed
-            if exitrv == None:
+            if exitrv is None:
                 exitrv = pkgdefs.EXIT_EACCESS
             if lin:
                 err = _("Failed '{op}' for child image "
@@ -3115,7 +3115,7 @@ class LinkedImageException(ApiException):
                 "child detach: {0}").format(detach_child_notsup)
 
         if detach_from_parent is not None:
-            if exitrv == None:
+            if exitrv is None:
                 exitrv = pkgdefs.EXIT_PARENTOP
             err =  _("Parent linked to child, can not detach "
                 "child: {0}").format(detach_from_parent)
@@ -3149,7 +3149,7 @@ class LinkedImageException(ApiException):
             err = _("Can't link image to itself: {0}")
 
         if parent_bad_img is not None:
-            if exitrv == None:
+            if exitrv is None:
                 exitrv = pkgdefs.EXIT_EACCESS
             err = _("Can't initialize parent image at path: {0}").format(
                 parent_bad_img)
@@ -3159,7 +3159,7 @@ class LinkedImageException(ApiException):
                 parent_bad_notabs)
 
         if parent_bad_path is not None:
-            if exitrv == None:
+            if exitrv is None:
                 exitrv = pkgdefs.EXIT_EACCESS
             err = _("Can't access parent image at path: {0}").format(
                 parent_bad_path)
@@ -3220,7 +3220,7 @@ The child generated the following output:
                 self_linked)
 
         if self_not_child is not None:
-            if exitrv == None:
+            if exitrv is None:
                 exitrv = pkgdefs.EXIT_NOPARENT
             err = _("Current image is not a linked child: {0}").format(
                 self_not_child)
@@ -3244,7 +3244,7 @@ The child generated the following output:
                    )
 
         # set default error return value
-        if exitrv == None:
+        if exitrv is None:
             exitrv = pkgdefs.EXIT_OOPS
 
         self.lix_err = err
