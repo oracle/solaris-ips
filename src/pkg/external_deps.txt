@@ -61,6 +61,7 @@
     pkg:/runtime/python-39
     pkg:/runtime/python-311
     pkg:/service/network/dns/mdns
+    pkg:/system/network/avahi
     pkg:/shell/ksh
     pkg:/shell/ksh93
     pkg:/system/core-os
