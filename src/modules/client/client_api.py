@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2015, 2024, Oracle and/or its affiliates.
 #
 
 
@@ -1192,7 +1192,7 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
     # display plan debugging information
     if _verbose > 2:
-        DebugValues.set_value("plan", "True")
+        DebugValues["plan"] = "True"
 
     # plan the requested operation
     stuff_to_do = None

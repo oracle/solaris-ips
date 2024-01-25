@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -150,7 +150,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
         this doesn't tell us anything about the image we're
         manipulating, just the environment that we're running in."""
 
-        if self.__in_gz_cached != None:
+        if self.__in_gz_cached is not None:
             return self.__in_gz_cached
 
         # check if we're running in the gz
@@ -175,10 +175,8 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
         """Check to see if zones are supported in the current image.
         i.e. can the current image have zone children."""
 
-        # pylint: disable=E1120
-        if DebugValues.get_value("zones_supported"):
+        if DebugValues["zones_supported"]:
             return True
-        # pylint: enable=E1120
 
         # first check if the image variant is global
         variant = "variant.opensolaris.zone"
@@ -228,7 +226,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
             self.__zoneadm_list_cache = None
 
         # try to return the cached children
-        if self.__zoneadm_list_cache != None:
+        if self.__zoneadm_list_cache is not None:
             assert type(self.__zoneadm_list_cache) == list
             return self.__zoneadm_list_cache
 
@@ -386,7 +384,7 @@ class LinkedImageZoneChildPlugin(li.LinkedImageChildPlugin):
 def _zonename():
     """Get the zonname of the current system."""
 
-    cmd = DebugValues.get_value("bin_zonename") # pylint: disable=E1120
+    cmd = DebugValues["bin_zonename"]
     if cmd is not None:
         cmd = [cmd]
     else:
@@ -459,7 +457,7 @@ def _list_zones(root, path_transform):
     results."""
 
     rv = dict()
-    cmd = DebugValues.get_value("bin_zoneadm") # pylint: disable=E1120
+    cmd = DebugValues["bin_zoneadm"]
     if cmd is not None:
         cmd = [cmd]
     else:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 try:
@@ -1638,7 +1638,7 @@ def __collect_default_ignore_dep_files(ignored_dep_files):
     """Helpler function to collect default ignored-dependency files."""
 
     root_ignored = "/usr/share/pkg/ignored_deps"
-    altroot = DebugValues.get_value("ignored_deps")
+    altroot = DebugValues["ignored_deps"]
     if altroot:
         root_ignored = altroot
     if os.path.exists(root_ignored):
@@ -2281,7 +2281,7 @@ def main_func():
                 usage(_("{opt} takes argument of form "
                    "name=value, not {arg}").format(
                    opt=opt, arg=arg))
-            DebugValues.set_value(key, value)
+            DebugValues[key] = value
 
     if DebugValues:
         reload(pkg.digest)

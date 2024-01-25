@@ -1422,22 +1422,6 @@ class DummyLock(object):
         return self.held
 
 
-class Singleton(type):
-    """Set __metaclass__ to Singleton to create a singleton.
-    See http://en.wikipedia.org/wiki/Singleton_pattern """
-
-    def __init__(cls, name, bases, dictionary):
-        super(Singleton, cls).__init__(name, bases, dictionary)
-        cls.instance = None
-
-    def __call__(cls, *args, **kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args,
-                **kw)
-
-        return cls.instance
-
-
 EmptyDict = ImmutableDict()
 
 # Setting the python file buffer size to 128k gives substantial performance
@@ -1664,8 +1648,8 @@ def api_cmdpath():
         cmdpath = os.environ["PKG_CMDPATH"]
 
     # DebugValues is a singleton, hence no 'self' arg; pylint: disable=E1120
-    if DebugValues.get_value("simulate_cmdpath"):
-        cmdpath = DebugValues.get_value("simulate_cmdpath")
+    if DebugValues["simulate_cmdpath"]:
+        cmdpath = DebugValues["simulate_cmdpath"]
 
     return cmdpath
 
@@ -1702,7 +1686,7 @@ def liveroot():
     that we are running from."""
 
     # DebugValues is a singleton, hence no 'self' arg; pylint: disable=E1120
-    live_root = DebugValues.get_value("simulate_live_root")
+    live_root = DebugValues["simulate_live_root"]
     if not live_root and "PKG_LIVE_ROOT" in os.environ:
         live_root = os.environ["PKG_LIVE_ROOT"]
     if not live_root:

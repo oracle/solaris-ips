@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 #
 
 try:
@@ -796,7 +796,7 @@ def main_func():
                         _("{opt} takes argument of form "
                         "name=value, not {arg}").format(
                         opt=opt, arg=arg))
-                DebugValues.set_value(key, value)
+                DebugValues[key] = value
             else:
                 usage("unknown option {0}".format(opt))
 

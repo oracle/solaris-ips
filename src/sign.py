@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 try:
@@ -174,7 +174,7 @@ def main_func():
         elif opt == "-D":
             try:
                 key, value = arg.split("=", 1)
-                DebugValues.set_value(key, value)
+                DebugValues[key] = value
             except (AttributeError, ValueError):
                 error(_("{opt} takes argument of form "
                     "name=value, not {arg}").format(
