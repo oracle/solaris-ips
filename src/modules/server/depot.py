@@ -2047,13 +2047,12 @@ class DNSSD_Plugin(SimplePlugin):
             return
 
         try:
-            while not timedout:
+            while not timedout and not self.reg_ok:
                 avail = select.select([self.sd_hdl], [], [],
                     to_val)
                 if self.sd_hdl in avail[0]:
                     pybonjour.DNSServiceProcessResult(
                         self.sd_hdl)
-                    to_val = 0
                 else:
                     timedout = True
         except pybonjour.BonjourError as e:
