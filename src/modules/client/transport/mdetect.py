@@ -102,7 +102,6 @@ class MirrorDetector(object):
                 if sd_hdl in avail[0]:
                     pybonjour.DNSServiceProcessResult(
                         sd_hdl)
-                    tval = 0
                 else:
                     timedout = True
         except select.error as e:
@@ -150,7 +149,6 @@ class MirrorDetector(object):
                 if sd_hdl in avail[0]:
                     pybonjour.DNSServiceProcessResult(
                         sd_hdl)
-                    tval = 0
                 else:
                     timedout = True
         except select.error as e:
