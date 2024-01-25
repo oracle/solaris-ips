@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 # This module provides a basic interface to smf.
@@ -72,7 +72,7 @@ class NonzeroExitException(Exception):
 
 def __call(args, zone=None):
     # a way to invoke a separate executable for testing
-    cmds_dir = DebugValues.get_value("smf_cmds_dir")
+    cmds_dir = DebugValues["smf_cmds_dir"]
     # returned values will be in the user's locale
     # so we need to ensure that the force_str uses
     # their locale.
@@ -82,7 +82,7 @@ def __call(args, zone=None):
             os.path.join(cmds_dir,
             args[0].lstrip("/")),) + args[1:]
     if zone:
-        cmd = DebugValues.get_value("bin_zlogin")
+        cmd = DebugValues["bin_zlogin"]
         if cmd is None:
             cmd = zlogin_path
         args = (cmd, zone) + args

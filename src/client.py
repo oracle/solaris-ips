@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 #
@@ -1730,7 +1730,7 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
     # display plan debugging information
     if _verbose > 2:
-        DebugValues.set_value("plan", "True")
+        DebugValues["plan"] = "True"
 
     # plan the requested operation
     stuff_to_do = None
@@ -2524,7 +2524,7 @@ def set_mediator(op, api_inst, pargs,
             "specified using -V and -I"), cmd=op)
 
     if verbose > 2:
-        DebugValues.set_value("plan", "True")
+        DebugValues["plan"] = "True"
 
     # Now set version and/or implementation for all matching mediators.
     # The user may specify 'None' as a special value to explicitly
@@ -2615,7 +2615,7 @@ def unset_mediator(op, api_inst, pargs,
         usage(_("at least one mediator must be specified"),
             cmd=op)
     if verbose > 2:
-        DebugValues.set_value("plan", "True")
+        DebugValues["plan"] = "True"
 
     # Build dictionary of mediators to unset based on input.
     mediators = collections.defaultdict(dict)
@@ -5573,7 +5573,7 @@ def main_func():
                     usage(_("{opt} takes argument of form "
                         "name=value, not {arg}").format(
                         opt=opt, arg=arg))
-            DebugValues.set_value(key, value)
+            DebugValues[key] = value
         elif opt == "-R":
             mydir = arg
         elif opt == "--runid":

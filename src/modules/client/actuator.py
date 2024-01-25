@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import pkg.smf as smf
@@ -291,8 +291,7 @@ class Actuator(object):
                         os.O_EXCL  |
                         os.O_CREAT |
                         os.O_WRONLY))
-            if not DebugValues.get_value("smf_cmds_dir") and \
-                not self.zone:
+            if not DebugValues["smf_cmds_dir"] and not self.zone:
                 return
 
         self.do_nothing = False

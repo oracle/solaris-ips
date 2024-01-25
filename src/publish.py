@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 try:
@@ -761,7 +761,7 @@ def main_func():
                         usage(_("{opt} takes argument of form "
                             "name=value, not {arg}").format(
                             opt=opt, arg=arg))
-                DebugValues.set_value(key, value)
+                DebugValues[key] = value
             elif opt in ("--help", "-?"):
                 show_usage = True
     except getopt.GetoptError as e:
