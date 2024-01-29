@@ -5962,11 +5962,10 @@ if __name__ == "__main__":
     gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
-    # Make all warnings be errors.
-    import warnings
-    warnings.simplefilter('error')
-    # disable ResourceWarning: unclosed file
-    warnings.filterwarnings("ignore", category=ResourceWarning)
+    # By default, hide all warnings from users.
+    if not sys.warnoptions:
+        import warnings
+        warnings.simplefilter("ignore")
 
     # Attempt to handle SIGHUP/SIGTERM gracefully.
     import signal

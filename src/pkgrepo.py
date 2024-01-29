@@ -2372,10 +2372,9 @@ if __name__ == "__main__":
     gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
-    # Make all warnings be errors.
-    warnings.simplefilter('error')
-    # disable ResourceWarning: unclosed file
-    warnings.filterwarnings("ignore", category=ResourceWarning)
+    # By default, hide all warnings from users.
+    if not sys.warnoptions:
+        warnings.simplefilter("ignore")
 
     __retval = handle_errors(main_func)
     try:

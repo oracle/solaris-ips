@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 # We should be using pkg.no_site_packages here but doing so stops us being
@@ -598,13 +598,9 @@ if __name__ == "__main__":
     gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
-    # Commented out for now while ON fixes the invalid escape
-    # sequences problems.
-    # Make all warnings be errors.
-    # warnings.simplefilter('error')
-
-    # disable ResourceWarning: unclosed file
-    warnings.filterwarnings("ignore", category=ResourceWarning)
+    # By default, hide all warnings from users.
+    if not sys.warnoptions:
+        warnings.simplefilter("ignore")
 
     try:
         __ret = main_func()

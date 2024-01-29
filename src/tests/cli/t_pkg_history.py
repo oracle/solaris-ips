@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -575,14 +575,12 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         """Verify we can get history when unicode locale is set"""
 
         # If pkg history run when below locales set, it fails.
-        unicode_locales = ["fr_FR.UTF-8", "zh_TW.UTF-8", "zh_CN.UTF-8",
-            "ko_KR.UTF-8", "ja_JP.UTF-8"]
-        p = subprocess.Popen(["/usr/bin/locale", "-a"],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        lines = p.stdout.readlines()
-        # subprocess return bytes and we need str
-        locale_list = [force_str(i.rstrip()) for i in lines]
-        unicode_list = list(set(locale_list) & set(unicode_locales))
+        unicode_locales = {"fr_FR.UTF-8", "zh_TW.UTF-8", "zh_CN.UTF-8",
+            "ko_KR.UTF-8", "ja_JP.UTF-8"}
+        res = subprocess.run(["/usr/bin/locale", "-a"],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        available_locales = set(res.stdout.splitlines())
+        unicode_list = list(available_locales & unicode_locales)
         self.assertTrue(unicode_list, "You must have one of the "
             " following locales installed for this test to succeed: "
             + ", ".join(unicode_locales))

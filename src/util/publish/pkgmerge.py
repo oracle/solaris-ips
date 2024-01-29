@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 try:
@@ -38,6 +38,7 @@ try:
     import sys
     import tempfile
     import traceback
+    import warnings
 
     import pkg.actions as actions
     import pkg.fmri
@@ -969,11 +970,10 @@ if __name__ == "__main__":
     gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
-    # Make all warnings be errors.
-    import warnings
-    warnings.simplefilter('error')
-    # disable ResourceWarning: unclosed file
-    warnings.filterwarnings("ignore", category=ResourceWarning)
+    # By default, hide all warnings from users.
+    if not sys.warnoptions:
+        warnings.simplefilter("ignore")
+
     try:
         __ret = main_func()
     except (pkg.actions.ActionError, trans.TransactionError,

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import rapidjson as json
@@ -96,21 +96,26 @@ if __name__ == "__main__":
         cov_file = "{0}/pkg5".format(covdir)
         cov = coverage.coverage(data_file=cov_file, data_suffix=True)
         cov.start()
-    # Make all warnings be errors.
-    # NOTE : For Py3.7 migration, ignoring all warning
-    warnings.simplefilter('ignore')
 
-    # These warnings only happen in the test suite when importing
-    # pkg5unittest. It may be because of circular import inside pkg5unittest.
-    # Suppress the warning.
-    warnings.filterwarnings('ignore', message='Not importing directory .*',
-        category=ImportWarning)
-    warnings.filterwarnings('ignore', message='CRLExtensionOID has been '
-        'renamed to CRLEntryExtensionOID',
-        category=PendingDeprecationWarning)
+    # Make all warnings be errors.
+    warnings.simplefilter('error')
+
+    # Suppress deprecation warnings for known occurrences
+    # outside of the pkg codebase.
+    warnings.filterwarnings('ignore', module="bemgmt|rad.encodings.xdr",
+                            category=DeprecationWarning)
 
     # Suppress ResourceWarning: unclosed file.
     warnings.filterwarnings("ignore", category=ResourceWarning)
+
+    # Apply similar filters in subprocesses as well
+    os.environ["PYTHONWARNINGS"] = ",".join((
+        "error",
+        "ignore::DeprecationWarning:bemgmt",
+        "ignore::DeprecationWarning:rad.encodings.xdr",
+        "ignore::DeprecationWarning:cherrypy.lib.httputil",
+        "ignore::ResourceWarning",
+    ))
 
     try:
         #
