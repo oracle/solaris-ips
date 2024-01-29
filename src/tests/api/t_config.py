@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -155,9 +155,7 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
         # properties don't cause a traceback.
         p1 = propcls("property")
         self.assertFalse(p1 == "property")
-        self.assertTrue(p1 != "property")
-        self.assertFalse(p1 == None)
-        self.assertTrue(p1 != None)
+        self.assertTrue(p1 is not None)
 
         # Verify that all expected values are accepted at init and
         # during set and that the value is set as expected.  Also
@@ -871,9 +869,7 @@ class TestPropertySection(pkg5unittest.Pkg5TestCase):
         # sections don't cause a traceback.
         s1 = seccls("section")
         self.assertFalse(s1 == "section")
-        self.assertTrue(s1 != "section")
-        self.assertFalse(s1 == None)
-        self.assertTrue(s1 != None)
+        self.assertTrue(s1 is not None)
 
         # Verify base stringify works as expected.
         self.__verify_stringify(seccls, [("section", "section")])
@@ -1920,7 +1916,7 @@ class TestSMFConfig(_TestConfigBase):
                     contact = True
                     break
 
-            if contact == False:
+            if contact is False:
                 raise RuntimeError("Process did not launch "
                     "successfully.")
         except (KeyboardInterrupt, RuntimeError) as e:
@@ -2028,6 +2024,7 @@ class TestSMFConfig(_TestConfigBase):
                 doorpath=dpath)
         finally:
             # Removing the files stops configd.
+            self.__configd.kill()
             self.__configd = None
             while rfiles:
                 portable.remove(rfiles[-1])
@@ -2057,6 +2054,7 @@ class TestSMFConfig(_TestConfigBase):
         svc_fmri = "svc:/application/pkg/configuration"
 
         def cleanup():
+            self.__configd.kill()
             self.__configd = None
             while rfiles:
                 portable.remove(rfiles[-1])

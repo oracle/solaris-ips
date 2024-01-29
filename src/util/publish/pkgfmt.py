@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 try:
@@ -724,8 +724,10 @@ if __name__ == "__main__":
     gettext.install("pkg", "/usr/share/locale")
     misc.set_fd_limits(printer=error)
 
-    # disable ResourceWarning: unclosed file
-    warnings.filterwarnings("ignore", category=ResourceWarning)
+    # By default, hide all warnings from users.
+    if not sys.warnoptions:
+        warnings.simplefilter("ignore")
+
     try:
         __ret = main_func()
     except (PipeError, KeyboardInterrupt):
