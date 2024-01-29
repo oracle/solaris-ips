@@ -28,6 +28,7 @@
 
 import locale
 import os
+import shlex
 
 import pkg.misc as misc
 import pkg.pkgsubprocess as subprocess
@@ -187,8 +188,11 @@ def get_prop(fmri, prop, zone=None):
     args = (svcprop_path, "-c", "-p", prop, fmri)
     buf = __call(args, zone=zone)
     assert len(buf) == 1, "Was expecting one entry, got:{0}".format(buf)
-    buf = buf[0].rstrip("\n")
-    return buf
+    string = buf[0].rstrip("\n")
+    # String returned by svcprop is escaped for use in shell and needs
+    # to be unescaped back to the original state.
+    string = " ".join(shlex.split(string))
+    return string
 
 def enable(fmris, temporary=False, sync_timeout=0, zone=None):
     if not fmris:
