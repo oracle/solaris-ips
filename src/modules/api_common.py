@@ -21,15 +21,13 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 # Visible changes to classes here require an update to
 # doc/client_api_versions.txt and/or doc/server_api_versions.txt.
 
 """Contains API functions and classes common to both pkg.client.api and
 pkg.server.api."""
-
-import six
 
 import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
@@ -197,7 +195,7 @@ class PackageInfo(object):
                 (k, isinstance(modifiers[k], str) and
                     tuple([sorted(modifiers[k])]) or
                     tuple(sorted(modifiers[k])))
-                for k in sorted(six.iterkeys(modifiers))
+                for k in sorted(modifiers.keys())
             )
         return self.attrs.get(name, {modifiers: []}).get(
             modifiers, [])
@@ -244,7 +242,7 @@ def _get_pkg_cat_data(cat, info_needed, actions=None,
                 summ = a.attrs["value"]
         elif attr_name == "pkg.description":
             desc = a.attrs["value"]
-        elif cat_info != None and a.has_category_info():
+        elif cat_info is not None and a.has_category_info():
             cat_info.extend(a.parse_category_info())
 
     if get_summ and summ is None:
@@ -252,6 +250,6 @@ def _get_pkg_cat_data(cat, info_needed, actions=None,
             summ = ""
         else:
             summ = desc
-    if not PackageInfo.DESCRIPTION in info_needed:
+    if PackageInfo.DESCRIPTION not in info_needed:
         desc = None
     return summ, desc, cat_info, deps

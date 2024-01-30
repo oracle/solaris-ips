@@ -20,13 +20,12 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2015, 2024, Oracle and/or its affiliates.
 #
 
 import os
 import re
 import shlex
-import six
 import sys
 
 import pkg.actions
@@ -496,7 +495,7 @@ def apply_transforms(transforms, action, pkg_attrs, verbose, act_filename,
         s = transform[11:transform.index("->")]
         # Map each pattern to its position in the original match string.
         matchorder = {}
-        for attr, match in six.iteritems(attrdict):
+        for attr, match in attrdict.items():
             # Attributes might be quoted even if they don't need it,
             # and lead to a mis-match.  These three patterns are all
             # safe to try.  If we fail to find the match expression,
@@ -564,7 +563,7 @@ def searching_open(filename, includes, try_cwd=False):
     if filename == "-":
         return filename, sys.stdin
 
-    if filename.startswith("/") or try_cwd == True and \
+    if filename.startswith("/") or try_cwd is True and \
         os.path.exists(filename):
         try:
             return filename, open(filename)

@@ -34,7 +34,6 @@ try:
     import gettext
     import locale
     import os
-    import six
     import sys
     import traceback
     import warnings
@@ -202,7 +201,7 @@ def generate(args):
     for d in sorted(ds):
         msg(d)
 
-    for key, value in six.iteritems(pkg_attrs):
+    for key, value in pkg_attrs.items():
         msg(actions.attribute.AttributeAction(**{key: value}))
 
     if show_missing:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a user packaging object
@@ -181,7 +181,7 @@ class GroupAction(generic.Action):
         # Get the default values if they're non-empty
         grdefval = dict((
             (k, v)
-            for k, v in six.iteritems(gr.getdefaultvalues())
+            for k, v in gr.getdefaultvalues().items()
             if v != ""
         ))
 

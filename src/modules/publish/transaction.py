@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """Provides a set of publishing interfaces for interacting with a pkg(7)
@@ -30,7 +30,6 @@ though the other classes can be referred to for documentation purposes."""
 
 import os
 import shutil
-import six
 from urllib.parse import quote, unquote, urlparse, urlunparse
 import tempfile
 
@@ -495,12 +494,12 @@ class TransportTransaction(object):
 
             self.__uploads[fname] = (elf_attrs, csize, chashes)
 
-        for k, v in six.iteritems(elf_attrs):
+        for k, v in elf_attrs.items():
             if isinstance(v, list):
                 action.attrs[k] = v + action.attrlist(k)
             else:
                 action.attrs[k] = v
-        for k, v in six.iteritems(chashes):
+        for k, v in chashes.items():
             if k == "pkg.content-hash":
                 action.attrs[k] = action.attrlist(k) + [v]
             else:

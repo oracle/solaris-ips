@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a (symbolic) link packaging object
@@ -31,7 +31,6 @@ packaging object."""
 
 import errno
 import os
-import six
 import stat
 
 from . import generic
@@ -117,7 +116,7 @@ class LinkAction(generic.Action):
         if "mediator" in self.attrs:
             rval.extend(
                 (self.name, k, v, None)
-                for k, v in six.iteritems(self.attrs)
+                for k, v in self.attrs.items()
                 if k.startswith("mediator")
             )
         return rval

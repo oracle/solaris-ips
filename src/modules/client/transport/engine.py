@@ -28,7 +28,6 @@ import errno
 import http.client
 import os
 import pycurl
-import six
 import time
 
 from urllib.parse import urlsplit
@@ -845,13 +844,13 @@ class CurlTransportEngine(TransportEngine):
             headerlist = []
 
             # Headers common to all requests
-            for k, v in six.iteritems(self.__common_header):
+            for k, v in self.__common_header.items():
                 headerstr = "{0}: {1}".format(k, v)
                 headerlist.append(headerstr)
 
             # Headers specific to this request
             if treq.header:
-                for k, v in six.iteritems(treq.header):
+                for k, v in treq.header.items():
                     headerstr = "{0}: {1}".format(k, v)
                     headerlist.append(headerstr)
 

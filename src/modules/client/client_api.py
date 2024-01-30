@@ -33,7 +33,6 @@ import itertools
 import rapidjson as json
 import os
 import re
-import six
 import socket
 import sys
 import tempfile
@@ -82,7 +81,7 @@ def _strify(input):
 
     if isinstance(input, dict):
         return dict([(_strify(key), _strify(value)) for key, value in
-            six.iteritems(input)])
+            input.items()])
     elif isinstance(input, list):
         return [_strify(element) for element in input]
     elif isinstance(input, (str, bytes)):
@@ -2254,7 +2253,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                 pub_data["sys_pub"] = "No"
             if pub.properties:
                 pub_data["Properties"] = {}
-                for k, v in six.iteritems(pub.properties):
+                for k, v in pub.properties.items():
                     pub_data["Properties"][k] = v
             data.setdefault("publisher_details", []).append(
                 pub_data)

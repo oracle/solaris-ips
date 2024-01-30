@@ -70,7 +70,6 @@ try:
     import logging
     import os
     import re
-    import six
     import socket
     import sys
     import tempfile
@@ -129,7 +128,7 @@ valid_special_attrs = ["action.hash", "action.key", "action.name", "action.raw"]
 valid_special_prefixes = ["action."]
 
 default_attrs = {}
-for atype, aclass in six.iteritems(actions.types):
+for atype, aclass in actions.types.items():
     default_attrs[atype] = [aclass.key_attr]
     if atype == "depend":
         default_attrs[atype].insert(0, "type")
@@ -2419,7 +2418,7 @@ def list_mediators(op, api_inst, pargs, omit_headers, output_format,
         # Configured mediator information
         gen_mediators = (
             (mediator, mediation)
-            for mediator, mediation in six.iteritems(api_inst.mediators)
+            for mediator, mediation in api_inst.mediators.items()
         )
 
     # Set minimum widths for mediator and version columns by using the
@@ -4001,8 +4000,7 @@ def publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
 
             if "Properties" not in pub:
                 continue
-            pub_items = sorted(
-                six.iteritems(pub["Properties"]))
+            pub_items = sorted(pub["Properties"].items())
             property_padding = "                      "
             properties_displayed = False
             for k, v in pub_items:

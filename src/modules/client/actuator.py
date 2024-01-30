@@ -32,7 +32,6 @@ import pkg.misc
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
-import six
 
 
 class Actuator(object):
@@ -358,15 +357,15 @@ class Actuator(object):
 
         # handle callables first
 
-        for act in six.itervalues(self.removal):
+        for act in self.removal.values():
             if hasattr(act, "__call__"):
                 act()
 
-        for act in six.itervalues(self.install):
+        for act in self.install.values():
             if hasattr(act, "__call__"):
                 act()
 
-        for act in six.itervalues(self.update):
+        for act in self.update.values():
             if hasattr(act, "__call__"):
                 act()
 

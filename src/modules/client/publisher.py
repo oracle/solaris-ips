@@ -43,7 +43,6 @@ import hashlib
 import os
 import pycurl
 import shutil
-import six
 import tempfile
 import time
 import uuid
@@ -1839,7 +1838,7 @@ pkg unset-publisher {0}
                     pubs=[self.prefix]):
                     pub, stem, ver = t
 
-                    entry = dict(six.iteritems(sentry))
+                    entry = dict(sentry.items())
                     try:
                         npart.add(metadata=entry,
                             op_time=op_time, pub=pub,
@@ -2797,7 +2796,7 @@ pkg unset-publisher {0}
         certs_with_problems = []
 
         ca_dict = copy.copy(ca_dict)
-        for k, v in six.iteritems(self.get_ca_certs()):
+        for k, v in self.get_ca_certs().items():
             if k in ca_dict:
                 ca_dict[k].extend(v)
             else:
@@ -3072,8 +3071,7 @@ pkg unset-publisher {0}
         # The logic in __set_prop requires that the item with key
         # 'SIGNATURE_POLICY' comes before the item with key
         # 'signature-required-names'.
-        od = collections.OrderedDict(sorted(six.iteritems(d)))
-        for k, v in six.iteritems(od):
+        for k, v in sorted(d.items()):
             # Must iterate through each value and
             # set it this way so that the logic
             # in __set_prop is used.

@@ -51,7 +51,6 @@ import queue
 import random
 import re
 import shutil
-import six
 import rapidjson as json
 import socket
 import tarfile
@@ -483,7 +482,7 @@ class DepotHTTP(_Depot):
         versions = "pkg-server {0}\n".format(pkg.VERSION)
         versions += "\n".join(
             "{0} {1}".format(op, " ".join(str(v) for v in vers))
-            for op, vers in six.iteritems(self.vops)
+            for op, vers in self.vops.items()
         ) + "\n"
         return versions
 
@@ -1579,7 +1578,7 @@ class NastyDepotHTTP(DepotHTTP):
         }
 
         self.errlist = []
-        for x, n in six.iteritems(errors):
+        for x, n in errors.items():
             for i in range(0, n):
                 self.errlist.append(x)
         cherrypy.log("NASTY Depot Error List: {0}".format(
@@ -1694,7 +1693,7 @@ class NastyDepotHTTP(DepotHTTP):
         if self.need_nasty_2():
             cherrypy.log("NASTY versions_0: modified version #s")
             versions = "pkg-server {0}-nasty\n".format(pkg.VERSION)
-            for op, vers in six.iteritems(self.vops):
+            for op, vers in self.vops.items():
                 versions += op + " "
                 verlen = len(vers)
                 for v in vers:
@@ -1725,7 +1724,7 @@ class NastyDepotHTTP(DepotHTTP):
         versions = "pkg-server {0}\n".format(pkg.VERSION)
         versions += "\n".join(
             "{0} {1}".format(op, " ".join(str(v) for v in vers))
-            for op, vers in six.iteritems(self.vops)
+            for op, vers in self.vops.items()
         ) + "\n"
         return versions
 

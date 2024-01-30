@@ -2682,7 +2682,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
                 # copy() is too slow here and catalog entries
                 # are shallow so this should be sufficient.
-                entry = dict(six.iteritems(sentry))
+                entry = dict(sentry.items())
                 if not base:
                     # Nothing else to do except add the
                     # entry for non-base catalog parts.
@@ -3833,7 +3833,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
             stems_and_pats = imageplan.ImagePlan.freeze_pkgs_match(
                 self, pat_list)
             return dict([(s, __make_publisherless_fmri(p))
-                for s, p in six.iteritems(stems_and_pats)])
+                for s, p in stems_and_pats.items()])
         if dry_run:
             return list(__calc_frozen().values())
         with self.locked_op("freeze"):
@@ -3844,7 +3844,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
             # comment.
             timestamp = calendar.timegm(time.gmtime())
             d.update([(s, (str(p), comment, timestamp))
-                for s, p in six.iteritems(stems_and_pats)])
+                for s, p in stems_and_pats.items()])
             self._freeze_dict_save(d)
             return list(stems_and_pats.values())
 
@@ -4013,8 +4013,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         progtrack.plan_all_start()
         # compute dict of changing variants
         if variants:
-            new = set(six.iteritems(variants))
-            cur = set(six.iteritems(self.cfg.variants))
+            new = set(variants.items())
+            cur = set(self.cfg.variants.items())
             variants = dict(new - cur)
         elif facets:
             new_facets = self.get_facets()

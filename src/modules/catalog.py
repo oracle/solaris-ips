@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -33,7 +33,6 @@ import fnmatch
 import hashlib
 import os
 import rapidjson as json
-import six
 import stat
 import threading
 import types
@@ -573,7 +572,7 @@ class CatalogPart(CatalogPartBase):
                 entries.setdefault(sver, [])
                 entries[sver].append((pfmri, entry))
 
-        for key, ver in sorted(six.iteritems(versions), key=itemgetter(1)):
+        for key, ver in sorted(versions.items(), key=itemgetter(1)):
             yield ver, entries[key]
 
     def fmris(self, last=False, objects=True, ordered=False, pubs=EmptyI):
@@ -640,7 +639,7 @@ class CatalogPart(CatalogPartBase):
                 entries.setdefault(sver, [])
                 entries[sver].append(pfmri)
 
-        for key, ver in sorted(six.iteritems(versions), key=itemgetter(1)):
+        for key, ver in sorted(versions.items(), key=itemgetter(1)):
             yield ver, entries[key]
 
     def get_entry(self, pfmri=None, pub=None, stem=None, ver=None):
@@ -1211,7 +1210,7 @@ class CatalogAttrs(CatalogPartBase):
         # Use a copy to prevent the in-memory version from being
         # affected by the transformations.
         struct = copy.deepcopy(self.__data)
-        for key, val in six.iteritems(struct):
+        for key, val in struct.items():
             if isinstance(val, datetime.datetime):
                 # Convert datetime objects to an ISO-8601
                 # basic format string.
@@ -1248,7 +1247,7 @@ class CatalogAttrs(CatalogPartBase):
             except ValueError:
                 raise api_errors.InvalidCatalogFile(location)
 
-        for key, val in six.iteritems(struct):
+        for key, val in struct.items():
             if key in ("created", "last-modified"):
                 # Convert ISO-8601 basic format strings to
                 # datetime objects.
@@ -1572,7 +1571,7 @@ class Catalog(object):
                 parts.append(part)
 
         def merge_entry(src, dest):
-            for k, v in six.iteritems(src):
+            for k, v in src.items():
                 if k == "actions":
                     dest.setdefault(k, [])
                     dest[k] += v
@@ -1592,7 +1591,7 @@ class Catalog(object):
                         # Part doesn't have this FMRI,
                         # so skip it.
                         continue
-                    for k, v in six.iteritems(entry):
+                    for k, v in entry.items():
                         if k == "actions":
                             mdata.setdefault(k, [])
                             mdata[k] += v
@@ -1611,7 +1610,7 @@ class Catalog(object):
                     # Part doesn't have this FMRI,
                     # so skip it.
                     continue
-                for k, v in six.iteritems(entry):
+                for k, v in entry.items():
                     if k == "actions":
                         mdata.setdefault(k, [])
                         mdata[k] += v
@@ -1776,7 +1775,7 @@ class Catalog(object):
             parts[pname] = entries[pname]
 
         logdate = datetime_to_update_ts(op_time)
-        for locale, metadata in six.iteritems(updates):
+        for locale, metadata in updates.items():
             name = "update.{0}.{1}".format(logdate, locale)
             ulog = self.__get_update(name)
             ulog.add(pfmri, operation, metadata=metadata,
@@ -1785,7 +1784,7 @@ class Catalog(object):
                 "last-modified": op_time
             }
 
-        for name, part in six.iteritems(self.__parts):
+        for name, part in self.__parts.items():
             # Signature data for each part needs to be cleared,
             # and will only be available again after save().
             attrs.parts[name] = {
@@ -1866,7 +1865,7 @@ class Catalog(object):
 
         attrs = self._attrs
         if self.log_updates:
-            for name, ulog in six.iteritems(self.__updates):
+            for name, ulog in self.__updates.items():
                 ulog.save()
 
                 # Replace the existing signature data
@@ -1874,13 +1873,13 @@ class Catalog(object):
                 entry = attrs.updates[name] = {
                     "last-modified": ulog.last_modified
                 }
-                for n, v in six.iteritems(ulog.signatures):
+                for n, v in ulog.signatures.items():
                     entry["signature-{0}".format(n)] = v
 
         # Save any CatalogParts that are currently in-memory,
         # updating their related information in catalog.attrs
         # as they are saved.
-        for name, part in six.iteritems(self.__parts):
+        for name, part in self.__parts.items():
             # Must save first so that signature data is
             # current.
 
@@ -1897,7 +1896,7 @@ class Catalog(object):
             entry = attrs.parts[name] = {
                 "last-modified": part.last_modified
             }
-            for n, v in six.iteritems(part.signatures):
+            for n, v in part.signatures.items():
                 entry["signature-{0}".format(n)] = v
 
         # Finally, save the catalog attributes.
@@ -2141,7 +2140,7 @@ class Catalog(object):
             if metadata:
                 entry["metadata"] = metadata
             if manifest:
-                for k, v in six.iteritems(manifest.signatures):
+                for k, v in manifest.signatures.items():
                     entry["signature-{0}".format(k)] = v
             part = self.get_part(self.__BASE_PART)
             entries[part.name] = part.add(pfmri, metadata=entry,
@@ -2243,7 +2242,7 @@ class Catalog(object):
             # (Which is why __get_update is not used.)
             ulog = CatalogUpdate(name, meta_root=path)
             for pfmri, op_type, op_time, metadata in ulog.updates():
-                for pname, pdata in six.iteritems(metadata):
+                for pname, pdata in metadata.items():
                     part = self.get_part(pname,
                         must_exist=True)
                     if part is None:
@@ -2279,7 +2278,7 @@ class Catalog(object):
             self.batch_mode = True
 
             updates = self.get_updates_needed(path)
-            if updates == None:
+            if updates is None:
                 # Nothing has changed, so nothing to do.
                 return
 
@@ -2295,7 +2294,7 @@ class Catalog(object):
             # signature that matches the new catalog.attrs file.
             new_attrs = CatalogAttrs(meta_root=path)
             new_sigs = {}
-            for name, mdata in six.iteritems(new_attrs.parts):
+            for name, mdata in new_attrs.parts.items():
                 new_sigs[name] = {}
                 for key in mdata:
                     if not key.startswith("signature-"):
@@ -2308,7 +2307,7 @@ class Catalog(object):
             self.batch_mode = old_batch_mode
             self.finalize()
 
-            for name, part in six.iteritems(self.__parts):
+            for name, part in self.__parts.items():
                 part.validate(signatures=new_sigs[name])
 
             # Finally, save the catalog, and then copy the new
@@ -2513,7 +2512,7 @@ class Catalog(object):
                 parts.append(part)
 
         def merge_entry(src, dest):
-            for k, v in six.iteritems(src):
+            for k, v in src.items():
                 if k == "actions":
                     dest.setdefault(k, [])
                     dest[k] += v
@@ -2713,7 +2712,7 @@ class Catalog(object):
         """
 
         def merge_entry(src, dest):
-            for k, v in six.iteritems(src):
+            for k, v in src.items():
                 if k == "actions":
                     dest.setdefault(k, [])
                     dest[k] += v
@@ -2847,7 +2846,7 @@ class Catalog(object):
             raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
         return (
             (k.split("signature-")[1], v)
-            for k, v in six.iteritems(entry)
+            for k, v in entry.items()
             if k.startswith("signature-")
         )
 
@@ -3079,7 +3078,7 @@ class Catalog(object):
                         # }
                         mods = frozenset(
                             (k, frozenset(a.attrlist(k)))
-                            for k in six.iterkeys(a.attrs)
+                            for k in a.attrs.keys()
                             if k not in ("name", "value")
                         )
                         if mods not in attrs[atname]:
@@ -3324,7 +3323,7 @@ class Catalog(object):
         # fmri matches.
         proposed_dict = {}
         for d in ret.values():
-            for k, l in six.iteritems(d):
+            for k, l in d.items():
                 proposed_dict.setdefault(k, []).extend(l)
 
         # construct references so that we can know which pattern
@@ -3518,7 +3517,7 @@ class Catalog(object):
                 if not last_lm or lm > last_lm:
                     last_lm = lm
 
-            for name, uattrs in six.iteritems(new_attrs.updates):
+            for name, uattrs in new_attrs.updates.items():
                 up_lm = uattrs["last-modified"]
 
                 # The last component of the update name is the
@@ -3835,7 +3834,7 @@ class Catalog(object):
                 return None
             return sigs
 
-        for name, mdata in six.iteritems(self._attrs.parts):
+        for name, mdata in self._attrs.parts.items():
             part = self.get_part(name, must_exist=True)
             if part is None:
                 # Part does not exist; no validation needed.
@@ -3843,7 +3842,7 @@ class Catalog(object):
             part.validate(signatures=get_sigs(mdata),
                 require_signatures=require_signatures)
 
-        for name, mdata in six.iteritems(self._attrs.updates):
+        for name, mdata in self._attrs.updates.items():
             ulog = self.__get_update(name, cache=False,
                 must_exist=True)
             if ulog is None:

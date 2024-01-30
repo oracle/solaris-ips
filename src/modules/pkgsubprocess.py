@@ -21,12 +21,11 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import os
 import types
-import six
 import subprocess
 import pkg.portable
 try:
@@ -148,13 +147,9 @@ class Popen(subprocess.Popen):
                 # The bundled subprocess module takes a dict in
                 # the "env" argument.  Allow that here by doing
                 # the explicit conversion to a list.
-                env = [
-                    "{0}={1}".format(k, v)
-                    for k, v in six.iteritems(env)
-                ]
+                env = [f"{key}={val}" for key, val in env.items()]
 
-            self.pid = posix_spawnp(executable, args, sfa,
-                env)
+            self.pid = posix_spawnp(executable, args, sfa, env)
             self._child_created = True
 
             # parent
