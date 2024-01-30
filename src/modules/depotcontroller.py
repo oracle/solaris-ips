@@ -19,14 +19,13 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import http.client
 import os
 import shlex
 import signal
-import six
 import ssl
 import sys
 import time
@@ -255,7 +254,7 @@ class DepotController(object):
         """Set the nastiness level of the depot.  Also works on
         running depots."""
         self.__nasty = nastiness
-        if self.__depot_handle != None:
+        if self.__depot_handle is not None:
             nastyurl = urljoin(self.get_depot_url(),
                 "nasty/{0:d}".format(self.__nasty))
             url = urlopen(nastyurl)
@@ -305,11 +304,11 @@ class DepotController(object):
             Then make a little HTTP request to see if the depot is
             responsive to requests """
 
-        if self.__depot_handle == None:
+        if self.__depot_handle is None:
             return False
 
         status = self.__depot_handle.poll()
-        if status != None:
+        if status is not None:
             return False
         return self.__network_ping()
 
@@ -318,7 +317,7 @@ class DepotController(object):
         """ Return a boolean value indicating whether a depot process
             has been started using this depotcontroller. """
 
-        return self.__depot_handle != None
+        return self.__depot_handle is not None
 
     def get_args(self):
         """ Return the equivalent command line invocation (as an
@@ -342,10 +341,10 @@ class DepotController(object):
         if self.__port != -1:
             args.append("-p")
             args.append("{0:d}".format(self.__port))
-        if self.__dir != None:
+        if self.__dir is not None:
             args.append("-d")
             args.append(self.__dir)
-        if self.__file_root != None:
+        if self.__file_root is not None:
             args.append("--file-root={0}".format(self.__file_root))
         if self.__readonly:
             args.append("--readonly")
@@ -378,7 +377,7 @@ class DepotController(object):
         if self.__nasty_sleep:
             args.append("--nasty-sleep {0:d}".format(self.__nasty_sleep))
         for section in self.__props:
-            for prop, val in six.iteritems(self.__props[section]):
+            for prop, val in self.__props[section].items():
                 args.append("--set-property={0}.{1}='{2}'".format(
                     section, prop, val))
         if self.__writable_root:
@@ -424,7 +423,7 @@ class DepotController(object):
             stdout=self.__output,
             stderr=self.__output,
             close_fds=True)
-        if self.__depot_handle == None:
+        if self.__depot_handle is None:
             raise DepotStateException("Could not start Depot")
         self.__starttime = time.time()
         self.__output.close()
@@ -458,7 +457,7 @@ class DepotController(object):
                     contact = True
                     break
                 time.sleep(check_interval)
-            if contact == False:
+            if not contact:
                 self.kill()
                 self.__state = self.HALTED
                 raise DepotStateException("Depot did not respond to "
@@ -512,7 +511,7 @@ class DepotController(object):
             raise
 
     def refresh(self):
-        if self.__depot_handle == None:
+        if self.__depot_handle is None:
             # XXX might want to remember and return saved
             # exit status
             return 0
@@ -524,14 +523,14 @@ class DepotController(object):
         """kill the depot; letting it live for
         a little while helps get reliable death"""
 
-        if self.__depot_handle == None:
+        if self.__depot_handle is None:
             # XXX might want to remember and return saved
             # exit status
             return 0
 
         try:
             lifetime = time.time() - self.__starttime
-            if now == False and lifetime < 1.0:
+            if now is False and lifetime < 1.0:
                 time.sleep(1.0 - lifetime)
 
         finally:
@@ -574,7 +573,7 @@ def test_func(testdir):
             print("... Ping ", end=" ")
             sys.stdout.flush()
             time.sleep(0.2)
-            while dc.is_alive() == False:
+            while not dc.is_alive():
                 pass
             print("... Done.  ", end=" ")
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 
@@ -33,7 +33,6 @@ relationship between the package containing the action and another package.
 
 from . import generic
 import re
-import six
 
 import pkg.actions
 import pkg.client.pkgdefs as pkgdefs
@@ -457,8 +456,7 @@ class DependencyAction(generic.Action):
 
             # Now build the action output string an attribute at a
             # time.
-            for k, v in sorted(six.iteritems(act.attrs),
-                               key=key_func):
+            for k, v in sorted(act.attrs.items(), key=key_func):
                 # Newline breaks are only forced when there is
                 # more than one value for an attribute.
                 if not (isinstance(v, list) or

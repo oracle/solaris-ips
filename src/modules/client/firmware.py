@@ -21,11 +21,10 @@
 #
 
 #
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 #
 
 import os.path
-import six
 import sys
 
 import pkg.misc as misc
@@ -56,7 +55,7 @@ class Firmware(object):
         args = [os.path.join(firmware_dir, which)]
         args.extend([
                 "{0}={1}".format(k, quote_attr_value(v))
-                for k, v in sorted(six.iteritems(dep_action.attrs))
+                for k, v in sorted(dep_action.attrs.items())
         ])
 
         key = str(args)

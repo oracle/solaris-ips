@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -32,7 +32,6 @@ import errno
 import os
 import shutil
 import rapidjson as json
-import six
 import stat
 import unittest
 from functools import cmp_to_key
@@ -482,7 +481,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
         c = catalog.Catalog(meta_root=cpath, log_updates=True)
 
         # Verify that a newly created catalog has no signature data.
-        for sigs in six.itervalues(c.signatures):
+        for sigs in c.signatures.values():
             self.assertEqual(len(sigs), 0)
 
         # Verify that a newly created catalog will validate since no
@@ -505,7 +504,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
         self.assertTrue("catalog.base.C" in old_sigs)
 
         updates = 0
-        for fname, sigs in six.iteritems(old_sigs):
+        for fname, sigs in old_sigs.items():
             self.assertTrue(len(sigs) >= 1)
 
             if fname.startswith("update."):

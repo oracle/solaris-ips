@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -34,7 +34,6 @@ import os
 import pkg.client.image as image
 import pkg.misc
 import shutil
-import six
 import tempfile
 import unittest
 
@@ -850,7 +849,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
             user_provided_dir=True, cmdpath=cmdpath)
         pub = img.get_publisher(prefix=prefix)
         for section in pub_cfg:
-            for prop, val in six.iteritems(pub_cfg[section]):
+            for prop, val in pub_cfg[section].items():
                 if section == "publisher":
                     pub_val = getattr(pub, prop)
                 else:
@@ -884,7 +883,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         rpath = dc.get_repodir()
         props = ""
         for sname in pubcfg:
-            for pname, pval in six.iteritems(pubcfg[sname]):
+            for pname, pval in pubcfg[sname].items():
                 if sname == "publisher" and pname == "prefix":
                     continue
                 pname = pname.replace("_", "-")

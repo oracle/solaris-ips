@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 import codecs
 import datetime
@@ -29,7 +29,6 @@ import logging
 import os
 import os.path
 import shutil
-import six
 import stat
 import sys
 import tempfile
@@ -3419,7 +3418,7 @@ class Repository(object):
         """
 
         def merge(src, dest):
-            for k, v in six.iteritems(src):
+            for k, v in src.items():
                 if k in dest:
                     dest[k].extend(v)
                 else:
@@ -3806,7 +3805,7 @@ class Repository(object):
             for attrs in ignored_pkgs[astem]:
                 pub = fmri.PkgFmri(
                     attrs["pkg"]).publisher
-                if pub != None and pub != afmri.publisher:
+                if pub is not None and pub != afmri.publisher:
                     continue
                 # Check the lower bound.
                 minfmri = attrs.get(

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -41,7 +41,6 @@ import collections
 import itertools
 import operator
 import rapidjson as json
-import six
 
 import pkg.actions
 import pkg.client.actuator
@@ -930,8 +929,7 @@ class PlanDescription(object):
                         PlanDescription. \
                                 __msg_dict2list(msg))
                     msg["msg_stage"] = OP_STAGE_PRINTED
-            for si, si_list in six.iteritems(
-                self._item_msgs[item_id]):
+            for si, si_list in self._item_msgs[item_id].items():
                 if si == "messages":
                     continue
                 for msg in si_list:
@@ -948,8 +946,7 @@ class PlanDescription(object):
     def __gen_unordered_msg(self, stages):
         """Generate unordered messages."""
         for item_id in self._item_msgs:
-            for si, si_list in six.iteritems(
-                self._item_msgs[item_id]):
+            for si, si_list in self._item_msgs[item_id].items():
                 if si == "messages":
                     iid = item_id
                     pid = None

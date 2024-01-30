@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a driver packaging object.
@@ -32,7 +32,6 @@ packaging object.
 
 import os
 from . import generic
-import six
 
 from tempfile import mkstemp
 
@@ -219,14 +218,14 @@ class DriverAction(generic.Action):
             a2d = {}
             for alias, name in (
                 (a, n)
-                for n, act_list in six.iteritems(driver_actions)
+                for n, act_list in driver_actions.items()
                 for act in act_list
                 for a in act.attrlist("alias")
             ):
                 a2d.setdefault(alias, set()).add(name)
 
             # Enhance that mapping with data from driver_aliases.
-            for name, aliases in six.iteritems(file_db):
+            for name, aliases in file_db.items():
                 for alias in aliases:
                     a2d.setdefault(alias, set()).add(name)
 

@@ -20,13 +20,12 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import cherrypy
 import itertools
 import os
-import six
 
 from functools import cmp_to_key
 from io import BytesIO
@@ -155,8 +154,7 @@ class CatalogInterface(_Interface):
         # Add packages not incorporated by the recursively discovered
         # incorporations above.
         cat_info = frozenset([cat.DEPENDENCY])
-        remaining = (frozenset(cat.names(pubs=pubs)) -
-            set(six.iterkeys(allowed)))
+        remaining = (frozenset(cat.names(pubs=pubs)) - set(allowed.keys()))
 
         for pkg_name in remaining:
             allowed.setdefault(pkg_name, [])
@@ -726,7 +724,7 @@ class ConfigInterface(_Interface):
         See pkg.depotd(8) for the list of properties.
         """
         rval = {}
-        for sname, props in six.iteritems(self._depot.cfg.get_index()):
+        for sname, props in self._depot.cfg.get_index().items():
             rval[sname] = [p for p in props]
         return rval
 
@@ -755,7 +753,7 @@ class ConfigInterface(_Interface):
                                         format.
         """
         rval = {}
-        for sname, props in six.iteritems(self._depot.repo.cfg.get_index()):
+        for sname, props in self._depot.repo.cfg.get_index().items():
             rval[sname] = [p for p in props]
         return rval
 

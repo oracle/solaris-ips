@@ -51,7 +51,6 @@ import pprint
 import shutil
 import signal
 import rapidjson as json
-import six
 import stat
 import subprocess
 import sys
@@ -3191,7 +3190,7 @@ class CliTestCase(Pkg5TestCase):
         dc.set_port(port)
 
         for section in properties:
-            for prop, val in six.iteritems(properties[section]):
+            for prop, val in properties[section].items():
                 dc.set_property(section, prop, val)
         if refresh_index:
             dc.set_refresh_index()

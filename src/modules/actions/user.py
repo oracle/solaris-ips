@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a user packaging object
@@ -254,7 +254,7 @@ class UserAction(generic.Action):
         # Get the default values if they're non-empty
         pwdefval = dict((
             (k, v)
-            for k, v in six.iteritems(pw.getdefaultvalues())
+            for k, v in pw.getdefaultvalues().items()
             if v != ""
         ))
 

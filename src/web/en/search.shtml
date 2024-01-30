@@ -19,10 +19,9 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+## Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 ##
 <%!
-        import six
         import html
         import itertools
         import pkg.actions as actions
@@ -179,7 +178,7 @@
         scheme, netloc, path, params, query, fragment = urlparse(uri)
 
         nparams = []
-        for name, val in six.iteritems(request.params):
+        for name, val in request.params.items():
                 if name == "start":
                         continue
                 nparams.append((name, val))
@@ -203,7 +202,7 @@
         scheme, netloc, path, params, query, fragment = urlparse(uri)
 
         nparams = []
-        for name, val in six.iteritems(request.params):
+        for name, val in request.params.items():
                 if name == "start":
                         continue
                 nparams.append((name, val))
@@ -309,7 +308,7 @@ Next</a>
                             fragment = urlparse(uri)
 
                         nparams = []
-                        for name, val in six.iteritems(request.params):
+                        for name, val in request.params.items():
                                 if name in ("failed", "query_error"):
                                         continue
                                 nparams.append((name, val))

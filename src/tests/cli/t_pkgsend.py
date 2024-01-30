@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -37,7 +37,6 @@ import shutil
 import stat
 import tempfile
 import unittest
-import six
 from urllib.error import HTTPError
 from urllib.request import urlopen, Request, pathname2url
 
@@ -1485,7 +1484,7 @@ file elftest.so.1 mode=0755 owner=root group=bin path=bin/true pkg.size=ignored 
             'pkg.size': '3948'
         }
         actual = dict(
-            (k, v) for (k, v) in six.iteritems(a.attrs)
+            (k, v) for (k, v) in a.attrs.items()
             if k in expected
         )
         self.assertEqualDiff(expected, actual)

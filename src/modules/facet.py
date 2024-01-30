@@ -28,7 +28,6 @@
 
 import fnmatch
 import re
-import six
 import types
 from functools import cmp_to_key
 
@@ -112,10 +111,10 @@ class Facets(dict):
 
         return [
                 [misc.force_text(k), v, True]
-                for k, v in six.iteritems(obj.__inherited)
+                for k, v in obj.__inherited.items()
         ] + [
                 [misc.force_text(k), v, False]
-                for k, v in six.iteritems(obj.__local)
+                for k, v in obj.__local.items()
         ]
 
     @staticmethod
@@ -393,9 +392,9 @@ class Facets(dict):
     def update(self, d):
         if type(d) == Facets:
             # preserve inherited facets.
-            for k, v in six.iteritems(d.__inherited):
+            for k, v in d.__inherited.items():
                 self._set_inherited(k, v)
-            for k, v in six.iteritems(d.__local):
+            for k, v in d.__local.items():
                 self[k] = v
             return
 

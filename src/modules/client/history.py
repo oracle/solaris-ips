@@ -21,14 +21,13 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import copy
 import errno
 import os
 import shutil
-import six
 import sys
 import traceback
 import xml.dom.minidom as xmini
@@ -802,7 +801,7 @@ class History(object):
             except (AttributeError, KeyError):
                 # Failing an exact match, determine if this
                 # error is a subclass of an existing one.
-                for entry, val in six.iteritems(error_results):
+                for entry, val in error_results.items():
                     if isinstance(error, entry):
                         result = val
                         break
@@ -894,7 +893,7 @@ class History(object):
         if not self.__snapshot:
             return
 
-        for name, val in six.iteritems(self.__snapshot):
+        for name, val in self.__snapshot.items():
             if not name.startswith("__"):
                 object.__setattr__(self, name, val)
         self.__operations = self.__snapshot["__operations"]

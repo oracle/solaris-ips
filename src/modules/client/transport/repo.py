@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import errno
@@ -31,7 +31,6 @@ import itertools
 import os
 import shutil
 import rapidjson as json
-import six
 import sys
 import tempfile
 
@@ -1129,7 +1128,7 @@ class HTTPRepo(TransportRepo):
             csize = resp.getheader("Content-Length", None)
             chashes = dict(
                 val.split("=", 1)
-                for hdr, val in six.iteritems(resp.headers)
+                for hdr, val in resp.headers.items()
                 if hdr.lower().startswith("x-ipkg-attr")
             )
             return (csize, chashes)
@@ -1676,7 +1675,7 @@ class _FilesystemRepo(TransportRepo):
         buf.write("pkg-server {0}\n".format(pkg.VERSION))
         buf.write("\n".join(
             "{0} {1}".format(op, " ".join(vers))
-            for op, vers in six.iteritems(vops)
+            for op, vers in vops.items()
         ) + "\n")
         buf.seek(0)
         self.__stats.record_tx()
@@ -2237,7 +2236,7 @@ class _ArchiveRepo(TransportRepo):
         buf.write("pkg-server {0}\n".format(pkg.VERSION))
         buf.write("\n".join(
             "{0} {1}".format(op, " ".join(vers))
-            for op, vers in six.iteritems(vops)
+            for op, vers in vops.items()
         ) + "\n")
         buf.seek(0)
         self.__stats.record_tx()

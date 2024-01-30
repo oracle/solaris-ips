@@ -35,7 +35,6 @@ try:
     import operator
     import os
     import re
-    import six
     import sys
     import tempfile
     import traceback
@@ -468,7 +467,7 @@ def write_line(line, fileobj):
         rem_count = total_count
 
         # Now build the action output string an attribute at a time.
-        for k, v in sorted(six.iteritems(sattrs), key=key_func):
+        for k, v in sorted(sattrs.items(), key=key_func):
             # Newline breaks are only forced when there is more than
             # one value for an attribute.
             if not (isinstance(v, list) or isinstance(v, set)):

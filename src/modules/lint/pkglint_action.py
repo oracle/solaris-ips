@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -34,7 +34,6 @@ import pkg.lint.base as base
 from pkg.actions import ActionError
 from pkg.actions.file import FileAction
 import re
-import six
 import stat
 
 ObsoleteFmri = collections.namedtuple("ObsoleteFmri", "is_obsolete, fmri")
@@ -133,7 +132,7 @@ class PkgDupActionChecker(base.ActionChecker):
                 variants = action.get_variant_template()
                 variants.merge_unknown(pkg_vars)
                 # Action attributes must be lists or strings.
-                for k, v in six.iteritems(variants):
+                for k, v in variants.items():
                     if isinstance(v, set):
                         action.attrs[k] = list(v)
                     else:

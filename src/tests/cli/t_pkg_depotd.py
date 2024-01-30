@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -32,7 +32,6 @@ import pkg5unittest
 import datetime
 import os
 import shutil
-import six
 import sys
 import tempfile
 import time
@@ -844,7 +843,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
             depot_handle = subprocess.Popen(cmdargs, env=newenv,
                 shell=True)
 
-            self.assertTrue(depot_handle != None, msg="Could not "
+            self.assertTrue(depot_handle is not None, msg="Could not "
                 "start depot")
             begintime = time.time()
             check_interval = 0.20
@@ -1007,7 +1006,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
             pub_repo = publisher.Repository()
             pub.repository = pub_repo
 
-        for attr, val in six.iteritems(self.pub_repo_cfg):
+        for attr, val in self.pub_repo_cfg.items():
             setattr(pub_repo, attr, val)
         repo.update_publisher(pub)
 
@@ -1043,7 +1042,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 cfgdata["publisher"][prop])
 
         repo = pub.repository
-        for prop, expected in six.iteritems(self.pub_repo_cfg):
+        for prop, expected in self.pub_repo_cfg.items():
             returned = getattr(repo, prop)
             if prop.endswith("uris") or prop == "origins":
                 uris = []

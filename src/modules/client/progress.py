@@ -37,8 +37,6 @@ import time
 from collections import deque
 from functools import wraps
 
-import six
-
 import pkg.client.pkgdefs as pkgdefs
 import pkg.client.publisher as publisher
 import pkg.fmri
@@ -1695,8 +1693,7 @@ class MultiProgressTracker(ProgressTrackerFrontend):
         # Look in the ProgressTrackerFrontend for a list of frontend
         # methods to multiplex.
         #
-        for methname, m in six.iteritems(
-            ProgressTrackerFrontend.__dict__):
+        for methname, m in ProgressTrackerFrontend.__dict__.items():
             if methname == "__init__":
                 continue
             if not inspect.isfunction(m):
@@ -3253,7 +3250,7 @@ def test_progress_tracker(t, gofast=False):
     hunkmax = 8192
     approx_time = 5.0 * fast   # how long we want the dl to take
     # invent a list of random download chunks.
-    for pkgname, filelist in six.iteritems(dlscript):
+    for pkgname, filelist in dlscript.items():
         for f in range(0, perpkgfiles):
             filesize = random.randint(0, filesizemax)
             hunks = []
@@ -3270,7 +3267,7 @@ def test_progress_tracker(t, gofast=False):
     try:
         t.download_set_goal(len(dlscript), pkggoalfiles, pkggoalbytes)
         n = 0
-        for pkgname, pkgfiles in six.iteritems(dlscript):
+        for pkgname, pkgfiles in dlscript.items():
             fmri = pkg.fmri.PkgFmri(pkgname)
             t.download_start_pkg(fmri)
             for pkgfile in pkgfiles:
@@ -3287,7 +3284,7 @@ def test_progress_tracker(t, gofast=False):
         t.reset_download()
         t.republish_set_goal(len(dlscript), pkggoalbytes, pkggoalbytes)
         n = 0
-        for pkgname, pkgfiles in six.iteritems(dlscript):
+        for pkgname, pkgfiles in dlscript.items():
             fmri = pkg.fmri.PkgFmri(pkgname)
             t.republish_start_pkg(fmri)
             for pkgfile in pkgfiles:
@@ -3305,7 +3302,7 @@ def test_progress_tracker(t, gofast=False):
         t.reset_download()
         t.archive_set_goal("testarchive", pkggoalfiles, pkggoalbytes)
         n = 0
-        for pkgname, pkgfiles in six.iteritems(dlscript):
+        for pkgname, pkgfiles in dlscript.items():
             for pkgfile in pkgfiles:
                 for hunk in pkgfile:
                     t.archive_add_progress(0, hunk)

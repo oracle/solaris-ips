@@ -34,7 +34,6 @@ import mmap
 import operator
 import os
 import shutil
-import six
 import stat
 import sys
 import tempfile
@@ -3155,7 +3154,7 @@ class ImagePlan(object):
         """Check all the newly installed actions for conflicts with
         existing actions."""
 
-        for key, actions in six.iteritems(new):
+        for key, actions in new.items():
             oactions = old.get(key, [])
 
             self.__progtrack.plan_add_progress(
@@ -3205,7 +3204,7 @@ class ImagePlan(object):
         # Ensure that overlay and preserve file semantics are handled
         # as expected when conflicts only exist in packages that are
         # being removed.
-        for key, oactions in six.iteritems(old):
+        for key, oactions in old.items():
             self.__progtrack.plan_add_progress(
                 self.__progtrack.PLAN_ACTION_CONFLICT)
 
@@ -3237,12 +3236,12 @@ class ImagePlan(object):
             return None
 
         bad_keys = set()
-        for ns, key_dict in six.iteritems(nsd):
+        for ns, key_dict in nsd.items():
             if type(ns) != int:
                 type_func = ImagePlan.__check_inconsistent_types
             else:
                 type_func = noop
-            for key, actions in six.iteritems(key_dict):
+            for key, actions in key_dict.items():
                 if len(actions) == 1:
                     continue
                 if type_func(actions, []) is not None:
@@ -3336,7 +3335,7 @@ class ImagePlan(object):
             elif kf == "path":
                 return 20
             return kf
-        types = sorted(six.itervalues(pkg.actions.types), key=key)
+        types = sorted(pkg.actions.types.values(), key=key)
 
         namespace_dict = dict(
             (ns, list(action_classes))
@@ -3354,7 +3353,7 @@ class ImagePlan(object):
         fmri_dict = weakref.WeakValueDictionary()
         # Iterate over action types in namespace groups first; our first
         # check should be for action type consistency.
-        for ns, action_classes in six.iteritems(namespace_dict):
+        for ns, action_classes in namespace_dict.items():
             pt.plan_add_progress(pt.PLAN_ACTION_CONFLICT)
             # There's no sense in checking actions which have no
             # limits
@@ -3388,8 +3387,7 @@ class ImagePlan(object):
                 # cache which could conflict with the new
                 # actions being installed, or with actions
                 # already installed, but not getting removed.
-                keys = set(itertools.chain(six.iterkeys(new),
-                    six.iterkeys(old)))
+                keys = set(itertools.chain(new.keys(), old.keys()))
                 self.__update_act(keys, old, False,
                     offset_dict, action_classes, msf,
                     gone_fmris, fmri_dict)
@@ -3398,7 +3396,7 @@ class ImagePlan(object):
                 # action cache which are staying on the system,
                 # and could conflict with the actions being
                 # installed.
-                keys = set(six.iterkeys(old))
+                keys = set(old.keys())
                 self.__update_act(keys, new, True,
                     offset_dict, action_classes, msf,
                     gone_fmris | changing_fmris, fmri_dict)
@@ -4450,7 +4448,7 @@ class ImagePlan(object):
                 # mediations provided by the image administrator.
                 prop_mediators[m] = new_mediation
 
-        for m, new_mediation in six.iteritems(prop_mediators):
+        for m, new_mediation in prop_mediators.items():
             # If after processing all mediation data, a source wasn't
             # marked for a particular component, mark it as being
             # sourced from 'system'.
@@ -5384,7 +5382,7 @@ class ImagePlan(object):
             root = os.path.normpath(self.image.root)
 
             rzones = zone.list_running_zones()
-            for z, path in six.iteritems(rzones):
+            for z, path in rzones.items():
                 if os.path.normpath(path) == root:
                     self.pd._actuators.set_zone(z)
                     # there should be only on zone per path
@@ -5417,8 +5415,7 @@ class ImagePlan(object):
                 # aliases drivers have lost in the new image.
                 # This prevents two drivers from ever attempting
                 # to have the same alias at the same time.
-                for name, aliases in \
-                    six.iteritems(self.pd._rm_aliases):
+                for name, aliases in self.pd._rm_aliases.items():
                     driver.DriverAction.remove_aliases(name,
                         aliases, self.image)
 
@@ -6072,7 +6069,7 @@ class ImagePlan(object):
                             # value.
                             atvalue = a.attrs["value"]
                             is_list = type(atvalue) == list
-                            for vn, vv in six.iteritems(variants):
+                            for vn, vv in variants.items():
                                 if vn == atname and \
                                     ((is_list and
                                     vv not in atvalue) or \
@@ -6164,13 +6161,13 @@ class ImagePlan(object):
                 ])))
             else:
                 # single match or wildcard
-                for k, pfmris in six.iteritems(ret[p]):
+                for k, pfmris in ret[p].items():
                     # for each matching package name
                     matchdict.setdefault(k, []).append(
                         (p, pfmris))
 
         proposed_dict = {}
-        for name, lst in six.iteritems(matchdict):
+        for name, lst in matchdict.items():
             nwc_ps = [
                 (p, set(pfmris))
                 for p, pfmris in lst
@@ -6313,7 +6310,7 @@ class ImagePlan(object):
             # Rebuild proposed_dict based on latest version of every
             # package.
             sort_key = operator.attrgetter("version")
-            for pname, flist in six.iteritems(proposed_dict):
+            for pname, flist in proposed_dict.items():
                 # Must sort on version; sorting by FMRI would
                 # sort by publisher, then by version which is
                 # not desirable.
@@ -6387,7 +6384,7 @@ class ImagePlan(object):
 
         # For each fmri, pattern where the pattern matched the fmri
         # including the version ...
-        for full_fmri, pat in six.iteritems(references):
+        for full_fmri, pat in references.items():
             parts = pat.split("@", 1)
             # If the pattern doesn't include a version, then add the
             # version the package is installed at to the list of
@@ -6425,7 +6422,7 @@ class ImagePlan(object):
                 anarchy=True, include_scheme=False), set()).add(p)
         # Check whether one stem has been frozen at non-identical
         # versions.
-        for k, v in six.iteritems(stems):
+        for k, v in stems.items():
             if len(v) > 1:
                 multiversions.append((k, v))
             else:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 from collections import namedtuple, defaultdict
@@ -32,7 +32,6 @@ import fnmatch
 import hashlib
 import os
 import re
-import six
 import tempfile
 from itertools import groupby, chain, product, repeat
 from operator import itemgetter
@@ -59,7 +58,7 @@ def _compile_fnpats(fn_pats):
             re.compile(fnmatch.translate(pat), re.IGNORECASE).match
             for pat in pats
         ])
-        for (key, pats) in six.iteritems(fn_pats)
+        for (key, pats) in fn_pats.items()
     )
 
 
@@ -72,7 +71,7 @@ def _attr_matches(action, attr_match):
     if not attr_match:
         return True
 
-    for (attr, matches) in six.iteritems(attr_match):
+    for (attr, matches) in attr_match.items():
         if attr in action.attrs:
             for match in matches:
                 for attrval in action.attrlist(attr):
@@ -176,7 +175,7 @@ class Manifest(object):
 
     def __str__(self):
         r = ""
-        if "pkg.fmri" not in self.attributes and self.fmri != None:
+        if "pkg.fmri" not in self.attributes and self.fmri is not None:
             r += "set name=pkg.fmri value={0}\n".format(self.fmri)
 
         for act in sorted(self.actions):
@@ -187,7 +186,7 @@ class Manifest(object):
         """A generator function that returns the unsorted manifest
         contents as lines of text."""
 
-        if "pkg.fmri" not in self.attributes and self.fmri != None:
+        if "pkg.fmri" not in self.attributes and self.fmri is not None:
             yield "set name=pkg.fmri value={0}\n".format(self.fmri)
 
         for act in self.actions:
@@ -243,8 +242,8 @@ class Manifest(object):
         sdict = dict(dictify(self, self_exclude))
         odict = dict(dictify(origin, origin_exclude))
 
-        sset = set(six.iterkeys(sdict))
-        oset = set(six.iterkeys(odict))
+        sset = set(sdict.keys())
+        oset = set(odict.keys())
 
         added = [(None, sdict[i]) for i in sset - oset]
         removed = [(odict[i], None) for i in oset - sset]
@@ -430,7 +429,7 @@ class Manifest(object):
                    a.attrs.get("mediator-implementation"))
 
         mediators = self._actions_to_dict(gen_references)
-        for mediation, mvariants in six.iteritems(mediators):
+        for mediation, mvariants in mediators.items():
             values = {
                 "mediator-priority": mediation[1],
                 "mediator-version": mediation[2],
@@ -441,12 +440,12 @@ class Manifest(object):
                     "value={0} {1} {2}\n".format(mediation[0],
                      " ".join((
                          "=".join(t)
-                          for t in six.iteritems(values)
+                          for t in values.items()
                           if t[1]
                      )),
                      " ".join((
                          "=".join(t)
-                         for t in six.iteritems(mvariant)
+                         for t in mvariant.items()
                      ))
                 )
                 yield a
@@ -641,7 +640,7 @@ class Manifest(object):
             # Now emit a pkg.facet action for each variant
             # combination containing the list of facets unique to
             # that combination.
-            for varkey, fnames in six.iteritems(facets):
+            for varkey, fnames in facets.items():
                 # A unique key for each combination is needed,
                 # and using a hash obfuscates that interface
                 # while giving us a reliable way to generate
@@ -1673,7 +1672,7 @@ class FactoredManifest(Manifest):
         # so that empty cache files are created if no action of that
         # type exists for the package (avoids full manifest loads
         # later).
-        for n, acts in six.iteritems(self.actions_bytype):
+        for n, acts in self.actions_bytype.items():
             t_prefix = "manifest.{0}.".format(n)
 
             try:

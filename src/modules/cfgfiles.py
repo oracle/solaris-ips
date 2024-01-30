@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
@@ -31,7 +31,6 @@ import datetime
 import errno
 import os
 import re
-import six
 import stat
 import sys
 import tempfile
@@ -275,7 +274,7 @@ class PasswordFile(CfgFile):
     def getnextuid(self):
         """returns next free system (<=99) uid"""
         uids = []
-        for t in six.itervalues(self.password_file.index):
+        for t in self.password_file.index.values():
             if t[1]:
                 uids.append(t[1]["uid"])
         for i in range(100):
@@ -329,7 +328,7 @@ class GroupFile(CfgFile):
     def getnextgid(self):
         """returns next free system (<=99) gid"""
         gids = []
-        for t in six.itervalues(self.index):
+        for t in self.index.values():
             if t[1]:
                 gids.append(t[1]["gid"])
         for i in range(100):
@@ -404,7 +403,7 @@ class FtpusersFile(CfgFile):
 
     def getuser(self, username):
         """ returns true if user is allowed to use FTP - ie is NOT in file"""
-        return not 'username' in self.getvalue({"username" : username})
+        return 'username' not in self.getvalue({"username" : username})
 
 
     def adduser(self, username):

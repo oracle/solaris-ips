@@ -19,14 +19,13 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import errno
 import fnmatch
 import os
 import platform
-import six
 import stat
 import sys
 import shutil
@@ -833,7 +832,7 @@ class install_func(_install):
                 else:
                     file_util.copy_file(src, dest, update=1)
 
-        for d, files in six.iteritems(scripts[osname]):
+        for d, files in scripts[osname].items():
             for (srcname, dstname) in files:
                 dst_dir = util.change_root(self.root_dir, d)
                 dst_path = util.change_root(self.root_dir,

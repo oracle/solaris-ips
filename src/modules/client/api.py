@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -556,7 +556,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
          """
 
         ret = {}
-        for m, mvalues in six.iteritems(self._img.cfg.mediators):
+        for m, mvalues in self._img.cfg.mediators.items():
             ret[m] = copy.copy(mvalues)
             if "version" in ret[m]:
                 # Don't expose internal Version object to
@@ -849,7 +849,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
     def get_avoid_list(self):
         """Return list of tuples of (pkg stem, pkgs w/ group
         dependencies on this) """
-        return [a for a in six.iteritems(self._img.get_avoid_dict())]
+        return [a for a in self._img.get_avoid_dict().items()]
 
     def gen_facets(self, facet_list, implicit=False, patterns=misc.EmptyI):
         """A generator function that produces tuples of the form:
@@ -1377,7 +1377,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         assert _op in api_op_values
         assert _ad_kwargs is None or \
             _op in [API_OP_ATTACH, API_OP_DETACH]
-        assert _ad_kwargs != None or \
+        assert _ad_kwargs is not None or \
             _op not in [API_OP_ATTACH, API_OP_DETACH]
         assert not _li_md_only or \
             _op in [API_OP_ATTACH, API_OP_DETACH, API_OP_SYNC]
@@ -3526,7 +3526,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     # copy() is too slow here and catalog
                     # entries are shallow so this should be
                     # sufficient.
-                    entry = dict(six.iteritems(sentry))
+                    entry = dict(sentry.items())
                     if not base:
                         # Nothing else to do except add
                         # the entry for non-base catalog
@@ -4159,7 +4159,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                         # structure sanely somewhere.
                         mods = tuple(
                             (k, tuple(sorted(a.attrlist(k))))
-                            for k in sorted(six.iterkeys(a.attrs))
+                            for k in sorted(a.attrs.keys())
                             if k not in ("name", "value")
                         )
                         attrs[atname][mods].extend(atvlist)
@@ -4206,7 +4206,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     # image, elide packages that are not for
                     # a matching variant value.
                     is_list = type(atvalue) == list
-                    for vn, vv in six.iteritems(img_variants):
+                    for vn, vv in img_variants.items():
                         if vn == atname and \
                             ((is_list and
                             vv not in atvalue) or \
@@ -5261,7 +5261,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         # First, attempt to match the updated publisher object to an
         # existing one using the object id that was stored during
         # copy().
-        for key, old in six.iteritems(publishers):
+        for key, old in publishers.items():
             if pub._source_object_id == id(old):
                 # Store the new publisher's id and the old
                 # publisher object so it can be restored if the
@@ -5277,7 +5277,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         # Next, be certain that the publisher's prefix and alias
         # are not already in use by another publisher.
-        for key, old in six.iteritems(publishers):
+        for key, old in publishers.items():
             if pub._source_object_id == id(old):
                 # Don't check the object we're replacing.
                 continue
@@ -5290,7 +5290,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         # Next, determine what needs updating and add the updated
         # publisher.
-        for key, old in six.iteritems(publishers):
+        for key, old in publishers.items():
             if pub._source_object_id == id(old):
                 old = orig_pub[-1]
                 if need_refresh(old, pub):
@@ -5317,7 +5317,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
             # Attempting to unpack a non-sequence%s;
             # pylint: disable=W0633
             new_id, old_pub = orig_pub
-            for new_pfx, new_pub in six.iteritems(publishers):
+            for new_pfx, new_pub in publishers.items():
                 if id(new_pub) == new_id:
                     publishers[old_pub.prefix] = old_pub
                     break
