@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -229,7 +229,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
     def test_1_usage(self):
         """Tests that we show a usage message."""
         ret, output, err = self.pkglint("--help")
-        self.assertTrue("Usage:" in output,
+        self.assertTrue("usage:" in output,
             "No usage string printed")
 
     def test_2_badopts(self):
@@ -399,7 +399,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
         ret, output, err = self.pkglint("-f {0}/rcfile {1}".format(
             self.test_root, mpath), testrc=False)
         self.assertTrue("pkglint.action005.1" not in err,
-            "Missing dependency warning printed, despite paramter")
+            "Missing dependency warning printed, despite parameter")
 
         # this time, we've whitelisted a versioned dependency, but
         # we don't depend on any given version - we should still
@@ -417,7 +417,7 @@ pkglint.exclude = pkg.lint.pkglint_action.PkgActionChecker.linted \
             ret, output, err = self.pkglint(mpath)
             self.assertTrue("pkglint.action005.1" not in err,
                 "Missing dependency warning printed, despite "
-                "paramter set in {0}".format(mf))
+                "parameter set in {0}".format(mf))
 
     def test_11_broken_missing_rcfile(self):
         """Tests that we fail gracefully with a broken or missing
