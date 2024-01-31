@@ -26,6 +26,7 @@
 
 try:
     import pkg.no_site_packages
+    import argparse
     import codecs
     import logging
     import sys
@@ -34,7 +35,6 @@ try:
     import locale
     import traceback
     import warnings
-    from optparse import OptionParser
 
     from pkg.client.api_errors import InvalidPackageErrors
     from pkg import VERSION
@@ -74,50 +74,46 @@ def main_func():
 
     usage = \
         _("\n"
-        "        %prog [-b branch] [-c cache_dir] [-f file]\n"
+        "        %(prog)s [-b branch] [-c cache_dir] [-f file]\n"
         "            [-l uri ...] [-p regexp] [-r uri ...] [-v]\n"
         "            [-e extension_path ...]\n"
         "            manifest ...\n"
-        "        %prog -L")
-    parser = OptionParser(usage=usage)
+        "        %(prog)s -L")
+    parser = argparse.ArgumentParser(usage=usage)
 
-    parser.add_option("-b", dest="release", metavar="branch",
+    parser.add_argument("-b", dest="release", metavar="branch",
         help=_("branch to use from lint and reference repositories"))
-    parser.add_option("-c", dest="cache", metavar="dir",
+    parser.add_argument("-c", dest="cache", metavar="cache_dir",
         help=_("directory to use as a repository cache"))
-    parser.add_option("-f", dest="config", metavar="file",
+    parser.add_argument("-f", dest="config", metavar="file",
         help=_("specify an alternative pkglintrc file"))
-    parser.add_option("-l", dest="lint_uris", metavar="uri",
+    parser.add_argument("-l", dest="lint_uris", metavar="uri", default=[],
         action="append", help=_("lint repository URI"))
-    parser.add_option("-L", dest="list_checks",
-        action="store_true",
+    parser.add_argument("-L", dest="list_checks", action="store_true",
         help=_("list checks configured for this session and exit"))
-    parser.add_option("-p", dest="pattern", metavar="regexp",
+    parser.add_argument("-p", dest="pattern", metavar="regexp",
         help=_("pattern to match FMRIs in lint URI"))
-    parser.add_option("-r", dest="ref_uris", metavar="uri",
+    parser.add_argument("-r", dest="ref_uris", metavar="uri", default=[],
         action="append", help=_("reference repository URI"))
-    parser.add_option("-e", dest="extension_path", metavar="dir",
+    parser.add_argument("-e", dest="extension_path", metavar="extension_path",
         action="append", help=_("extension_path"))
-    parser.add_option("-v", dest="verbose", action="store_true",
+    parser.add_argument("-v", dest="verbose", action="store_true",
         help=_("produce verbose output, overriding settings in pkglintrc"))
+    parser.add_argument("manifests", nargs="*")
 
-    opts, args = parser.parse_args(sys.argv[1:])
+    args = parser.parse_args()
 
     # without a cache option, we can't access repositories, so expect
     # local manifests.
-    if not (opts.cache or opts.list_checks) and not args:
+    if not (args.cache or args.list_checks) and not args.manifests:
         parser.error(
-            _("Required -c option missing, no local manifests provided."
-            ))
-
-    pattern = opts.pattern
-    opts.ref_uris = _make_list(opts.ref_uris)
-    opts.lint_uris = _make_list(opts.lint_uris)
+            _("Required -c option missing, no local manifests provided.")
+        )
 
     logger = logging.getLogger("pkglint")
     ch = logging.StreamHandler(sys.stdout)
 
-    if opts.verbose:
+    if args.verbose:
         logger.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
 
@@ -129,35 +125,34 @@ def main_func():
 
     lint_logger = log.PlainLogFormatter()
     try:
-        if not opts.list_checks:
+        if not args.list_checks:
             msg(_("Lint engine setup..."))
         lint_engine = engine.LintEngine(lint_logger,
-            config_file=opts.config, verbose=opts.verbose,
-            extension_path=opts.extension_path)
+            config_file=args.config, verbose=args.verbose,
+            extension_path=args.extension_path)
 
-        if opts.list_checks:
+        if args.list_checks:
             list_checks(lint_engine.checkers,
-                lint_engine.excluded_checkers, opts.verbose)
+                lint_engine.excluded_checkers, args.verbose)
             return EXIT_OK
 
-        if (opts.lint_uris or opts.ref_uris) and not opts.cache:
+        if (args.lint_uris or args.ref_uris) and not args.cache:
             parser.error(
-                _("Required -c option missing when using "
-                "repositories."))
+                _("Required -c option missing when using repositories.")
+            )
 
         manifests = []
-        if len(args) >= 1:
-            manifests = read_manifests(args, lint_logger)
-            if None in manifests or \
-                lint_logger.produced_lint_msgs():
+        if args.manifests:
+            manifests = read_manifests(args.manifests, lint_logger)
+            if None in manifests or lint_logger.produced_lint_msgs():
                 error(_("Fatal error in manifest - exiting."))
                 return EXIT_OOPS
-        lint_engine.setup(ref_uris=opts.ref_uris,
-            lint_uris=opts.lint_uris,
+        lint_engine.setup(ref_uris=args.ref_uris,
+            lint_uris=args.lint_uris,
             lint_manifests=manifests,
-            cache=opts.cache,
-            pattern=pattern,
-            release=opts.release)
+            cache=args.cache,
+            pattern=args.pattern,
+            release=args.release)
 
         msg(_("Starting lint run..."))
 
@@ -312,16 +307,6 @@ def read_manifests(names, lint_logger):
         else:
             manifests.append(None)
     return manifests
-
-def _make_list(opt):
-    """Makes a list out of opt, and returns it."""
-
-    if isinstance(opt, list):
-        return opt
-    elif opt is None:
-        return []
-    else:
-        return [opt]
 
 
 if __name__ == "__main__":
