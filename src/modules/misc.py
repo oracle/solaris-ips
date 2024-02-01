@@ -64,8 +64,6 @@ from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
     S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG, S_ISSOCK, \
     S_IWUSR, S_IXGRP, S_IXOTH
 
-import six
-
 from urllib.parse import urlsplit, urlparse, urlunparse
 from urllib.request import pathname2url, url2pathname
 
@@ -185,11 +183,11 @@ def copytree(src, dst):
                 try:
                     sock.bind(d_path)
                     sock.close()
-                except sock.error as _e:
+                except socket.error as err:
                     # Store original exception so that the
                     # real cause of failure can be raised if
                     # this fails.
-                    problem = sys.exc_info()
+                    problem = err
                     continue
             os.chown(d_path, s.st_uid, s.st_gid)
             os.utime(d_path, (s.st_atime, s.st_mtime))
@@ -213,7 +211,7 @@ def copytree(src, dst):
     os.chown(dst, src_stat.st_uid, src_stat.st_gid)
     os.utime(dst, (src_stat.st_atime, src_stat.st_mtime))
     if problem:
-        six.reraise(problem[0], problem[1], problem[2])
+        raise problem
 
 
 def move(src, dst):

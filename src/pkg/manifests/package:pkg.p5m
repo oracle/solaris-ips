@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
@@ -64,18 +64,18 @@ dir  path=usr/bin
 file path=usr/bin/pkg
 file path=usr/bin/pkgdepend
 file path=usr/bin/pkgdiff
-file path=usr/bin/pkgfmt pkg.depend.bypass-generate=.*six.*
+file path=usr/bin/pkgfmt
 file path=usr/bin/pkglint
-file path=usr/bin/pkgmerge pkg.depend.bypass-generate=.*six.*
+file path=usr/bin/pkgmerge
 file path=usr/bin/pkgmogrify
-file path=usr/bin/pkgrecv pkg.depend.bypass-generate=.*six.*
+file path=usr/bin/pkgrecv
 file path=usr/bin/pkgrepo
 file path=usr/bin/pkgsend
 file path=usr/bin/pkgsign
 file path=usr/bin/pkgsurf
 dir  path=usr/lib
 file path=usr/lib/cronjob-removal.sh mode=0755
-file path=usr/lib/pkg.depotd mode=0755 pkg.depend.bypass-generate=.*six.*
+file path=usr/lib/pkg.depotd mode=0755
 dir  path=usr/lib/update-manager
 link path=usr/lib/update-manager/update-refresh.sh target=../cronjob-removal.sh
 link path=usr/lib/update-refresh.sh target=cronjob-removal.sh

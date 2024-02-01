@@ -49,9 +49,6 @@
     pkg:/library/python/pyopenssl
     pkg:/library/python/pyopenssl-39
     pkg:/library/python/pyopenssl-311
-    pkg:/library/python/six
-    pkg:/library/python/six-39
-    pkg:/library/python/six-311
     pkg:/library/python/rapidjson
     pkg:/library/python/rapidjson-39
     pkg:/library/python/rapidjson-311

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 #
 
 """This module implements PrintEngine (abstract), POSIXPrintEngine and
@@ -38,8 +38,6 @@ import termios
 import time
 from abc import ABCMeta, abstractmethod
 
-import six
-
 from pkg.misc import PipeError, force_str
 
 
@@ -48,7 +46,7 @@ class PrintEngineException(Exception):
     def __str__(self):
         return "PrintEngineException: {0}".format(" ".join(self.args))
 
-class PrintEngine(six.with_metaclass(ABCMeta, object)):
+class PrintEngine(metaclass=ABCMeta):
     """Abstract class defining what a PrintEngine must know how to do."""
 
     def __init__(self):
@@ -250,7 +248,7 @@ class LoggingPrintEngine(PrintEngine):
         val = self._stringio.getvalue()
         if val:
             # should only ever have a partial line
-            assert not "\n" in val
+            assert "\n" not in val
             self._logger.log(self._loglevel, val)
         self._stringio.seek(0)
         self._stringio.truncate(0)

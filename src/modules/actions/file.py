@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a file packaging object
@@ -32,7 +32,6 @@ packaging object."""
 import errno
 from . import generic
 import os
-import six
 import stat
 import tempfile
 import types
@@ -180,7 +179,7 @@ class FileAction(generic.Action):
         pres_type = self._check_preserve(orig, pkgplan)
         do_content = True
         old_path = None
-        if pres_type == True or (pres_type and
+        if pres_type is True or (pres_type and
             pkgplan.origin_fmri == pkgplan.destination_fmri):
             # File is marked to be preserved and exists so don't
             # reinstall content.
@@ -365,7 +364,7 @@ class FileAction(generic.Action):
             self.replace_required = True
             return errors, warnings, info
 
-        if path.lower().endswith("/bobcat") and args["verbose"] == True:
+        if path.lower().endswith("/bobcat") and args["verbose"] is True:
             # Returned as a purely informational (untranslated)
             # message so that no client should interpret it as a
             # reason to fail verification.
@@ -393,11 +392,11 @@ class FileAction(generic.Action):
                 "{expected:d}").format(found=lstat.st_size,
                 expected=pkg_size))
 
-        if (preserve is not None and args["verbose"] == False or
+        if (preserve is not None and args["verbose"] is False or
             lstat is None):
             return errors, warnings, info
 
-        if args["forever"] != True:
+        if args["forever"] is not True:
             return errors, warnings, info
 
         #
@@ -832,7 +831,7 @@ class FileAction(generic.Action):
             self.remove_fsobj(pkgplan, path)
         except Exception as e:
             # Raise new exception chained to old.
-            six.raise_from(e, rm_exc)
+            raise e from rm_exc
         finally:
             # If parent directory wasn't image root, then assume
             # mode needs reset.
