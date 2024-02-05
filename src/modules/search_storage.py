@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -59,13 +59,13 @@ def consistent_open(data_list, directory, timeout = 1):
 
     start_time = time.time()
 
-    while cur_version == None and missing != True:
+    while cur_version is None and missing is not True:
         # The assignments to cur_version and missing cannot be
         # placed here. They must be reset prior to breaking out of the
         # for loop so that the while loop condition will be true. They
         # cannot be placed after the for loop since that path is taken
         # when all files are missing or opened successfully.
-        if timeout != None and ((time.time() - start_time) > timeout):
+        if timeout is not None and ((time.time() - start_time) > timeout):
             raise search_errors.InconsistentIndexException(
                 directory)
         for d in data_list:
@@ -79,7 +79,7 @@ def consistent_open(data_list, directory, timeout = 1):
                 fh = open(f, 'r')
                 # If we get here, then the current index file
                 # is present.
-                if missing == None:
+                if missing is None:
                     missing = False
                 elif missing:
                     for dl in data_list:
@@ -94,7 +94,7 @@ def consistent_open(data_list, directory, timeout = 1):
                 # Read the version. If this is the first file,
                 # set the expected version otherwise check that
                 # the version matches the expected version.
-                if cur_version == None:
+                if cur_version is None:
                     cur_version = version_num
                 elif not (cur_version == version_num):
                     # Got inconsistent versions, so close
@@ -109,7 +109,7 @@ def consistent_open(data_list, directory, timeout = 1):
                     # If the index file is missing, ensure
                     # that previous files were missing as
                     # well. If not, try again.
-                    if missing == False:
+                    if missing is False:
                         for d in data_list:
                             d.close_file_handle()
                         missing = None
@@ -121,7 +121,7 @@ def consistent_open(data_list, directory, timeout = 1):
                         d.close_file_handle()
                     raise
     if missing:
-        assert cur_version == None
+        assert cur_version is None
         # The index is missing (ie, no files were present).
         return None
     else:

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from pylint.interfaces import IAstroidChecker
@@ -132,7 +132,7 @@ class MultiPlatformAPIChecker(BaseChecker):
     def visit_import(self, node):
         """triggered when an import statement is seen"""
         for name, alias in node.names:
-            if alias == None:
+            if alias is None:
                 alias = name
             self._check_verboten_import(node, name)
             self.imported_modules.update({alias: name})
@@ -150,7 +150,7 @@ class MultiPlatformAPIChecker(BaseChecker):
                 except ImportError as ex:
                     # this is checked elsewhere in pylint (F0401)
                     continue
-            if alias == None:
+            if alias is None:
                 alias = fullname
             self.imported_modules.update({alias: fullname})
 

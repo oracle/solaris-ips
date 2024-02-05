@@ -24,7 +24,6 @@
 # Copyright (c) 2015, 2024, Oracle and/or its affiliates.
 #
 
-import six
 from pkg._sha512_t import lib, ffi
 
 """A hash module computes SHA512/t. Now it only supports SHA512/256 and
@@ -85,7 +84,7 @@ class SHA512_t(object):
         lib.memcpy(shc, self.ctx, ffi.sizeof("SHA512_CTX"))
         lib.SHA512_t_Final(digest, shc)
 
-        return b"".join(six.int2byte(i) for i in digest)
+        return bytes(digest)
 
     def hexdigest(self):
         """Return hexadecimal digest of the strings passed to the update()

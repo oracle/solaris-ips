@@ -72,8 +72,6 @@ from functools import cmp_to_key
 
 from urllib.parse import unquote
 
-import six
-
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
 import pkg.client.bootenv as bootenv
@@ -1093,31 +1091,27 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         return self._img.get_frozen_list()
 
-    def __plan_common_exception(self, log_op_end_all=False):
+    def __plan_common_exception(self, exc, log_op_end_all=False):
         """Deal with exceptions that can occur while planning an
         operation.  Any exceptions generated here are passed
         onto the calling context.  By default all exceptions
         will result in a call to self.log_operation_end() before
         they are passed onto the calling context."""
 
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-
+        exc_type = type(exc)
         if exc_type == apx.PlanCreationException:
-            self.__set_history_PlanCreationException(exc_value)
+            self.__set_history_PlanCreationException(exc)
         elif exc_type == apx.CanceledException:
             self._cancel_done()
         elif exc_type == apx.ConflictingActionErrors:
-            self.log_operation_end(error=str(exc_value),
+            self.log_operation_end(error=str(exc),
                 result=RESULT_CONFLICTING_ACTIONS)
-        elif exc_type in [
-            apx.IpkgOutOfDateException,
-            fmri.IllegalFmri]:
-            self.log_operation_end(error=exc_value)
+        elif exc_type in (apx.IpkgOutOfDateException, fmri.IllegalFmri):
+            self.log_operation_end(error=exc)
         elif log_op_end_all:
-            self.log_operation_end(error=exc_value)
+            self.log_operation_end(error=exc)
 
-        if exc_type not in (apx.ImageLockedError,
-            apx.ImageLockingFailedError):
+        if exc_type not in (apx.ImageLockedError, apx.ImageLockingFailedError):
             # Must be called before reset_unlock, and only if
             # the exception was not a locked error.
             self._img.unlock()
@@ -1148,10 +1142,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         self._activity_lock.release()
 
-        # re-raise the original exception. (we have to explicitly
-        # restate the original exception since we may have cleared the
-        # current exception scope above.)
-        six.reraise(exc_type, exc_value, exc_traceback)
+        # re-raise the original exception.
+        raise exc
 
     def solaris_image(self):
         """Returns True if the current image is a solaris image, or an
@@ -1527,16 +1519,15 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
             self.__planned_children = True
 
-        except:
+        except Exception as err:
             if _op in [
                 API_OP_UPDATE,
                 API_OP_INSTALL,
                 API_OP_REVERT,
                 API_OP_SYNC]:
-                self.__plan_common_exception(
-                    log_op_end_all=True)
+                self.__plan_common_exception(err, log_op_end_all=True)
             else:
-                self.__plan_common_exception()
+                self.__plan_common_exception(err)
             # NOTREACHED
 
         stuff_to_do = not self.planned_nothingtodo()

@@ -35,7 +35,6 @@ import os
 import platform
 import shutil
 import rapidjson as json
-import six
 import stat
 import sys
 import tempfile
@@ -44,7 +43,6 @@ import time
 from contextlib import contextmanager
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from urllib.parse import quote, unquote
 
 import pkg.actions
 import pkg.catalog
@@ -1466,7 +1464,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 # Not interesting; already installed.
                 return False, None
             img_entry = img_kcat.get_entry(pfmri=pfmri)
-            if not img_entry is None:
+            if img_entry is not None:
                 # Already in image known catalog.
                 return False, None
             return True, new_entry
@@ -3282,8 +3280,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
             portable.rename(sp, stripped_path)
             portable.rename(op, offsets_path)
             portable.rename(bp, conflicting_keys_path)
-        except EnvironmentError as e:
-            if e.errno == errno.EACCES or e.errno == errno.EROFS:
+        except EnvironmentError as err:
+            if err.errno == errno.EACCES or err.errno == errno.EROFS:
                 self.__action_cache_dir = self.temporary_dir()
                 stripped_path = os.path.join(
                     self.__action_cache_dir, "actions.stripped")
@@ -3295,14 +3293,13 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 portable.rename(op, offsets_path)
                 portable.rename(bp, conflicting_keys_path)
             else:
-                exc_info = sys.exc_info()
                 try:
                     os.unlink(stripped_path)
                     os.unlink(offsets_path)
                     os.unlink(conflicting_keys_path)
                 except:
                     pass
-                six.reraise(exc_info[0], exc_info[1], exc_info[2])
+                raise err
 
         progtrack.job_add_progress(progtrack.JOB_FAST_LOOKUP)
         progtrack.job_done(progtrack.JOB_FAST_LOOKUP)

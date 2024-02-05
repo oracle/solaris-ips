@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """\
@@ -128,7 +128,7 @@ def count_catalog(mg, d):
 
 
     try:
-        if not d in catalog_by_ip_active[mg["ip"]]:
+        if d not in catalog_by_ip_active[mg["ip"]]:
             catalog_by_ip_active[mg["ip"]].append(d)
     except KeyError:
         catalog_by_ip_active[mg["ip"]] = [d]
@@ -141,7 +141,7 @@ def count_catalog(mg, d):
     # Agent-specific measurements.
 
     agent = pkg_agent_pat.search(mg["agent"])
-    if agent == None:
+    if agent is None:
         return
 
     ag = agent.groupdict()

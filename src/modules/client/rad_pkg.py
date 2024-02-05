@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2015, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -271,7 +271,7 @@ class PkgFmri(object):
             include_build=include_build)
         if self.__fmri:
             fmri_str = self.__fmri.get_fmri(**opts)
-            if include_timestamp == False:
+            if include_timestamp is False:
                 rind = fmri_str.rfind(":")
                 if rind != -1:
                     fmri_str = fmri_str[:rind]

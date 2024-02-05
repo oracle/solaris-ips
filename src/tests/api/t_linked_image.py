@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -59,7 +59,7 @@ Expected "{0}" to be contained in:
 
 def apx_verify(e, e_type, e_member=None):
 
-    if e == None:
+    if e is None:
         raise RuntimeError("""
 Expected {0} exception.
 Didn't get any exception.
@@ -73,7 +73,7 @@ Got a {1} exception:
 {2}
 """.format(str(e_type), str(type(e)), traceback.format_exc()))
 
-    if e_member == None:
+    if e_member is None:
         return
 
     if getattr(e, e_member, None) is None:
@@ -394,7 +394,7 @@ This is a license.
 
     # utility functions for use by test cases
     def _imgs_create(self, limit, variants=None, **ic_opts):
-        if variants == None:
+        if variants is None:
             variants = {
                 "variant.foo": "bar",
                 "variant.opensolaris.zone": "nonglobal",
@@ -425,12 +425,12 @@ This is a license.
 
     def _children_attach(self, i, cl, rv=None, rvdict=None, **args):
         assert i not in cl
-        assert rvdict == None or type(rvdict) == dict
-        assert rv == None or rvdict == None
+        assert rvdict is None or type(rvdict) == dict
+        assert rv is None or rvdict is None
 
-        if rv == None:
+        if rv is None:
             rv = EXIT_OK
-        if rvdict == None:
+        if rvdict is None:
             rvdict = {}
             for c in cl:
                 rvdict[c] = rv
@@ -451,13 +451,13 @@ Error output:
     def _children_op(self, i, cl, op, rv=None, rvdict=None, **args):
         assert i not in cl
         assert type(op) == str
-        assert rv == None or type(rv) == int
-        assert rvdict == None or type(rvdict) == dict
-        assert rv == None or rvdict == None
+        assert rv is None or type(rv) == int
+        assert rvdict is None or type(rvdict) == dict
+        assert rv is None or rvdict is None
 
-        if rv == None:
+        if rv is None:
             rv = EXIT_OK
-        if rvdict == None:
+        if rvdict is None:
             rvdict = {}
             for c in cl:
                 rvdict[c] = rv

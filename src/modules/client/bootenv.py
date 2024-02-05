@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 import errno
 import os
@@ -81,7 +81,7 @@ class GenericBootEnv(object):
         self.root = self.img.get_root()
         rc = 0
 
-        assert self.root != None
+        assert self.root is not None
 
     def _store_image_state(self):
         """Internal function used to preserve current image information

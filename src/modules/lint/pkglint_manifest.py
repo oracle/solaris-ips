@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 # Some pkg(7) specific lint manifest checks
@@ -506,7 +506,7 @@ class PkgManifestChecker(base.ManifestChecker):
     def info_classification(self, manifest, engine, pkglint_id="008"):
         """Checks that the info.classification attribute is valid."""
 
-        if (not "info.classification" in manifest) or \
+        if ("info.classification" not in manifest) or \
             self.skip_classification_check:
             return
 
@@ -533,7 +533,7 @@ class PkgManifestChecker(base.ManifestChecker):
 
         prefix = "org.opensolaris.category.2008:"
 
-        if not prefix in value:
+        if prefix not in value:
             engine.error(_("info.classification attribute "
                 "does not contain '{prefix}' for {fmri}").format(
                 **locals()), msgid="{0}.2".format(msgid))

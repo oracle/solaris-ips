@@ -1592,7 +1592,7 @@ class LinkedImage(object):
         into a single return code."""
 
         _li_rvdict_check(rvdict)
-        if type(rv_map) != type(None):
+        if rv_map is not None:
             assert type(rv_map) == list
             for (rv_set, rv) in rv_map:
                 assert type(rv_set) == set

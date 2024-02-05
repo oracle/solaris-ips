@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 import calendar
@@ -394,7 +394,7 @@ class Version(object):
 
     def set_timestamp(self, timestamp=datetime.datetime.utcnow()):
         assert type(timestamp) == datetime.datetime
-        assert timestamp.tzname() == None or timestamp.tzname() == "UTC"
+        assert timestamp.tzname() is None or timestamp.tzname() == "UTC"
         self.timestr = timestamp.strftime("%Y%m%dT%H%M%SZ")
 
     def get_timestamp(self):
@@ -531,7 +531,7 @@ class Version(object):
         compared as releases were for the CONSTRAINT_RELEASE* policies.
         """
 
-        if constraint == None or constraint == CONSTRAINT_NONE:
+        if constraint is None or constraint == CONSTRAINT_NONE:
             return self > other
 
         if constraint == CONSTRAINT_AUTO and \

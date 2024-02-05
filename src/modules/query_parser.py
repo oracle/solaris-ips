@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -1215,7 +1215,7 @@ class TermQuery(object):
                 tmp.append(self._data_main_dict)
                 ret = ss.consistent_open(tmp, self._dir_path,
                     self._file_timeout_secs)
-            if ret == None:
+            if ret is None:
                 raise search_errors.NoIndexException(
                     self._dir_path)
             should_reread = False
@@ -1249,7 +1249,7 @@ class TermQuery(object):
                         self._dir_path,
                         self._file_timeout_secs)
                     try:
-                        if ret == None:
+                        if ret is None:
                             raise search_errors.NoIndexException(
                                 self._dir_path)
                         # Reread the dictionaries and
