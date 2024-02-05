@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -104,22 +104,22 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
         self.assertTrue(not self.n1.is_similar(self.n6))
 
     def testfmrihaspublisher(self):
-        self.assertTrue(self.n1.has_publisher() == True)
-        self.assertTrue(self.n2.has_publisher() == False)
-        self.assertTrue(self.n3.has_publisher() == False)
-        self.assertTrue(self.n4.has_publisher() == False)
-        self.assertTrue(self.n5.has_publisher() == False)
-        self.assertTrue(self.n6.has_publisher() == False)
-        self.assertTrue(self.n7.has_publisher() == True)
-        self.assertTrue(self.n8.has_publisher() == True)
+        self.assertTrue(self.n1.has_publisher())
+        self.assertFalse(self.n2.has_publisher())
+        self.assertFalse(self.n3.has_publisher())
+        self.assertFalse(self.n4.has_publisher())
+        self.assertFalse(self.n5.has_publisher())
+        self.assertFalse(self.n6.has_publisher())
+        self.assertTrue(self.n7.has_publisher())
+        self.assertTrue(self.n8.has_publisher())
 
     def testfmrihasversion(self):
-        self.assertTrue(self.n1.has_version() == False)
-        self.assertTrue(self.n2.has_version() == False)
-        self.assertTrue(self.n3.has_version() == True)
-        self.assertTrue(self.n4.has_version() == True)
-        self.assertTrue(self.n5.has_version() == True)
-        self.assertTrue(self.n6.has_version() == False)
+        self.assertFalse(self.n1.has_version())
+        self.assertFalse(self.n2.has_version())
+        self.assertTrue(self.n3.has_version())
+        self.assertTrue(self.n4.has_version())
+        self.assertTrue(self.n5.has_version())
+        self.assertFalse(self.n6.has_version())
 
     def testfmriissamepkg(self):
         self.assertTrue(self.n7.is_same_pkg(self.n8))

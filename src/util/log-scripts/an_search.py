@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import datetime
@@ -117,7 +117,7 @@ def count_search(mg, d):
 
 
     pm = pkg_pat.search(mg["uri"])
-    if pm != None:
+    if pm is not None:
         pg = pm.groupdict()
 
         kw = unquote(pg["keywords"])
@@ -148,7 +148,7 @@ def count_search(mg, d):
 
 
     agent = pkg_agent_pat.search(mg["agent"])
-    if agent == None:
+    if agent is None:
         return
 
     ag = agent.groupdict()

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 import errno
@@ -192,7 +192,7 @@ class Indexer(object):
         res = ss.consistent_open(self._data_dict.values(), directory,
             self._file_timeout_secs)
         pt = self._progtrack
-        if res == None:
+        if res is None:
             self.file_version_number = INITIAL_VERSION_NUMBER
             self.empty_index = True
             return None
@@ -567,7 +567,7 @@ class Indexer(object):
             file_handle = self._data_main_dict.get_file_handle()
             assert file_handle
 
-        if self.file_version_number == None:
+        if self.file_version_number is None:
             self.file_version_number = INITIAL_VERSION_NUMBER
         else:
             self.file_version_number += 1

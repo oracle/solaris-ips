@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import datetime
@@ -80,7 +80,7 @@ def count_manifest(mg, d):
         manifest_by_ip[mg["ip"]] = 1
 
     pm = pkg_pat.search(mg["uri"])
-    if pm != None and mg["response"] == "200":
+    if pm is not None and mg["response"] == "200":
         pg = pm.groupdict()
 
         try:
@@ -94,7 +94,7 @@ def count_manifest(mg, d):
             manifest_by_ver_pkg[unquote(pg["stem"] + "@" + pg["version"])] = 1
 
     agent = pkg_agent_pat.search(mg["agent"])
-    if agent == None:
+    if agent is None:
         return
 
     ag = agent.groupdict()

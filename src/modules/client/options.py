@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 
 import os
 
@@ -187,7 +187,7 @@ def __parse_prop_values(args, add=True):
     return props_values
 
 def opts_table_cb_pub_list(api_inst, opts, opts_new):
-    if opts[OUTPUT_FORMAT] == None:
+    if opts[OUTPUT_FORMAT] is None:
         opts_new[OUTPUT_FORMAT] = "default"
 
 def opts_table_cb_pub_props(api_inst, opts, opts_new):
@@ -691,7 +691,7 @@ def opts_table_cb_origins(api_inst, opts, opts_new):
     opts_new[ORIGINS] = origins
 
 def opts_table_cb_stage(api_inst, opts, opts_new):
-    if opts[STAGE] == None:
+    if opts[STAGE] is None:
         opts_new[STAGE] = pkgdefs.API_STAGE_DEFAULT
         return
 
@@ -783,7 +783,7 @@ def opts_cb_list(api_inst, opts, opts_new):
 
 def opts_cb_int(k, api_inst, opts, opts_new, minimum=None):
 
-    if k not in opts or opts[k] == None:
+    if k not in opts or opts[k] is None:
         err = _("missing required parameter")
         raise InvalidOptionError(msg=err, options=[k])
 

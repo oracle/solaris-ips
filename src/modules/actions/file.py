@@ -392,8 +392,7 @@ class FileAction(generic.Action):
                 "{expected:d}").format(found=lstat.st_size,
                 expected=pkg_size))
 
-        if (preserve is not None and args["verbose"] is False or
-            lstat is None):
+        if preserve is not None and args["verbose"] is False or lstat is None:
             return errors, warnings, info
 
         if args["forever"] is not True:

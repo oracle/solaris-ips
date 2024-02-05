@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -80,45 +80,42 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
     def testdotsequencecomparison(self):
         self.assertTrue(self.d3 < self.d4)
         self.assertTrue(self.d4 > self.d3)
-        self.assertTrue(not self.d1 < self.d2)
-        self.assertTrue(not self.d1 > self.d2)
-        self.assertTrue(not None == self.d1)
-        self.assertTrue(None != self.d1)
-        self.assertTrue(self.d1 != self.d3)
-        self.assertTrue(self.d1 == self.d2)
+        self.assertFalse(self.d1 < self.d2)
+        self.assertFalse(self.d1 > self.d2)
+        self.assertIsNotNone(self.d1)
+        self.assertNotEqual(self.d1, self.d3)
+        self.assertEqual(self.d1, self.d2)
         self.assertTrue(self.d1.is_same_major(self.d2))
         self.assertTrue(self.d3.is_same_major(self.d4))
         self.assertTrue(self.d1.is_same_minor(self.d2))
-        self.assertTrue(not self.d1.is_same_minor(self.d5))
-        self.assertTrue(not self.d3.is_same_minor(self.d4))
-        self.assertTrue(not self.d6.is_same_minor(self.d7))
+        self.assertFalse(self.d1.is_same_minor(self.d5))
+        self.assertFalse(self.d3.is_same_minor(self.d4))
+        self.assertFalse(self.d6.is_same_minor(self.d7))
         self.assertTrue(self.d3.is_subsequence(self.d5))
-        self.assertTrue(not self.d3.is_subsequence(self.d6))
-        self.assertTrue(not self.d1.is_subsequence(self.d6))
-        self.assertTrue(not self.d6.is_subsequence(self.d1))
-        self.assertTrue(not self.d5.is_subsequence(self.d3))
+        self.assertFalse(self.d3.is_subsequence(self.d6))
+        self.assertFalse(self.d1.is_subsequence(self.d6))
+        self.assertFalse(self.d6.is_subsequence(self.d1))
+        self.assertFalse(self.d5.is_subsequence(self.d3))
 
     def teststr(self):
-        self.assertTrue(str(self.v1) == "5.5.1,5.5.1-10:20051122T000000Z")
-        self.assertTrue(str(self.v2) == "5.5.1,5.5.1-10:20070318T123456Z")
-        self.assertTrue(str(self.v3) == "5.5.1,5.5-10")
-        self.assertTrue(str(self.v4) == "5.5.1,5.4-6")
-        self.assertTrue(str(self.v5) == "5.6,1")
-        self.assertTrue(str(self.v6) == "5.7,5.4")
-        self.assertTrue(str(self.v7) == "5.10,5.5.1")
-        self.assertTrue(str(self.v8) == "5.10.1,5.5.1")
-        self.assertTrue(str(self.v9) == "5.11,5.5.1")
-        self.assertTrue(str(self.v10) == "0.1,5.11-1")
-        self.assertTrue(str(self.v11) == "0.1,5.11-1:20070710T120000Z")
-        self.assertTrue(
-            str(self.v12) == "5.11,0.5.11-0.72:20070921T211008Z")
-        self.assertTrue(
-            str(self.v13) == "5.11,0.5.11-0.72:20070922T160226Z")
-        self.assertTrue(str(self.v14) == "0.1,5.11")
-        self.assertTrue(str(self.v15) == "0.1,5.11:20071014T234545Z")
-        self.assertTrue(str(self.v16) == "0.2,5.11")
-        self.assertTrue(str(self.v17) == "0.2,5.11-1:20071029T131519Z")
-        self.assertTrue(str(self.v18) == "5,5")
+        self.assertEqual(str(self.v1), "5.5.1,5.5.1-10:20051122T000000Z")
+        self.assertEqual(str(self.v2), "5.5.1,5.5.1-10:20070318T123456Z")
+        self.assertEqual(str(self.v3), "5.5.1,5.5-10")
+        self.assertEqual(str(self.v4), "5.5.1,5.4-6")
+        self.assertEqual(str(self.v5), "5.6,1")
+        self.assertEqual(str(self.v6), "5.7,5.4")
+        self.assertEqual(str(self.v7), "5.10,5.5.1")
+        self.assertEqual(str(self.v8), "5.10.1,5.5.1")
+        self.assertEqual(str(self.v9), "5.11,5.5.1")
+        self.assertEqual(str(self.v10), "0.1,5.11-1")
+        self.assertEqual(str(self.v11), "0.1,5.11-1:20070710T120000Z")
+        self.assertEqual(str(self.v12), "5.11,0.5.11-0.72:20070921T211008Z")
+        self.assertEqual(str(self.v13), "5.11,0.5.11-0.72:20070922T160226Z")
+        self.assertEqual(str(self.v14), "0.1,5.11")
+        self.assertEqual(str(self.v15), "0.1,5.11:20071014T234545Z")
+        self.assertEqual(str(self.v16), "0.2,5.11")
+        self.assertEqual(str(self.v17), "0.2,5.11-1:20071029T131519Z")
+        self.assertEqual(str(self.v18), "5,5")
 
     def testbogusversion1(self):
         """ Test empty elements """
@@ -248,14 +245,12 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
 
     def testversioneq(self):
         self.assertTrue(not self.v9 == self.v8)
-        self.assertTrue(not self.v9 == None)
-        self.assertTrue(not None == self.v9)
+        self.assertFalse(self.v9 is None)
         self.assertTrue(self.v9 == self.v9same)
 
     def testversionne(self):
         self.assertTrue(self.v9 != self.v8)
-        self.assertTrue(self.v9 != None)
-        self.assertTrue(None != self.v9)
+        self.assertTrue(self.v9 is not None)
         self.assertTrue(not self.v9 != self.v9same)
 
     def testversionsuccessor1(self):
@@ -330,11 +325,11 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
             version.Version, "0.2,5.11-1:20070113T131672Z", None)
 
     def testversiongettime(self):
-        self.assertTrue(self.v1.get_timestamp().year == 2005)
-        self.assertTrue(self.v1.get_timestamp().hour == 0)
-        self.assertTrue(self.v1.get_timestamp().hour == 0)
-        self.assertTrue(self.v1.get_timestamp().tzname() == None)
-        self.assertTrue(self.v3.get_timestamp() == None)
+        self.assertEqual(self.v1.get_timestamp().year, 2005)
+        self.assertEqual(self.v1.get_timestamp().hour, 0)
+        self.assertEqual(self.v1.get_timestamp().hour, 0)
+        self.assertIsNone(self.v1.get_timestamp().tzname())
+        self.assertIsNone(self.v3.get_timestamp())
 
     def testversionsettime(self):
         d = datetime.datetime.utcnow()

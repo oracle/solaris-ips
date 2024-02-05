@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a license packaging object
@@ -142,7 +142,7 @@ class LicenseAction(generic.Action):
 
         hash_attr, hash_val, hash_func = \
             digest.get_preferred_hash(self)
-        if args["forever"] == True:
+        if args["forever"] is True:
             try:
                 chash, cdata = misc.get_data_digest(path,
                     hash_func=hash_func)

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -267,7 +267,7 @@ class PublishingDependency(Dependency):
 
         self.base_names = sorted(base_names)
 
-        if full_paths == None:
+        if full_paths is None:
             self.full_paths = []
         else:
             self.full_paths = full_paths

@@ -540,105 +540,131 @@ def pt_abstract(func):
 # versus front-end APIs.
 #
 class ProgressTrackerBackend(object):
-    # allow def func(args): pass
-    # More than one statement on a line; pylint: disable=C0321
 
-    def __init__(self): pass
+    def __init__(self):
+        pass
 
     #
     # This set of methods should be regarded as abstract *and* protected.
     #
     @pt_abstract
-    def _output_flush(self): pass
+    def _output_flush(self):
+        pass
 
     @pt_abstract
-    def _change_purpose(self, old_purpose, new_purpose): pass
+    def _change_purpose(self, old_purpose, new_purpose):
+        pass
 
     @pt_abstract
-    def _cache_cats_output(self, outspec): pass
+    def _cache_cats_output(self, outspec):
+        pass
 
     @pt_abstract
-    def _load_cat_cache_output(self, outspec): pass
+    def _load_cat_cache_output(self, outspec):
+        pass
 
     @pt_abstract
-    def _refresh_output_progress(self, outspec): pass
+    def _refresh_output_progress(self, outspec):
+        pass
 
     @pt_abstract
-    def _plan_output(self, outspec, planitem): pass
+    def _plan_output(self, outspec, planitem):
+        pass
 
     @pt_abstract
-    def _plan_output_all_done(self): pass
+    def _plan_output_all_done(self):
+        pass
 
     @pt_abstract
-    def _mfst_fetch(self, outspec): pass
+    def _mfst_fetch(self, outspec):
+        pass
 
     @pt_abstract
-    def _mfst_commit(self, outspec): pass
+    def _mfst_commit(self, outspec):
+        pass
 
     @pt_abstract
-    def _repo_ver_output(self, outspec, repository_scan=False): pass
+    def _repo_ver_output(self, outspec, repository_scan=False):
+        pass
 
     @pt_abstract
-    def _repo_ver_output_error(self, errors): pass
+    def _repo_ver_output_error(self, errors):
+        pass
 
     @pt_abstract
-    def _repo_ver_output_done(self): pass
+    def _repo_ver_output_done(self):
+        pass
 
-    def _repo_fix_output(self, outspec): pass
-
-    @pt_abstract
-    def _repo_fix_output_error(self, errors): pass
-
-    @pt_abstract
-    def _repo_fix_output_info(self, errors): pass
+    def _repo_fix_output(self, outspec):
+        pass
 
     @pt_abstract
-    def _repo_fix_output_done(self): pass
+    def _repo_fix_output_error(self, errors):
+        pass
 
     @pt_abstract
-    def _archive_output(self, outspec): pass
+    def _repo_fix_output_info(self, errors):
+        pass
 
     @pt_abstract
-    def _dl_output(self, outspec): pass
+    def _repo_fix_output_done(self):
+        pass
 
     @pt_abstract
-    def _act_output(self, outspec, actionitem): pass
+    def _archive_output(self, outspec):
+        pass
 
     @pt_abstract
-    def _act_output_all_done(self): pass
+    def _dl_output(self, outspec):
+        pass
 
     @pt_abstract
-    def _job_output(self, outspec, jobitem): pass
+    def _act_output(self, outspec, actionitem):
+        pass
 
     @pt_abstract
-    def _republish_output(self, outspec): pass
+    def _act_output_all_done(self):
+        pass
 
     @pt_abstract
-    def _lint_output(self, outspec): pass
+    def _job_output(self, outspec, jobitem):
+        pass
 
     @pt_abstract
-    def _li_recurse_start_output(self): pass
+    def _republish_output(self, outspec):
+        pass
 
     @pt_abstract
-    def _li_recurse_end_output(self): pass
+    def _lint_output(self, outspec):
+        pass
 
     @pt_abstract
-    def _li_recurse_output_output(self, lin, stdout, stderr): pass
+    def _li_recurse_start_output(self):
+        pass
 
     @pt_abstract
-    def _li_recurse_status_output(self, done): pass
+    def _li_recurse_end_output(self):
+        pass
 
     @pt_abstract
-    def _li_recurse_progress_output(self, lin): pass
+    def _li_recurse_output_output(self, lin, stdout, stderr):
+        pass
 
     @pt_abstract
-    def _reversion(self, pfmri, outspec): pass
+    def _li_recurse_status_output(self, done):
+        pass
+
+    @pt_abstract
+    def _li_recurse_progress_output(self, lin):
+        pass
+
+    @pt_abstract
+    def _reversion(self, pfmri, outspec):
+        pass
 
 class ProgressTrackerFrontend(object):
     """This essentially abstract class forms the interface that other
     modules in the system use to record progress against various goals."""
-
-    # More than one statement on a line; pylint: disable=C0321
 
     # Major phases of operation
     PHASE_PREPLAN = 1
@@ -746,34 +772,44 @@ class ProgressTrackerFrontend(object):
         }
 
     @pt_abstract
-    def set_purpose(self, purpose): pass
+    def set_purpose(self, purpose):
+        pass
 
     @pt_abstract
-    def get_purpose(self): pass
+    def get_purpose(self):
+        pass
 
     @pt_abstract
-    def reset_download(self): pass
+    def reset_download(self):
+        pass
 
     @pt_abstract
-    def reset(self): pass
+    def reset(self):
+        pass
 
     @pt_abstract
-    def set_major_phase(self, majorphase): pass
+    def set_major_phase(self, majorphase):
+        pass
 
     @pt_abstract
-    def flush(self): pass
+    def flush(self):
+        pass
 
     @pt_abstract
-    def cache_catalogs_start(self): pass
+    def cache_catalogs_start(self):
+        pass
 
     @pt_abstract
-    def cache_catalogs_done(self): pass
+    def cache_catalogs_done(self):
+        pass
 
     @pt_abstract
-    def load_catalog_cache_start(self): pass
+    def load_catalog_cache_start(self):
+        pass
 
     @pt_abstract
-    def load_catalog_cache_done(self): pass
+    def load_catalog_cache_done(self):
+        pass
 
     # fetching catalogs
     @pt_abstract
@@ -781,106 +817,138 @@ class ProgressTrackerFrontend(object):
         pass
 
     @pt_abstract
-    def refresh_start_pub(self, pub): pass
+    def refresh_start_pub(self, pub):
+        pass
 
     @pt_abstract
-    def refresh_end_pub(self, pub): pass
+    def refresh_end_pub(self, pub):
+        pass
 
     @pt_abstract
-    def refresh_progress(self, pub, nbytes): pass
+    def refresh_progress(self, pub, nbytes):
+        pass
 
     @pt_abstract
-    def refresh_done(self): pass
+    def refresh_done(self):
+        pass
 
     # planning an operation
     @pt_abstract
-    def plan_all_start(self): pass
+    def plan_all_start(self):
+        pass
 
     @pt_abstract
-    def plan_start(self, planid, goal=None): pass
+    def plan_start(self, planid, goal=None):
+        pass
 
     @pt_abstract
-    def plan_add_progress(self, planid, nitems=1): pass
+    def plan_add_progress(self, planid, nitems=1):
+        pass
 
     @pt_abstract
-    def plan_done(self, planid): pass
+    def plan_done(self, planid):
+        pass
 
     @pt_abstract
-    def plan_all_done(self): pass
+    def plan_all_done(self):
+        pass
 
     # getting manifests over the network
     @pt_abstract
-    def manifest_fetch_start(self, goal_mfsts): pass
+    def manifest_fetch_start(self, goal_mfsts):
+        pass
 
     @pt_abstract
-    def manifest_fetch_progress(self, completion): pass
+    def manifest_fetch_progress(self, completion):
+        pass
 
     @pt_abstract
-    def manifest_commit(self): pass
+    def manifest_commit(self):
+        pass
 
     @pt_abstract
-    def manifest_fetch_done(self): pass
+    def manifest_fetch_done(self):
+        pass
 
     # verifying the content of a repository
     @pt_abstract
-    def repo_verify_start(self, npkgs): pass
+    def repo_verify_start(self, npkgs):
+        pass
 
     @pt_abstract
-    def repo_verify_start_pkg(self, pkgfmri, repository_scan=False): pass
+    def repo_verify_start_pkg(self, pkgfmri, repository_scan=False):
+        pass
 
     @pt_abstract
-    def repo_verify_add_progress(self, pkgfmri): pass
+    def repo_verify_add_progress(self, pkgfmri):
+        pass
 
     @pt_abstract
-    def repo_verify_yield_error(self, pkgfmri, errors): pass
+    def repo_verify_yield_error(self, pkgfmri, errors):
+        pass
 
     @pt_abstract
-    def repo_verify_yield_warning(self, pkgfmri, warnings): pass
+    def repo_verify_yield_warning(self, pkgfmri, warnings):
+        pass
 
     @pt_abstract
-    def repo_verify_yield_info(self, pkgfmri, info): pass
+    def repo_verify_yield_info(self, pkgfmri, info):
+        pass
 
     @pt_abstract
-    def repo_verify_end_pkg(self, pkgfmri): pass
+    def repo_verify_end_pkg(self, pkgfmri):
+        pass
 
     @pt_abstract
-    def repo_verify_done(self): pass
+    def repo_verify_done(self):
+        pass
 
     # fixing the content of a repository
     @pt_abstract
-    def repo_fix_start(self, npkgs): pass
+    def repo_fix_start(self, npkgs):
+        pass
 
     @pt_abstract
-    def repo_fix_add_progress(self, pkgfmri): pass
+    def repo_fix_add_progress(self, pkgfmri):
+        pass
 
     @pt_abstract
-    def repo_fix_yield_error(self, pkgfmri, errors): pass
+    def repo_fix_yield_error(self, pkgfmri, errors):
+        pass
 
     @pt_abstract
-    def repo_fix_yield_info(self, pkgfmri, info): pass
+    def repo_fix_yield_info(self, pkgfmri, info):
+        pass
 
     @pt_abstract
-    def repo_fix_done(self): pass
+    def repo_fix_done(self):
+        pass
 
     # archiving to .p5p files
     @pt_abstract
-    def archive_set_goal(self, arcname, nitems, nbytes): pass
+    def archive_set_goal(self, arcname, nitems, nbytes):
+        pass
 
     @pt_abstract
-    def archive_add_progress(self, nitems, nbytes): pass
+    def archive_add_progress(self, nitems, nbytes):
+        pass
 
     @pt_abstract
-    def archive_done(self): pass
+    def archive_done(self):
+        pass
 
     # Called when bits arrive, either from on-disk cache or over-the-wire.
     @pt_abstract
-    def download_set_goal(self, npkgs, nfiles, nbytes): pass
+    def download_set_goal(self, npkgs, nfiles, nbytes):
+        pass
 
     @pt_abstract
-    def download_start_pkg(self, pkgfmri): pass
+    def download_start_pkg(self, pkgfmri):
+        pass
 
     @pt_abstract
-    def download_end_pkg(self, pkgfmri): pass
+    def download_end_pkg(self, pkgfmri):
+        pass
 
     @pt_abstract
     def download_add_progress(self, nfiles, nbytes, cachehit=False):
@@ -893,39 +961,49 @@ class ProgressTrackerFrontend(object):
         pass
 
     @pt_abstract
-    def download_get_progress(self): pass
+    def download_get_progress(self):
+        pass
 
     # Running actions
     @pt_abstract
-    def actions_set_goal(self, actionid, nactions): pass
+    def actions_set_goal(self, actionid, nactions):
+        pass
 
     @pt_abstract
-    def actions_add_progress(self, actionid): pass
+    def actions_add_progress(self, actionid):
+        pass
 
     @pt_abstract
-    def actions_done(self, actionid): pass
+    def actions_done(self, actionid):
+        pass
 
     @pt_abstract
-    def actions_all_done(self): pass
+    def actions_all_done(self):
+        pass
 
     @pt_abstract
-    def job_start(self, jobid, goal=None): pass
+    def job_start(self, jobid, goal=None):
+        pass
 
     @pt_abstract
-    def job_add_progress(self, jobid, nitems=1): pass
+    def job_add_progress(self, jobid, nitems=1):
+        pass
 
     @pt_abstract
-    def job_done(self, jobid): pass
+    def job_done(self, jobid):
+        pass
 
     @pt_abstract
-    def republish_set_goal(self, npkgs, ngetbytes, nsendbytes): pass
+    def republish_set_goal(self, npkgs, ngetbytes, nsendbytes):
+        pass
 
     @pt_abstract
     def republish_start_pkg(self, pkgfmri, getbytes=None, sendbytes=None):
         pass
 
     @pt_abstract
-    def republish_end_pkg(self, pkgfmri): pass
+    def republish_end_pkg(self, pkgfmri):
+        pass
 
     @pt_abstract
     def upload_add_progress(self, nbytes):
@@ -943,10 +1021,12 @@ class ProgressTrackerFrontend(object):
         pass
 
     @pt_abstract
-    def lint_add_progress(self): pass
+    def lint_add_progress(self):
+        pass
 
     @pt_abstract
-    def lint_done(self): pass
+    def lint_done(self):
+        pass
 
     @pt_abstract
     def set_linked_name(self, lin):
@@ -980,7 +1060,8 @@ class ProgressTrackerFrontend(object):
         pass
 
     @pt_abstract
-    def reversion_start(self, goal_pkgs, goal_revs): pass
+    def reversion_start(self, goal_pkgs, goal_revs):
+        pass
 
     @pt_abstract
     def reversion_add_progress(self, pfmri, pkgs=0, reversioned=0,
@@ -988,7 +1069,8 @@ class ProgressTrackerFrontend(object):
         pass
 
     @pt_abstract
-    def reversion_done(self): pass
+    def reversion_done(self):
+        pass
 
 
 class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):

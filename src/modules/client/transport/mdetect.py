@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import random
@@ -70,7 +70,7 @@ class MirrorDetector(object):
         # Clear the list of mirrors.  It will be repopulated later.
         self._mirrors = []
 
-        if not "pybonjour" in globals():
+        if "pybonjour" not in globals():
             return
 
         timedout = False

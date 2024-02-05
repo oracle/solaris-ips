@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -213,7 +213,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         to the test package will also likely required updates to
         this function."""
 
-        assert p != None
+        assert p is not None
         assert v_arch == 'i386' or v_arch == 'sparc' or v_arch == 'zos'
         assert v_zone == 'global' or v_zone == 'nonglobal'
 
@@ -274,7 +274,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         assert v_arch == 'i386' or v_arch == 'sparc' or v_arch == 'zos'
         assert v_zone == 'global' or v_zone == 'nonglobal'
 
-        if pl == None:
+        if pl is None:
             pl = []
 
         # verify the variant settings

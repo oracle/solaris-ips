@@ -297,7 +297,7 @@ class ImagePlan(object):
 
         pd = self.pd
         pd.state = pdstate
-        if not fmri_changes is None:
+        if fmri_changes is not None:
             pd._fmri_changes = fmri_changes
 
     def __vector_2_fmri_changes(self, installed_dict, vector,
@@ -1253,7 +1253,7 @@ class ImagePlan(object):
         # if we're not trying to uninstall packages, and inherited
         # facets are not changing, and we're already in sync, then
         # don't bother invoking the solver.
-        if not uninstall and not new_facets is not None and insync:
+        if not uninstall and new_facets is None and insync:
             # we don't need to do anything
             self.__finish_plan(plandesc.EVALUATED_PKGS,
                 fmri_changes=[])
@@ -4053,7 +4053,7 @@ class ImagePlan(object):
                 pkg.client.imageconfig.BE_USE_SUGGESTED_NAME)
         except pkg.config.UnknownPropertyError:
             use_suggested = True
-        if type(use_suggested) != type(True):
+        if not isinstance(use_suggested, bool):
             raise pkg.config.InvalidPropertyValueError
 
         for oldfmri, old_in, newfmri, new_in in eval_list:
