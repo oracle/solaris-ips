@@ -49,6 +49,7 @@ from pkg.misc import EmptyDict, EmptyI, expanddirs, PKG_FILE_MODE, PKG_DIR_MODE
 from pkg.actions.attribute import AttributeAction
 from pkg.actions.directory import DirectoryAction
 
+
 def _compile_fnpats(fn_pats):
     """Private helper function that returns a compiled version of a
     dictionary of fnmatch patterns."""
@@ -118,6 +119,7 @@ class ManifestDifference(
             jd_state=jd_state)
 
         return ManifestDifference(*state)
+
 
 class Manifest(object):
     """A Manifest is the representation of the actions composing a specific
@@ -1258,6 +1260,7 @@ class Manifest(object):
         cur_pos = 0
         line = file_handle.readline()
         action_dict = {}
+
         def __handle_list(lst, cp):
             """Translates what actions.generate_indices produces
             into a dictionary mapping token, action_name, key, and
@@ -1546,7 +1549,9 @@ class Manifest(object):
     def __contains__(self, key):
         return key in self.attributes
 
+
 null = Manifest()
+
 
 class FactoredManifest(Manifest):
     """This class serves as a wrapper for the Manifest class for callers
@@ -2038,7 +2043,9 @@ class EmptyFactoredManifest(Manifest):
         raise RuntimeError("Cannot call set_content on an "
             "EmptyFactoredManifest")
 
+
 NullFactoredManifest = EmptyFactoredManifest()
+
 
 class ManifestDuplicateError(Exception):
     """Simple Exception class to report on duplicate

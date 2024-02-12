@@ -102,6 +102,7 @@ search 0 1
 DEPOT_USER = "pkg5srv"
 DEPOT_GROUP = "pkg5srv"
 
+
 class DepotException(Exception):
     pass
 
@@ -128,6 +129,7 @@ def error(text, cmd=None):
     # program name on all platforms.
     logger.error(ws + pkg_cmd + text_nows)
 
+
 def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more
     specific error message.  Causes program to exit.
@@ -149,6 +151,7 @@ Usage:
 """))
     sys.exit(retcode)
 
+
 def _chown_dir(dir):
     """Sets ownership for the given directory to pkg5srv:pkg5srv"""
 
@@ -162,6 +165,7 @@ def _chown_dir(dir):
                 "{user}:{group}: {err}").format(
                 dir=dir, user=DEPOT_USER,
                 group=DEPOT_GROUP, err=err))
+
 
 def _get_publishers(root):
     """Given a repository root, return the list of available publishers,
@@ -184,6 +188,7 @@ def _get_publishers(root):
     except cfg.UnknownPropertyError:
         default_pub = None
     return all_pubs, default_pub, repository.get_status()
+
 
 def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
         cache_dir, cache_size, host, port, sroot,
@@ -326,6 +331,7 @@ def _write_httpd_conf(pubs, default_pubs, runtime_dir, log_dir, template_dir,
         raise DepotException(
             _("Unable to write depot_httpd.conf: {0}").format(err))
 
+
 def _write_versions_response(htdocs_path, fragment=False):
     """Writes a static versions/0 response for the Apache depot."""
 
@@ -344,6 +350,7 @@ def _write_versions_response(htdocs_path, fragment=False):
     except (OSError, apx.ApiException) as err:
         raise DepotException(
             _("Unable to write versions response: {0}").format(err))
+
 
 def _write_publisher_response(pubs, htdocs_path, repo_prefix):
     """Writes a static publisher/0 response for the depot."""
@@ -373,6 +380,7 @@ def _write_publisher_response(pubs, htdocs_path, repo_prefix):
         raise DepotException(
             _("Unable to write publisher response: {0}").format(err))
 
+
 def _write_status_response(status, htdocs_path, repo_prefix):
     """Writes a status status/0 response for the depot."""
     try:
@@ -385,6 +393,7 @@ def _write_status_response(status, htdocs_path, repo_prefix):
     except OSError as err:
         raise DepotException(
             _("Unable to write status response: {0}").format(err))
+
 
 def _createCertificateKey(serial, CN, starttime, endtime,
     dump_cert_path, dump_key_path, issuerCert=None, issuerKey=None,
@@ -456,6 +465,7 @@ def _createCertificateKey(serial, CN, starttime, endtime,
         f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
     return (cert, key)
 
+
 def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
     output_dir="/tmp"):
     """ Generate certificate and key files for https service."""
@@ -510,6 +520,7 @@ def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
 
     return (ca_cert_file, ca_key_file, server_cert_file, server_key_file)
 
+
 def cleanup_htdocs(htdocs_dir):
     """Destroy any existing "htdocs" directory."""
     try:
@@ -518,6 +529,7 @@ def cleanup_htdocs(htdocs_dir):
         raise DepotException(
             _("Unable to remove an existing 'htdocs' directory "
             "in the runtime directory: {0}").format(err))
+
 
 def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
             template_dir, cache_dir, cache_size, sroot, fragment=False,
@@ -593,6 +605,7 @@ def refresh_conf(repo_info, log_dir, host, port, runtime_dir,
         ret = EXIT_OOPS
     return ret
 
+
 def get_smf_repo_info():
     """Return a list of repo_info from the online instances of pkg/server
     which are marked as pkg/standalone = False and pkg/readonly = True."""
@@ -619,6 +632,7 @@ def get_smf_repo_info():
             "No online, readonly, non-standalone instances of "
             "{0} found.").format(PKG_SERVER_SVC))
     return repo_info
+
 
 def _check_unique_repo_properties(repo_info):
     """Determine whether the repository root, and supplied prefixes are
@@ -650,6 +664,7 @@ def _check_unique_repo_properties(repo_info):
         raise DepotException("\n".join(errors))
     return True
 
+
 def _affix_slash(str):
     val = str.lstrip("/").rstrip("/")
     if "/" in str:
@@ -659,6 +674,7 @@ def _affix_slash(str):
         str):
         raise DepotException(_("%s is not a valid prefix"))
     return "{0}/".format(val)
+
 
 def _update_smf_props(smf_fmri, prop_list, orig, dest):
     """Update the smf props after the new prop values are generated."""
@@ -672,6 +688,7 @@ def _update_smf_props(smf_fmri, prop_list, orig, dest):
                 refresh = True
         if refresh:
             smf.refresh(fmri)
+
 
 def main_func():
 
@@ -941,6 +958,7 @@ def main_func():
         allow_refresh=allow_refresh, ssl_cert_file=ssl_cert_file,
         ssl_key_file=ssl_key_file, ssl_cert_chain_file=ssl_cert_chain_file)
     return ret
+
 
 #
 # Establish a specific exit status which means: "python barfed an exception"

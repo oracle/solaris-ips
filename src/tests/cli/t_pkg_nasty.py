@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -38,6 +38,7 @@ import signal
 import time
 
 import pkg.portable as portable
+
 
 class TestPkgNasty(pkg5unittest.SingleDepotTestCase):
 

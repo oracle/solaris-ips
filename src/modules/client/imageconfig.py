@@ -101,6 +101,7 @@ _val_map_none = { "None": None }
 
 CURRENT_VERSION = 3
 
+
 class ImageConfig(cfg.FileConfig):
     """An ImageConfig object is a collection of configuration information:
     URLs, publishers, properties, etc. that allow an Image to operate."""
@@ -610,7 +611,6 @@ class ImageConfig(cfg.FileConfig):
             s = "linked_{0}".format(str(lin))
             for k in [li.PROP_NAME, li.PROP_PATH, li.PROP_RECURSE]:
                 self.set_property(s, k, str(linked_props[k]))
-
 
         # Transfer current publisher information to configuration.
         for prefix in self.__publishers:

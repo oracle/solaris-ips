@@ -77,6 +77,7 @@ dest_xport = None
 targ_pub = None
 target = None
 
+
 def error(text):
     """Emit an error message prefixed by the command name """
 
@@ -92,6 +93,7 @@ def error(text):
     # This has to be a constant value as we can't reliably get our actual
     # program name on all platforms.
     emsg(ws + "pkgrecv: " + text_nows)
+
 
 def usage(usage_error=None, retcode=pkgdefs.EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more specific
@@ -198,6 +200,7 @@ Environment:
         PKG_SRC         Source URI or path"""))
     sys.exit(retcode)
 
+
 def cleanup(caller_error=False):
     """To be called at program finish."""
 
@@ -221,6 +224,7 @@ def cleanup(caller_error=False):
             # attempt anyway.
             pass
 
+
 def abort(err=None, retcode=1):
     """To be called when a fatal error is encountered."""
 
@@ -232,6 +236,7 @@ def abort(err=None, retcode=1):
     cleanup(caller_error=True)
     sys.exit(retcode)
 
+
 def get_tracker():
     try:
         progresstracker = \
@@ -240,6 +245,7 @@ def get_tracker():
         progresstracker = progress.CommandLineProgressTracker()
     progresstracker.set_major_phase(progresstracker.PHASE_UTILITY)
     return progresstracker
+
 
 def get_manifest(pfmri, xport_cfg, validate=False):
 
@@ -270,6 +276,7 @@ def get_manifest(pfmri, xport_cfg, validate=False):
 
     return m
 
+
 def expand_fmri(pfmri, constraint=version.CONSTRAINT_AUTO):
     """Find matching fmri using CONSTRAINT_AUTO cache for performance.
     Returns None if no matching fmri is found."""
@@ -284,6 +291,7 @@ def expand_fmri(pfmri, constraint=version.CONSTRAINT_AUTO):
                 f.version.is_successor(pfmri.version, constraint):
                 return f
     return
+
 
 def get_dependencies(fmri_list, xport_cfg, tracker):
 
@@ -300,6 +308,7 @@ def get_dependencies(fmri_list, xport_cfg, tracker):
 
     return list(s)
 
+
 def _get_dependencies(s, pfmri, xport_cfg, tracker):
     """Expand all dependencies."""
     # XXX???
@@ -313,6 +322,7 @@ def _get_dependencies(s, pfmri, xport_cfg, tracker):
             if new_fmri and new_fmri not in s:
                 _get_dependencies(s, new_fmri, xport_cfg, tracker)
     return s
+
 
 def get_sizes(mfst):
     """Takes a manifest and return
@@ -336,6 +346,7 @@ def get_sizes(mfst):
                 getb += a.get_action_chain_csize()
     return getb, getf, sendb, sendcb
 
+
 def add_hashes_to_multi(mfst, multi):
     """Takes a manifest and a multi object and adds the hashes to the multi
     object."""
@@ -345,6 +356,7 @@ def add_hashes_to_multi(mfst, multi):
         if a.has_payload and a.hash not in hashes:
             multi.add_action(a)
             hashes.add(a.hash)
+
 
 def prune(fmri_list, all_versions, all_timestamps):
     """Returns a filtered version of fmri_list based on the provided
@@ -363,6 +375,7 @@ def prune(fmri_list, all_versions, all_timestamps):
             dedup.setdefault(f.pkg_name, []).append(f)
         fmri_list = [sorted(dedup[f], reverse=True)[0] for f in dedup]
     return fmri_list
+
 
 def fetch_catalog(src_pub, tracker, txport, target_catalog,
     include_updates=False):
@@ -398,6 +411,7 @@ def fetch_catalog(src_pub, tracker, txport, target_catalog,
         tracker.refresh_done()
 
     return src_pub.catalog
+
 
 def main_func():
     global archive, cache_dir, download_start, xport, xport_cfg, \
@@ -577,6 +591,7 @@ def main_func():
     # Normal package transfer allows operations on a per-package basis.
     return transfer_pkgs(*args)
 
+
 def check_processed(any_matched, any_unmatched, total_processed):
     # Reduce unmatched patterns to those that were unmatched for all
     # publishers.
@@ -591,6 +606,7 @@ def check_processed(any_matched, any_unmatched, total_processed):
         rval = 3
     abort(str(apx.PackageMatchErrors(unmatched_fmris=unmatched)),
         retcode=rval)
+
 
 def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
     all_versions, all_timestamps, recursive):
@@ -626,6 +642,7 @@ def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
             all_versions, all_timestamps)
 
     return matches
+
 
 def __mog_helper(mog_files, fmri, mpathname):
     """Helper routine for mogrifying manifest. Precondition: mog_files
@@ -741,6 +758,7 @@ def __mog_helper(mog_files, fmri, mpathname):
 
     return (nfmri, new_lines)
 
+
 def _rm_temp_raw_files(fmri, xport_cfg, ignore_errors=False):
     # pkgdir is a directory with format: pkg_name/version.
     # pkg_parentdir is the actual pkg_name directory.
@@ -754,6 +772,7 @@ def _rm_temp_raw_files(fmri, xport_cfg, ignore_errors=False):
     if not os.listdir(pkg_parentdir):
         shutil.rmtree(pkg_parentdir,
             ignore_errors=ignore_errors)
+
 
 def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
     keep_compresed, raw, recursive, dry_run, verbose, dest_xport_cfg, src_uri,
@@ -813,7 +832,6 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
         if not recursive:
             msg(_("Retrieving and evaluating {0:d} package(s)...").format(
                 npkgs))
-
 
         tracker.manifest_fetch_start(npkgs)
 
@@ -1317,6 +1335,7 @@ def clone_repo(pargs, target, list_newest, all_versions, all_timestamps,
         return pkgdefs.EXIT_OOPS
     return pkgdefs.EXIT_OK
 
+
 def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
     keep_compressed, raw, recursive, dry_run, verbose, dest_xport_cfg, src_uri,
     dkey, dcert, mog_files):
@@ -1726,6 +1745,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
     if invalid_manifests:
         return pkgdefs.EXIT_OOPS
     return pkgdefs.EXIT_OK
+
 
 if __name__ == "__main__":
     misc.setlocale(locale.LC_ALL, "", error)

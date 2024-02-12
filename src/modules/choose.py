@@ -2,10 +2,11 @@
 # Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Python Software
 # Foundation; All Rights Reserved
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 import fnmatch
 import re
+
 
 def choose(names, pat, case_sensitive):
     """Return the subset of names that match pat. case_sensitive determines

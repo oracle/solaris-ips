@@ -50,6 +50,7 @@ country_by_hashed_ip = {}
 
 gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
 
+
 def count_entry(mg, d):
     di = d.date().isoformat()
 
@@ -64,6 +65,7 @@ def count_entry(mg, d):
             entry_by_date[di].append(dipd)
     else:
         entry_by_date[di] = [dipd]
+
 
 opts, args = getopt.getopt(sys.argv[1:], "a:b:S:t:w:")
 

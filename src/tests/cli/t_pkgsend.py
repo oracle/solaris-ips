@@ -593,7 +593,6 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
         for pfmri in (foo_fmri, bar_fmri):
             self.__validate_bundle_dir_package(pfmri, expected)
 
-
     # A map used to create a SVR4 package, and check an installed pkg(7)
     # version of that package, created via 'pkgsend import'.  We map the
     # path name to

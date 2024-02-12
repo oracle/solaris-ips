@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -152,7 +152,6 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         # we should not be able to install an i386 package indirectly
         self.pkg("install i386_pkg_indirect", exit=1)
 
-
     def test_old_zones_pkgs(self):
         self.__test_common("variant.opensolaris.zone",
             "opensolaris.zone")
@@ -198,6 +197,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         self.file_contains("etc/zone_arch", [zone, arch])
         self.file_contains("etc/isdebug", isdebug)
         self.image_destroy()
+
 
 if __name__ == "__main__":
     unittest.main()

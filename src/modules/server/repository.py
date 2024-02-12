@@ -371,6 +371,7 @@ class RepositorySigNoTrustAnchorDirError(RepositoryError):
         return _("Unable to find trust anchor directory {0}").format(
             self.data)
 
+
 class _RepoStore(object):
     """The _RepoStore object provides an interface for performing operations
     on a set of package data contained within a repository.  This class is

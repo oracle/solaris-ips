@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 # The portable module provide access to methods that require operating system-
@@ -62,20 +62,24 @@ def get_isainfo():
     This can be a list or a single string."""
     raise NotImplementedError
 
+
 def get_release():
     """ Return the information for the OS's release version.  This
     must be a dot-separated set of integers (i.e. no alphabetic
     or punctuation)."""
     raise NotImplementedError
 
+
 def get_platform():
     """ Return a string representing the current hardware model
     information, e.g. "i86pc"."""
     raise NotImplementedError
 
+
 def get_file_type(actions):
     """ Return a list containing the file type for each file in paths."""
     raise NotImplementedError
+
 
 # Account access
 # --------------
@@ -88,6 +92,7 @@ def get_group_by_name(name, dirpath, use_file):
         KeyError if the specified group does not exist"""
     raise NotImplementedError
 
+
 def get_user_by_name(name, dirpath, use_file):
     """ Return the user ID for a user name.
     If use_file is true, an OS-specific file from within the file tree
@@ -96,6 +101,7 @@ def get_user_by_name(name, dirpath, use_file):
     Exceptions:
         KeyError if the specified group does not exist"""
     raise NotImplementedError
+
 
 def get_name_by_gid(gid, dirpath, use_file):
     """ Return the group name for a group ID.
@@ -106,6 +112,7 @@ def get_name_by_gid(gid, dirpath, use_file):
         KeyError if the specified group does not exist"""
     raise NotImplementedError
 
+
 def get_name_by_uid(uid, dirpath, use_file):
     """ Return the user name for a user ID.
     If use_file is true, an OS-specific file from within the file tree
@@ -115,11 +122,13 @@ def get_name_by_uid(uid, dirpath, use_file):
         KeyError if the specified group does not exist"""
     raise NotImplementedError
 
+
 def get_usernames_by_gid(gid, dirpath):
     """ Return all user names associated with a group ID.
     The user name is first retrieved from an OS-specific file rooted
     by dirpath. If failed, try to retrieve it from the operating system."""
     raise NotImplementedError
+
 
 def is_admin():
     """ Return true if the invoking user has administrative
@@ -127,10 +136,12 @@ def is_admin():
     root user?)."""
     raise NotImplementedError
 
+
 def get_userid():
     """ Return a string representing the invoking user's id.  To be used
     for display purposes only!"""
     raise NotImplementedError
+
 
 def get_username():
     """ Return a string representing the invoking user's username.  To be
@@ -149,6 +160,7 @@ def chown(path, owner, group):
         or ownership cannot be changed"""
     raise NotImplementedError
 
+
 def rename(src, dst):
     """ Change the name of the given file, using the most
     appropriate method for the OS.
@@ -157,6 +169,7 @@ def rename(src, dst):
         EnvironmentError if the rename fails."""
     raise NotImplementedError
 
+
 def link(src, dst):
     """ Link the src to the dst if supported, otherwise copy
     Exceptions:
@@ -164,12 +177,14 @@ def link(src, dst):
        or copy files"""
     raise NotImplementedError
 
+
 def remove(path):
     """ Remove the given file in an OS-specific way
     Exceptions:
        OSError (or subclass) if the source path does not exist or 
        the file cannot be removed"""
     raise NotImplementedError
+
 
 def copyfile(src, dst):
     """ Copy the contents of the file named src to a file named dst.
@@ -181,6 +196,7 @@ def copyfile(src, dst):
     forks on Mac OS X).
     Exceptions: IOError if the destination location is not writable"""
     raise NotImplementedError
+
 
 def split_path(path):
     """ Splits a path and gives back the components of the path.  
@@ -194,6 +210,7 @@ def split_path(path):
     performing the split."""
     raise NotImplementedError
 
+
 def get_root(path):
     """ Returns the 'root' of the given path.  
     This should include any and all components of a path up to the first
@@ -205,6 +222,7 @@ def get_root(path):
     often leads to ambiguity in cross-platform code)."""
     raise NotImplementedError
 
+
 def assert_mode(path, mode):
     """ Checks that the file identified by path has the given mode to
     the extent possible by the host operating system.  Otherwise raises
@@ -212,11 +230,13 @@ def assert_mode(path, mode):
     mode of the file."""
     raise NotImplementedError
 
+
 def fsetattr(path, attrs):
     """ Set system attributes for file specified by 'path'. 'attrs' can be
     a list of verbose system attributes or a string containing a sequence of
     short options."""
     raise NotImplementedError
+
 
 def fgetattr(path, compact=False):
     """ Get system attributes for file specified by 'path'. If 'compact' is
@@ -224,10 +244,12 @@ def fgetattr(path, compact=False):
     of verbose attributes."""
     raise NotImplementedError
 
+
 def get_sysattr_dict():
     """ Returns a dictionary containing all supported system attributes. The
     keys of the dict are verbose attributes, the values short options."""
     raise NotImplementedError
+
 
 # File type constants
 # -------------------

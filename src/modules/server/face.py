@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """face - provides the BUI (Browser User Interface) for the image packaging
@@ -50,11 +50,14 @@ except ImportError:
     sys.exit(2)
 
 tlookup = None
+
+
 def init(depot):
     """Ensure that the BUI is properly initialized."""
     global tlookup
     pkg.server.feed.init(depot)
     tlookup = mako.lookup.TemplateLookup(directories=[depot.web_root])
+
 
 def feed(depot, request, response, pub):
     if depot.repo.mirror:
@@ -65,6 +68,7 @@ def feed(depot, request, response, pub):
             "No update history; unable to generate feed.")
     return pkg.server.feed.handle(depot, request, response, pub)
 
+
 def __render_template(depot, request, path, pub, http_depot=None):
     template = tlookup.get_template(path)
     base = api.BaseInterface(request, depot, pub)
@@ -72,6 +76,7 @@ def __render_template(depot, request, path, pub, http_depot=None):
     # bytes.
     return misc.force_bytes(template.render(g_vars={ "base": base,
         "pub": pub, "http_depot": http_depot}))
+
 
 def __handle_error(path, error):
     # All errors are treated as a 404 since reverse proxies such as Apache
@@ -82,6 +87,7 @@ def __handle_error(path, error):
             "template: {0}\n".format(path), traceback=True)
 
     raise cherrypy.NotFound()
+
 
 def respond(depot, request, response, pub, http_depot=None):
     """'http_depot' if set should be the resource that points to the top

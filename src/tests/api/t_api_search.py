@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -193,7 +193,6 @@ close
     res_remote_bug_id_4725245 = set([
         ("pkg:/example_pkg@1.0-0", "4725245", 'set name=com.sun.service.bug_ids value=4641790 value=4725245 value=4817791 value=4851433 value=4897491 value=4913776 value=6178339 value=6556919 value=6627937')
     ])
-
 
     res_remote_inc_changes = set([
         ("pkg:/example_pkg@1.0-0", "6556919 6627937", 'set name=com.sun.service.incorporated_changes value="6556919 6627937"'),
@@ -2701,7 +2700,6 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                     "Didn't get expected error:{0}".format(err))
         else:
             return TestApiSearchBasics._extract_action_from_res(it)
-
 
     def _search_op(self, api_obj, remote, token, test_value,
         case_sensitive=False, return_actions=True, num_to_return=None,

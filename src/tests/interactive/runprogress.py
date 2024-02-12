@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2014, 2024, Oracle and/or its affiliates.
 #
 
 import sys
@@ -30,6 +30,7 @@ import gettext
 import locale
 import pkg.client.progress as progress
 import pkg.misc as misc
+
 
 def parse_argv():
     misc.setlocale(locale.LC_ALL, "", None)

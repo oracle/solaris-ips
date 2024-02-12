@@ -38,6 +38,7 @@ from tempfile import mkstemp
 import pkg.pkgsubprocess as subprocess
 from pkg.client.debugvalues import DebugValues
 
+
 class DriverAction(generic.Action):
     """Class representing a driver-type packaging object."""
 
@@ -650,7 +651,6 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
             elif raw:
                 yield line
         myfile.close()
-
 
     @classmethod
     def __get_image_data(cls, img, name, collect_errs = False):

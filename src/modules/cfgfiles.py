@@ -38,6 +38,7 @@ import time
 
 import pkg.lockfile as lockfile
 
+
 class CfgFile(object):
     """ Solaris configuration file editor... make it easier to
         modify Solaris line-oriented configuration files from actions """
@@ -86,7 +87,6 @@ class CfgFile(object):
         lines = [[self.index[l][2], self.index[l][0]] for l in self.index]
         lines.sort()
         return [l[1] for l in lines]
-
 
     def readfile(self):
         if os.path.exists(self.filename):
@@ -203,9 +203,11 @@ class CfgFile(object):
 
         os.rename(name, self.filename)
 
+
 class PasswordFile(CfgFile):
     """Manage the passwd and shadow together. Note that
        insertion/deletion of +/- fields isn't supported"""
+
     def __init__(self, path_prefix, lock=False):
         self.password_file = \
             CfgFile(os.path.join(path_prefix, "etc/passwd"),
@@ -309,8 +311,10 @@ class PasswordFile(CfgFile):
     def unlock(self):
         self.lockfile.unlock()
 
+
 class GroupFile(CfgFile):
     """ manage the group file"""
+
     def __init__(self, image):
         self.__image = image
         CfgFile.__init__(self, os.path.join(image.get_root(), "etc/group"),
@@ -388,6 +392,7 @@ class GroupFile(CfgFile):
         for g in self.getgroups(username):
             self.subuser(g, username)
 
+
 class FtpusersFile(CfgFile):
     """ If a username is present in this file, it denies that user
     the ability to use ftp"""
@@ -404,7 +409,6 @@ class FtpusersFile(CfgFile):
     def getuser(self, username):
         """ returns true if user is allowed to use FTP - ie is NOT in file"""
         return 'username' not in self.getvalue({"username" : username})
-
 
     def adduser(self, username):
         """ add specified user to file, removing ability to use ftp"""
@@ -426,8 +430,10 @@ class FtpusersFile(CfgFile):
         elif value and not self.getuser(username):
             self.subuser(username)
 
+
 class UserattrFile(CfgFile):
     """ manage the userattr file """
+
     def __init__(self, path_prefix):
         CfgFile.__init__(self, os.path.join(path_prefix, "etc/user_attr"),
                          ":",

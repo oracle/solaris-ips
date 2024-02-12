@@ -851,7 +851,6 @@ class TestPkgLinked1(TestPkgLinked):
                 self.set_image(1)
                 self.image_destroy()
 
-
             # child should still be listed
             self._pkg([0], "list-linked -H > {0}".format(outfile))
             self._ccmd("cat {0}".format(outfile))
@@ -1118,7 +1117,6 @@ class TestPkgLinked1(TestPkgLinked):
         self._pkg_child(0, [1, 2, 3], "audit-linked")
         self._pkg_child_all(0, "audit-linked")
 
-
     def test_audit_diverged_1(self):
         self._imgs_create(4)
 
@@ -1148,6 +1146,7 @@ class TestPkgLinked1(TestPkgLinked):
         self._pkg([1, 2, 3], "audit-linked", rv=rv)
         self._pkg_child(0, [1, 2, 3], "audit-linked", rv=rv)
         self._pkg_child_all(0, "audit-linked", rv=rv)
+
 
 class TestPkgLinked2(TestPkgLinked):
     """Class used solely to split up the test suite for parallelization."""
@@ -2672,7 +2671,6 @@ class TestPkgLinkedIncorpDowngrade(TestPkgLinked):
             self.i_path.insert(i, self.img_path(i))
 
         self.pkgsend_bulk(self.rurl1, self.pkgs)
-
 
     def test_incorp_downgrade(self):
         """Test that incorporated pkgs can be downgraded if
@@ -4567,7 +4565,6 @@ exit 0""".strip("\n")
             # cleanup current image tree
             shutil.rmtree(base_path)
 
-
     def test_linked_paths_no_self_link(self):
         """You can't link images to themselves."""
 
@@ -5097,7 +5094,6 @@ exit 0""".strip("\n")
         self.__ccmd("mkdir -p {0}".format(gzpath))
 
         os.environ["PKG_GZR"] = gzpath.rstrip(os.sep)
-
 
         # fake zoneadm binary used for testing
         zoneadm_sh = """

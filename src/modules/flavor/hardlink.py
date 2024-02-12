@@ -21,16 +21,18 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import os
 
 import pkg.flavor.base as base
 
+
 class HardlinkDependency(base.PublishingDependency):
     """Class representing the dependency by having an action that's a
     hardlink to a path."""
+
     def __init__(self, action, path, pkg_vars):
         base_names = [os.path.basename(path)]
         paths = [os.path.dirname(path)]
@@ -41,6 +43,7 @@ class HardlinkDependency(base.PublishingDependency):
         return "HLDep({0}, {1}, {2}, {3}, {4})".format(self.action,
             self.base_names, self.run_paths, self.pkg_vars,
             self.dep_vars)
+
 
 def process_hardlink_deps(action, pkg_vars):
     """Given an action, and the variants against which the action's package

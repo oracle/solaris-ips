@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -32,6 +32,7 @@ import pkg.flavor.python as python
 
 from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR
 from pkg.misc import force_str
+
 
 class ScriptNonAbsPath(base.DependencyAnalysisError):
     """Exception that is raised when a file uses a relative path for the
@@ -45,6 +46,7 @@ class ScriptNonAbsPath(base.DependencyAnalysisError):
     def __str__(self):
         return _("{lp} says it should be run with '{bin}' which is "
             "a relative path.").format(**vars(self))
+
 
 class ScriptDependency(base.PublishingDependency):
     """Class representing the dependency created by having #! at the top
@@ -60,6 +62,7 @@ class ScriptDependency(base.PublishingDependency):
         return "PBDep({0}, {1}, {2}, {3}, {4})".format(self.action,
             self.base_names, self.run_paths, self.pkg_vars,
             self.dep_vars)
+
 
 def process_script_deps(action, pkg_vars, **kwargs):
     """Given an action, if the file starts with #! a list containing a

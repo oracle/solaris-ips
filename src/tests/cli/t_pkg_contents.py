@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -33,6 +33,7 @@ import os
 import pkg.fmri as pfmri
 
 from functools import reduce
+
 
 class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
@@ -343,7 +344,6 @@ class TestPkgContentsPerTestRepo(pkg5unittest.SingleDepotTestCase):
         pkg5unittest.SingleDepotTestCase.setUp(self)
         self.make_misc_files(self.misc_files)
         self.plist = self.pkgsend_bulk(self.rurl, (self.nopathA10))
-
 
     def test_contents_installed_changed_manifest(self):
         """Test that if an installed manifest has changed in the

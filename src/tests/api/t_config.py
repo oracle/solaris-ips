@@ -204,7 +204,6 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
         ]
         self.__verify_equality(propcls, eqlist, nelist)
 
-
         # Verify base stringify works as expected.
         self.__verify_stringify(propcls, "property", [(None, ""),
             ("", ""), (TH_PACKAGE, TH_PACKAGE)])
@@ -1142,6 +1141,7 @@ class _TestConfigBase(pkg5unittest.Pkg5TestCase):
         act_types = map_types(conf.get_sections())
         self.assertEqualDiff(exp_types, act_types)
 
+
 class TestConfig(_TestConfigBase):
     """Class to test the functionality of the pkg.config 'flat'
     configuration classes.
@@ -2064,6 +2064,7 @@ class TestSMFConfig(_TestConfigBase):
                 rfiles.pop()
 
         rfiles = []
+
         def test_mfst(svc_fmri, ver, mfst_content, defs,
             exp_state=None):
             mname = "smf-manifest-{0:d}.xml".format(ver)

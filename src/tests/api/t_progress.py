@@ -411,5 +411,6 @@ class TestMultiProgressTracker(pkg5unittest.Pkg5TestCase):
         self.assertRaises(progress.ProgressTrackerException,
             progress.MultiProgressTracker, [])
 
+
 if __name__ == "__main__":
     unittest.main()

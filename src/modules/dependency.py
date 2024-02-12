@@ -21,12 +21,13 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 REQUIRE = 0
 OPTIONAL = 1
 INCORPORATE = 10
+
 
 class Dependency(object):
     """A Dependency object is a relationship between one Package and

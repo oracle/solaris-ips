@@ -39,6 +39,7 @@ try:
 except ModuleNotFoundError:
     manifest_locations = [ "lib/svc/manifest", "var/svc/manifest" ]
 
+
 class SMFManifestDependency(base.PublishingDependency):
 
     # maps SMF fmris to the manifest files that defined them
@@ -121,6 +122,7 @@ class SMFManifestDependency(base.PublishingDependency):
                         dirpath, f)
                     SMFManifestDependency.__populate_smf_dics(
                         manifest_file)
+
     @staticmethod
     def __populate_smf_dics(manifest_file):
         """Add a information information about the SMF instances and
@@ -142,6 +144,7 @@ class SMFManifestDependency(base.PublishingDependency):
             SMFManifestDependency.instance_deps.update(
                 instance_deps)
 
+
 def split_smf_fmri(fmri):
     """Split an SMF FMRI into constituent parts, returning the svc protocol,
     the service name, and the instance name, if any."""
@@ -162,6 +165,7 @@ def split_smf_fmri(fmri):
         raise ValueError(_("FMRI does not appear to be valid"))
     return protocol, service, instance
 
+
 def search_smf_dic(fmri, dictionary):
     """Search a dictionary of SMF FMRI mappings, returning a list of
     results. If the FMRI points to an instance, we can return quickly. If
@@ -180,6 +184,7 @@ def search_smf_dic(fmri, dictionary):
             if item.startswith(protocol + ":" + service + ":"):
                 results.append(dictionary[item])
     return results
+
 
 def get_smf_dependencies(fmri, instance_deps):
     """Given an instance FMRI, determine the FMRIs it depends on.  If we
@@ -205,6 +210,7 @@ def get_smf_dependencies(fmri, instance_deps):
 
     return []
 
+
 def resolve_smf_dependency(fmri, instance_mf):
     """Given an SMF FMRI that satisfies a given SMF dependency, determine
     which file(s) deliver that dependency using both the provided
@@ -223,6 +229,7 @@ def resolve_smf_dependency(fmri, instance_mf):
         raise ValueError(_("cannot resolve FMRI to a delivered file"))
 
     return list(manifests)
+
 
 def process_smf_manifest_deps(action, pkg_vars, **kwargs):
     """Given an action and a place to find the file it references, if the
@@ -335,6 +342,7 @@ def process_smf_manifest_deps(action, pkg_vars, **kwargs):
     }
     return deps, elist, pkg_attrs
 
+
 def __get_smf_dependencies(deps):
     """Given a minidom Element deps, search for the <service_fmri> elements
     inside it, and return the values as a list of strings."""
@@ -357,6 +365,7 @@ def __get_smf_dependencies(deps):
                     dependencies.append(dependency)
     return dependencies
 
+
 def is_smf_manifest(smf_file):
     """Quickly determine if smf_file is a valid SMF manifest."""
     try:
@@ -373,6 +382,7 @@ def is_smf_manifest(smf_file):
         "/usr/share/lib/xml/dtd/service_bundle.dtd.1":
         return False
     return True
+
 
 def parse_smf_manifest(smf_file):
     """Returns a tuple of two dictionaries. The first maps the SMF FMRIs
@@ -488,6 +498,7 @@ def parse_smf_manifest(smf_file):
             instance_mf[fmri] = manifest_path
 
     return instance_mf, instance_deps
+
 
 def has_smf_manifest_dir(path, prefix=None):
     """Determine if the given path string contains any of the directories

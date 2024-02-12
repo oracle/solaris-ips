@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -655,6 +655,7 @@ adm:NP:6445::::::
         # Publisher 'foo'" errors).
         def rem_test_pub():
             self.pkg("unset-publisher test")
+
         def add_test_pub():
             self.pkg("set-publisher -p {0}".format(self.durl))
 
@@ -664,6 +665,7 @@ adm:NP:6445::::::
         # that is no longer configured.
         def configure_cb():
             self.pkg("set-publisher -p {0}".format(repodir))
+
         def add_multi_test_pub():
             add_test_pub()
             configure_cb()

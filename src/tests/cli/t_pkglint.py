@@ -36,6 +36,7 @@ import tempfile
 import threading
 import subprocess
 
+
 class TestPkglintBasics(pkg5unittest.CliTestCase):
 
     manifest = """

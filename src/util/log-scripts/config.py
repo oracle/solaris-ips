@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import os
 import configparser
 
 CFGFILE = "site-config"
+
 
 def get(option, default=None):
     cfg = configparser.ConfigParser()

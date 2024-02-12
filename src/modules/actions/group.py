@@ -40,6 +40,7 @@ except ImportError:
 import pkg.client.api_errors as apx
 import pkg.actions
 
+
 class GroupAction(generic.Action):
     """Class representing a group packaging object.
     note that grouplist members are selected via the user action,

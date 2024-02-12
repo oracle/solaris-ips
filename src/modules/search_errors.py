@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 # __str__ methods defined for subclasses of IndexError should be defined
@@ -76,6 +76,7 @@ class ProblematicPermissionsIndexException(IndexingException):
             "permissions. Please correct this issue then " \
             "rebuild the index.".format(self.cause)
 
+
 class NoIndexException(Exception):
     """This is used when a search is executed while no index exists."""
 
@@ -85,6 +86,7 @@ class NoIndexException(Exception):
     def __str__(self):
         return "Could not find index to search, looked in: " \
             "{0}".format(self.index_dir)
+
 
 class IncorrectIndexFileHash(Exception):
     """This is used when the index hash value doesn't match the hash of the

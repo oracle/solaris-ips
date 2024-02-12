@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -35,6 +35,7 @@ import random
 import unittest
 
 import pkg.misc as misc
+
 
 class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
@@ -507,6 +508,7 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
         self.assertFalse("foo" in self.output)
 
+
 class TestIDROps(pkg5unittest.SingleDepotTestCase):
 
     need_ro_data = True
@@ -540,7 +542,6 @@ class TestIDROps(pkg5unittest.SingleDepotTestCase):
             add dir path=foo/hello owner=root group=sys mode=555
             add depend type=incorporate fmri=management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103-0.1.1697.1
             close"""
-
 
     def setUp(self):
         pkg5unittest.SingleDepotTestCase.setUp(self)

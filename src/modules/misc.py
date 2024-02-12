@@ -268,6 +268,7 @@ def url_affix_trailing_slash(u):
 
     return u
 
+
 _client_version = "pkg/{0} ({1} {2}; {3} {4}; {{0}}; {{1}})".format(
     VERSION, portable.util.get_canonical_os_name(), platform.machine(),
     portable.util.get_os_release(), platform.version())
@@ -284,6 +285,7 @@ def user_agent_str(img, client_name):
     useragent = _client_version.format(img_type_names[imgtype], client_name)
 
     return useragent
+
 
 # Valid hostname can be : HOSTNAME or IPv4 addr or IPV6 addr
 _hostname_re = re.compile(r"""^(?:[a-zA-Z0-9\-]+[a-zA-Z0-9\-\.]*
@@ -1927,6 +1929,7 @@ def flush_output():
         # Access to protected member; pylint: disable=W0212
         raise api_errors._convert_error(e)
 
+
 # valid json types
 json_types_immediates = (bool, float, int, str, type(None))
 json_types_collections = (dict, list)
@@ -3033,6 +3036,7 @@ def force_text(s, encoding="utf-8", errors="strict"):
         raise api_errors.PkgUnicodeDecodeError(s, *e.args)
     return s
 
+
 # force_str minimizes the work for compatible string handling between Python
 # 2 and 3 because we will have the native string type in its runtime, that is,
 # bytes in Python 2 and unicode string in Python 3.
@@ -3079,6 +3083,7 @@ def check_ca(cert):
 
     return kuse_sign is not False and bconst_ca
 
+
 FILE_DESCRIPTOR_LIMIT = 4096
 
 
@@ -3096,6 +3101,7 @@ def set_fd_limits(printer=None):
             " and try the requested operation again: {1}")\
             .format(soft, e))
         sys.exit(EXIT_OOPS)
+
 
 _varcetname_re = re.compile(r"\s")
 

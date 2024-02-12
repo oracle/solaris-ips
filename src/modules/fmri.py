@@ -46,6 +46,7 @@ PREF_PUB_PFX_ = PREF_PUB_PFX + "_"
 g_valid_pkg_name = \
     re.compile(r"^[A-Za-z0-9][A-Za-z0-9_\-\.\+]*(/[A-Za-z0-9][A-Za-z0-9_\-\.\+]*)*$")
 
+
 class FmriError(Exception):
     """Base exception class for FMRI errors."""
 
@@ -571,17 +572,21 @@ def fmri_match(pkg_name, pattern):
     """Returns true if 'pattern' is a proper subset of 'pkg_name'."""
     return ("/" + pkg_name).endswith("/" + pattern)
 
+
 def glob_match(pkg_name, pattern):
     return fnmatch.fnmatchcase(pkg_name, pattern)
+
 
 def regex_match(pkg_name, pattern):
     """Returns true if 'pattern' is a regular expression matching
     'pkg_name'."""
     return re.search(pattern, pkg_name)
 
+
 def exact_name_match(pkg_name, pattern):
     """Returns true if 'pattern' matches 'pkg_name' exactly."""
     return pkg_name == pattern
+
 
 def extract_pkg_name(fmri):
     """Given a string that can be converted to a FMRI.  Return the
@@ -596,6 +601,7 @@ def extract_pkg_name(fmri):
         pkg_name = fmri[nameidx:]
 
     return pkg_name
+
 
 def strip_pub_pfx(pub):
     """Strip the PREF_PUB_PFX off of a publisher."""

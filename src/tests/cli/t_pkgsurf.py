@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -39,6 +39,7 @@ import subprocess
 import tempfile
 import unittest
 from pkg.misc import CMP_UNSIGNED
+
 
 class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
     # Cleanup after every test.
@@ -291,7 +292,6 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
     horn_exp = horn_targ
 
-
     # Package has content change but has require-any dep on package which
     # got reversioned, dependencies should be fixed.
 
@@ -462,7 +462,6 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
     sleeper_exp = sleeper_ref
 
-
     # Check for correct handling of Varcets. Pkg contains same dep FMRI stem
     # twice. It also covers the case where a facet changes and the tool has
     # to sustitute the version in the ref repo (sandtiger case).
@@ -519,7 +518,6 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
 
     bamboo_exp = bamboo_targ
 
-
     # Create some packages for an additional publisher
     humpback_targ = """
             open pkg://cetacea/humpback@2.0,5.11-0:20000101T000000Z
@@ -532,7 +530,6 @@ class TestPkgsurf(pkg5unittest.ManyDepotTestCase):
         """
 
     humpback_exp = humpback_targ
-
 
     misc_files = [ "tmp/bat", "tmp/sting", "tmp/copyright" ]
 

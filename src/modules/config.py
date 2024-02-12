@@ -536,6 +536,7 @@ class PropDefined(Property):
         """A list of allowed values for this property."""
         return self.__allowed
 
+
 class PropList(PropDefined):
     """Class representing properties with a list of string values that may
     contain arbitrary character data.
@@ -668,6 +669,7 @@ class PropDictionaryList(PropList):
                 if not val:
                     continue
                 Property._is_allowed(self, val)
+
 
 class PropSimpleList(PropList):
     """Class representing a property with a list of string values that are
@@ -1643,6 +1645,7 @@ class FileConfig(Config):
 # Although, additional restrictions may be imposed by the property and section
 # classes in this module.
 _SMF_name_re = '^([A-Za-z][ A-Za-z0-9.-]*,)?[A-Za-z][ A-Za-z0-9-_]*$'
+
 
 class SMFInvalidPropertyNameError(PropertyConfigError):
     """Exception class used to indicate an invalid SMF property name."""

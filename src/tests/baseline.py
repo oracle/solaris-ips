@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -30,6 +30,7 @@ import unittest
 
 BASELINE_MATCH = 0
 BASELINE_MISMATCH = 1
+
 
 class BaseLine(object):
     """Test result baseline recording and checking. """
@@ -134,6 +135,7 @@ class BaseLine(object):
             n, r = line.split('|')
             self.__results[n] = r.rstrip('\n')
         f.close()
+
 
 class ReadOnlyBaseLine(BaseLine):
     def store(self):

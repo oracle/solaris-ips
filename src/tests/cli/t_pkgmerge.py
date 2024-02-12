@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -41,6 +41,7 @@ import unittest
 import zlib
 
 import sys
+
 
 class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
     persistent_setup = True
@@ -1393,7 +1394,6 @@ set name=variant.arch value=PPC value=ARM\
         self.assertEqualDiff(expected, actual)
         shutil.rmtree(repodir)
 
-
     def test_9_dependency(self):
         """Test dependency actions duplication detection. 
         """
@@ -1471,6 +1471,7 @@ set name=variant.arch value=sparc value=i386\
                         sorted(l for l in m)).strip()
             actual += "\n"
         return actual.strip()
+
 
 if __name__ == "__main__":
     unittest.main()

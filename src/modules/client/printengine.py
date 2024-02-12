@@ -43,8 +43,10 @@ from pkg.misc import PipeError, force_str
 
 class PrintEngineException(Exception):
     """Exception indicating the failure to create PrintEngine."""
+
     def __str__(self):
         return "PrintEngineException: {0}".format(" ".join(self.args))
+
 
 class PrintEngine(metaclass=ABCMeta):
     """Abstract class defining what a PrintEngine must know how to do."""

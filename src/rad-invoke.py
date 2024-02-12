@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2015, 2024, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -41,6 +41,7 @@ class _InfoFilter(logging.Filter):
     def filter(self, rec):
         return rec.levelno <= logging.INFO
 
+
 class _StreamHandler(logging.StreamHandler):
     """Simple subclass to ignore exceptions raised during logging output."""
 
@@ -48,7 +49,9 @@ class _StreamHandler(logging.StreamHandler):
         # Ignore exceptions raised during output to stdout/stderr.
         return
 
+
 ips_logger = None
+
 
 def error(text):
     """Create error message."""
@@ -57,6 +60,7 @@ def error(text):
         return {"status": entry.ERROR, "errors": [{"reason": text}]}
     ips_logger.error(text)
     sys.exit(1)
+
 
 def __init_log():
     """Initialize logger."""
@@ -74,6 +78,7 @@ def __init_log():
     if os.getenv("__IPS_INVOKE_IN_RAD") == "true":
         handler.addFilter(_InfoFilter())
     ips_logger.addHandler(handler)
+
 
 def main_func():
     pkg_image = None
@@ -112,6 +117,7 @@ def main_func():
     return entry.rad_pkg(pargs[0], pargs_json=pargs_json,
         opts_json=opts_json, pkg_image=pkg_image,
         prog_delay=prog_delay)
+
 
 if __name__ == "__main__":
     misc.setlocale(locale.LC_ALL, "")

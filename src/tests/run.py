@@ -86,6 +86,7 @@ def usage(exitcode=2):
 """, file=sys.stderr)
     sys.exit(exitcode)
 
+
 if __name__ == "__main__":
     #
     # Start coverage before proceeding so that reports are accurate.
@@ -246,6 +247,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
             issubclass(obj, unittest.TestCase)):
             return True
         return False
+
     def _istestmethod(name, obj):
         if name.startswith("test"):
             if isinstance(obj, types.FunctionType):
@@ -431,7 +433,6 @@ if __name__ == "__main__":
             subprocess.call([
                 ppriv, "-s", "A-sys_linkdir", str(os.getpid())
             ])
-
 
     time_estimates = {}
     timing_history = os.path.join(os.getcwd(), ".timing_history.txt")

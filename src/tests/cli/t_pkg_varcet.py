@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -41,6 +41,7 @@ import pkg.facet as facet
 import pkg.variant as variant
 
 from pkg.client.pkgdefs import EXIT_OOPS
+
 
 class TestPkgVarcet(pkg5unittest.SingleDepotTestCase):
 

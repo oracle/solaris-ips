@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import pkg.client.api
@@ -44,6 +44,7 @@ from urllib.parse import urlparse, quote
 PKG_CLIENT_NAME = "pkglint"
 CLIENT_API_VERSION = 82
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
+
 
 class LintEngineException(Exception):
     """An exception thrown when something fatal goes wrong with the engine,
@@ -1313,6 +1314,7 @@ def lint_fmri_successor(new, old, ignore_pubs=True, ignore_timestamps=True):
 
     # everything is equal, or old has no version and we'll favour new
     return True
+
 
 def _manifest_sort_key(mf):
     """The lint engine uses the FMRI of a package to deterine the order in

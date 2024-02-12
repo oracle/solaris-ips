@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -34,6 +34,7 @@ import errno
 import os
 import platform
 import unittest
+
 
 class TestPkgInitInstall(pkg5unittest.SingleDepotTestCase):
     persistent_setup = True

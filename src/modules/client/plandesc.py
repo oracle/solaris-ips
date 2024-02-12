@@ -69,6 +69,7 @@ OP_STAGE_PREP     = 1
 OP_STAGE_EXEC     = 2
 OP_STAGE_PRINTED  = 3 # The message has been consumed by a client
 
+
 class _ActionPlan(collections.namedtuple("_ActionPlan", "p src dst")):
     """A named tuple used to keep track of all the actions that will be
     executed during an image-modifying procecure."""

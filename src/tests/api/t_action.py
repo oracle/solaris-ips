@@ -39,8 +39,8 @@ import pkg.digest
 from pkg.client.debugvalues import DebugValues
 from importlib import reload
 
-class TestActions(pkg5unittest.Pkg5TestCase):
 
+class TestActions(pkg5unittest.Pkg5TestCase):
 
     act_strings = [
         "set name=foo value=foo",
@@ -715,6 +715,7 @@ Incorrect attribute list.
         act = action.fromstr(
             "set name=pkg.additional-update-on-update value=A@1")
         act.validate()
+
 
 if __name__ == "__main__":
     unittest.main()

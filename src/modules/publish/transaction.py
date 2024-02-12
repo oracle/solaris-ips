@@ -49,6 +49,7 @@ import pkg.portable.util as os_util
 import pkg.server.repository as sr
 import pkg.client.api_errors as apx
 
+
 class TransactionError(Exception):
     """Base exception class for all Transaction exceptions."""
 
@@ -268,7 +269,6 @@ class TransportTransaction(object):
                 msg=str(e))
 
         self.transport.publish_cache_repository(self.publisher, repo)
-
 
     def add(self, action, exact=False, path=None):
         """Adds an action and its related content to an in-flight

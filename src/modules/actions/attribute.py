@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a package attribute
@@ -33,6 +33,7 @@ possible types are: XXX."""
 from . import generic
 import pkg.fmri
 import pkg.actions
+
 
 class AttributeAction(generic.Action):
     """Class representing a package attribute."""

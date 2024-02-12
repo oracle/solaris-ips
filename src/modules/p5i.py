@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -37,6 +37,7 @@ import pkg.fmri as fmri
 
 CURRENT_VERSION = 1
 MIME_TYPE = "application/vnd.pkg5.info"
+
 
 def parse(data=None, fileobj=None, location=None):
     """Reads the pkg(7) publisher JSON formatted data at 'location'
@@ -140,6 +141,7 @@ def parse(data=None, fileobj=None, location=None):
     except (api_errors.PublisherError, TypeError, ValueError) as e:
         raise api_errors.InvalidP5IFile(str(e))
     return result
+
 
 def write(fileobj, pubs, pkg_names=None):
     """Writes the publisher, repository, and provided package names to the

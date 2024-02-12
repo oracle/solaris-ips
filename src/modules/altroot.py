@@ -44,6 +44,7 @@ import stat
 # has native support for all the *at(2) system calls we use below.
 import pkg.syscallat as sat
 
+
 # ---------------------------------------------------------------------------
 # Misc Functions
 #
@@ -61,11 +62,13 @@ def __path_abs_to_relative(path):
             path_new = tail
     return path_new
 
+
 def __fd_to_path(fd):
     """Given a file descriptor return the path to that file descriptor."""
 
     path = "/proc/{0:d}/path/{1:d}".format(os.getpid(), fd)
     return os.readlink(path)
+
 
 # ---------------------------------------------------------------------------
 # Functions for accessing files in an alternate image
@@ -182,6 +185,7 @@ def ar_open(root, path, flags,
 
     return path_fd
 
+
 def ar_unlink(root, path, noent_ok=False):
     """A function similar to os.unlink() that ensures that the path
     we're accessing resides within a specified directory subtree.
@@ -219,6 +223,7 @@ def ar_unlink(root, path, noent_ok=False):
 
     os.close(path_dir_fd)
     return
+
 
 def ar_rename(root, src, dst):
     """A function similar to os.rename() that ensures that the path
@@ -265,6 +270,7 @@ def ar_rename(root, src, dst):
     os.close(dst_dir_fd)
     return
 
+
 def ar_mkdir(root, path, mode, exists_is_ok=False):
     """A function similar to os.mkdir() that ensures that the path we're
     opening resides within a specified directory subtree.
@@ -294,6 +300,7 @@ def ar_mkdir(root, path, mode, exists_is_ok=False):
     os.close(path_dir_fd)
     return
 
+
 def ar_stat(root, path):
     """A function similar to os.stat() that ensures that the path
     we're accessing resides within a specified directory subtree.
@@ -308,6 +315,7 @@ def ar_stat(root, path):
     si = os.fstat(fd)
     os.close(fd)
     return si
+
 
 def ar_isdir(root, path):
     """A function similar to os.path.isdir() that ensures that the path
@@ -327,6 +335,7 @@ def ar_isdir(root, path):
         return True
     return False
 
+
 def ar_exists(root, path):
     """A function similar to os.path.exists() that ensures that the path
     we're accessing resides within a specified directory subtree.
@@ -342,6 +351,7 @@ def ar_exists(root, path):
         raise e
     os.close(fd)
     return True
+
 
 def ar_diff(root, path1, path2):
     """A function similar to filecmp.cmp() that ensures that the path
@@ -376,6 +386,7 @@ def ar_diff(root, path1, path2):
     os.close(fd1)
     os.close(fd2)
     return diff
+
 
 def ar_img_prefix(root):
     """A function that attempts to determine if a user or root pkg(7)

@@ -38,6 +38,7 @@ import tempfile
 import unittest
 from pkg.misc import EmptyI
 
+
 class TestPkgMogrify(pkg5unittest.CliTestCase):
     """Tests for the pkgmogrify publication tool."""
 
@@ -649,6 +650,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
         self.pkgmogrify([self.transforms["backreference-empty-string"],
             source_file])
         self.assertMatch("path=usr/sbin/foo")
+
 
 if __name__ == "__main__":
     unittest.main()

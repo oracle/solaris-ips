@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import uuid as uuidm
 import pkg.client.transport.exception as tx
 
 from pkg.misc import DummyLock, force_str
+
 
 class StreamingFileObj(object):
 

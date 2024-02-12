@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -40,6 +40,7 @@ import pkg.file_layout.file_manager as file_manager
 import pkg.file_layout.layout as layout
 
 path_to_pub_util = "../util/publish"
+
 
 class TestFileManager(pkg5unittest.CliTestCase):
 
@@ -110,6 +111,7 @@ class TestFileManager(pkg5unittest.CliTestCase):
 
         empty_dir = tempfile.mkdtemp(dir=self.base_dir)
         self.update_file_layout(empty_dir)
+
 
 if __name__ == "__main__":
     unittest.main()

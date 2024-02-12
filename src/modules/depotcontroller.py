@@ -37,10 +37,12 @@ from urllib.parse import urlunparse, urljoin
 import pkg.pkgsubprocess as subprocess
 import pkg.server.repository as sr
 
+
 class DepotStateException(Exception):
 
     def __init__(self, reason):
         Exception.__init__(self, reason)
+
 
 class DepotController(object):
 
@@ -595,6 +597,7 @@ def test_func(testdir):
             print("\nKeyboard Interrupt: Cleaning up Depots...")
             dc.stop()
             raise
+
 
 if __name__ == "__main__":
     __testdir = "/tmp/depotcontrollertest.{0:d}".format(os.getpid())

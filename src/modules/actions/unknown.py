@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a unknown packaging object
@@ -32,6 +32,7 @@ publishing transaction is not given enough information to determine what type of
 object it is.  No datastreams or attributes aside from a path are stored."""
 
 from . import generic
+
 
 class UnknownAction(generic.Action):
     """Class representing a unknown type of packaging object."""

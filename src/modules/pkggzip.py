@@ -21,10 +21,11 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import gzip
+
 
 class PkgGzipFile(gzip.GzipFile):
     """This is a version of GzipFile that does not include a file

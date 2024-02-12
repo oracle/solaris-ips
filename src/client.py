@@ -649,6 +649,7 @@ def accept_plan_licenses(api_inst):
         api_inst.set_plan_license_status(pfmri, dest.license,
             accepted=True)
 
+
 display_plan_options = ["basic", "fmris", "variants/facets", "services",
     "actions", "boot-archive"]
 
@@ -981,7 +982,6 @@ made will not be reflected on the next boot.
         logger.info(_("Actions:"))
         for a in plan.get_actions():
             logger.info("  {0}".format(a))
-
 
     if plan.has_release_notes():
         if need_blank:
@@ -3110,7 +3110,6 @@ def search(api_inst, args):
         if err:
             raise err
 
-
     except (api_errors.IncorrectIndexFileHash,
         api_errors.InconsistentIndexException):
         error(_("The search index appears corrupted.  Please "
@@ -3654,7 +3653,6 @@ def display_catalog_failures(cre, ignore_perms_failure=False):
             refresh_errstr += "\n"
         else:
             refresh_errstr += "\n   \n" + str(err)
-
 
     partial_str = ":"
     if partial:
@@ -5237,6 +5235,7 @@ def print_version(pargs):
     msg(pkg.VERSION)
     return EXIT_OK
 
+
 # To allow exception handler access to the image.
 _api_inst = None
 pargs = None
@@ -5474,6 +5473,7 @@ def opts_cb_remote(api_inst, opts, opts_new):
     global_settings.client_output_progfd = opts_new["progfd"]
     del opts_new["progfd"]
 
+
 opts_remote = [
     opts_cb_remote,
     ("ctlfd",                None),
@@ -5486,6 +5486,7 @@ def opts_cb_varcet(api_inst, opts, opts_new):
         raise api_errors.InvalidOptionError(
             api_errors.InvalidOptionError.INCOMPAT,
             ["list_all_items", "list_installed"])
+
 
 opts_list_varcet = \
     options.opts_table_no_headers + \

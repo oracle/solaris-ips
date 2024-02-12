@@ -21,15 +21,17 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import sys
 import pkg.query_parser as qp
 from pkg.query_parser import BooleanQueryException, ParseError, QueryException, QueryLengthExceeded
 
+
 class QueryLexer(qp.QueryLexer):
     pass
+
 
 class QueryParser(qp.QueryParser):
     """This class exists so that the classes the parent class query parser
@@ -47,28 +49,36 @@ class QueryParser(qp.QueryParser):
             tmp[class_name] = getattr(mod, class_name)
         self.query_objs = tmp
 
+
 # Because many classes do not have client specific modifications, they
 # simply subclass the parent module's classes.
 class Query(qp.Query):
     pass
 
+
 class AndQuery(qp.AndQuery):
     pass
+
 
 class OrQuery(qp.OrQuery):
     pass
 
+
 class PkgConversion(qp.PkgConversion):
     pass
+
 
 class PhraseQuery(qp.PhraseQuery):
     pass
 
+
 class FieldQuery(qp.FieldQuery):
     pass
 
+
 class TopQuery(qp.TopQuery):
     pass
+
 
 class TermQuery(qp.TermQuery):
     """This class handles the client specific search logic for searching

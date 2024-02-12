@@ -126,7 +126,6 @@ b = bb()
             import sys
             sys.exit(0)
 
-
     setup4 = """import pkg.actions as actions
 a1 = actions.fromstr("file 1234 group=bin mode=0755 owner=root path=usr/lib/libzonecfg.so.1")
         """

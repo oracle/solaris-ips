@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import testutils
@@ -33,6 +33,7 @@ import os
 import unittest
 
 from pkg import misc
+
 
 class TestAllFine(pkg5unittest.SingleDepotTestCase):
 
@@ -48,6 +49,7 @@ class TestAllFine(pkg5unittest.SingleDepotTestCase):
     def test_shouldpass2(self):
         pass
 
+
 class TestSetupFailing(pkg5unittest.SingleDepotTestCase):
 
     def setUp(self):
@@ -60,6 +62,7 @@ class TestSetupFailing(pkg5unittest.SingleDepotTestCase):
     def test_shoulderror2(self):
         pass
 
+
 class TestSetupFailingEarly(pkg5unittest.SingleDepotTestCase):
 
     def setUp(self):
@@ -68,6 +71,7 @@ class TestSetupFailingEarly(pkg5unittest.SingleDepotTestCase):
 
     def test_shoulderror1(self):
         pass
+
 
 class TestSetupFailingP(pkg5unittest.SingleDepotTestCase):
     persistent_setup = True
@@ -82,6 +86,7 @@ class TestSetupFailingP(pkg5unittest.SingleDepotTestCase):
     def test_shoulderror2(self):
         pass
 
+
 class TestSetupFailingEarlyP(pkg5unittest.SingleDepotTestCase):
     persistent_setup = True
 
@@ -91,6 +96,7 @@ class TestSetupFailingEarlyP(pkg5unittest.SingleDepotTestCase):
 
     def test_shoulderror1(self):
         pass
+
 
 class TestTeardownFailing(pkg5unittest.SingleDepotTestCase):
     def setUp(self):
@@ -104,6 +110,7 @@ class TestTeardownFailing(pkg5unittest.SingleDepotTestCase):
 
     def test_shoulderror2(self):
         pass
+
 
 class TestTeardownFailingP(pkg5unittest.SingleDepotTestCase):
     persistent_setup = True
@@ -120,6 +127,7 @@ class TestTeardownFailingP(pkg5unittest.SingleDepotTestCase):
     def test_shouldpass2(self):
         pass
 
+
 class TestMisc(pkg5unittest.CliTestCase):
     def doassign(self):
         self.test_root = "foo"
@@ -128,6 +136,7 @@ class TestMisc(pkg5unittest.CliTestCase):
         """ Test that test_root is readable but not writable """
         x = self.test_root
         self.assertRaises(AttributeError, self.doassign)
+
 
 if __name__ == "__main__":
     unittest.main()

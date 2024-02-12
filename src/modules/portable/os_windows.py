@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -41,40 +41,50 @@ import tempfile
 import threading
 from . import util as os_util
 
+
 def get_isainfo():
     """ TODO: Detect Windows 64-bit"""
     return ['i386']
 
+
 def get_release():
     return os_util.get_os_release()
+
 
 def get_platform():
     """ TODO: any other windows platforms to support?"""
     return 'i86pc'
 
+
 def get_group_by_name(name, dirpath, use_file):
     """group names/numbers are ignored on Windows."""
     return -1
+
 
 def get_user_by_name(name, dirpath, use_file):
     """group names/numbers are ignored on Windows."""
     return -1
 
+
 def get_name_by_gid(gid, dirpath, use_file):
     """group names/numbers are ignored on Windows."""
     return ''
+
 
 def get_name_by_uid(uid, dirpath, use_file):
     """group names/numbers are ignored on Windows."""
     return ''
 
+
 def get_usernames_by_gid(gid, dirpath, use_file):
     """group names/numbers are ignored on Windows."""
     return []
 
+
 def get_userid():
     """group names/numbers are ignored on Windows."""
     return -1
+
 
 def get_username():
     try:
@@ -88,6 +98,7 @@ def get_username():
         except ImportError:
             return None
 
+
 def is_admin():
     try:
         # ctypes only available in python 2.5 or later
@@ -95,6 +106,7 @@ def is_admin():
         return ctypes.windll.shell32.IsUserAnAdmin() != 0
     except ImportError:
         return False
+
 
 def chown(path, owner, group):
     """
@@ -130,6 +142,7 @@ def chown(path, owner, group):
 # initialized because that leads to a circular dependency.  So it is imported
 # as needed.
 
+
 trashname = "trash"
 
 # cached_image_info is a list of tuples (image root, image trash directory) for
@@ -138,6 +151,7 @@ trashname = "trash"
 # image object for it each time.
 cached_image_info = []
 cache_lock = threading.Lock()
+
 
 def get_trashdir(path):
     """
@@ -171,6 +185,7 @@ def get_trashdir(path):
     finally:
         cache_lock.release()
 
+
 def move_to_trash(path):
     """
     Move the file to a trash folder within its containing image. If the 
@@ -186,6 +201,7 @@ def move_to_trash(path):
     # this rename will raise an exception if the file is
     # locked and cannot be renamed.
     os.rename(path, os.path.join(tdir, os.path.basename(path)))
+
 
 def rename(src, dst):
     """
@@ -203,6 +219,7 @@ def rename(src, dst):
         # finally rename the file
         os.rename(src, dst)
 
+
 def remove(path):
     """
     Remove the given path. The file is moved to the trash area of the
@@ -215,12 +232,15 @@ def remove(path):
             raise
         move_to_trash(path)
 
+
 def link(src, dst):
     copyfile(src, dst)
+
 
 def split_path(path):
     drivepath = os.path.splitdrive(path)
     return drivepath[1].split('\\')
+
 
 def get_root(path):
     drivepath = os.path.splitdrive(path)
@@ -228,6 +248,7 @@ def get_root(path):
         return os.path.sep
     else:
         return drivepath[0] + '\\'
+
 
 def assert_mode(path, mode):
     # only compare user's permission bits on Windows
@@ -237,6 +258,7 @@ def assert_mode(path, mode):
             "want {2:o}".format(path, fmode, mode))
         ae.mode = fmode
         raise ae
+
 
 def copyfile(src, dst):
     shutil.copyfile(src, dst)

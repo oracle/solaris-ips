@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 # basic variant support
@@ -33,6 +33,7 @@ import types
 from collections import namedtuple
 from pkg._varcet import _allow_variant
 from pkg.misc import EmptyI
+
 
 class _Variants(dict):
     # store information on variants; subclass dict

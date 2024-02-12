@@ -50,8 +50,10 @@ host_props["outstanding"] = 0
 
 gi = GeoIP.new(GeoIP.GEOIP_MEMORY_CACHE)
 
+
 def host_cache_set_file_name(path = "./host-cache.pkl"):
     host_props["file_name"] = path
+
 
 def host_cache_load():
     try:
@@ -62,10 +64,12 @@ def host_cache_load():
         host_cache = {}
     host_props["outstanding"] = 0
 
+
 def host_cache_save():
     pklfile = open(host_props["file_name"], 'wb')
     pickle.dump(host_cache, pklfile)
     pklfile.close()
+
 
 def host_cache_add():
     if host_props["outstanding"] > 128:
@@ -73,6 +77,7 @@ def host_cache_add():
         host_props["outstanding"] = 0
 
     host_props["outstanding"] += 1
+
 
 def host_cache_lookup(ip):
     try:
@@ -93,9 +98,12 @@ def host_cache_lookup(ip):
     host_cache[ip] = ip
     return host_cache[ip]
 
+
 # Countries we're not allowed to report on (iran, north korea)
 filtered_countries = config.get("excluded").split(",")
 filtered_countries = [x.strip() for x in filtered_countries]
+
+
 def ip_to_country(ips):
     cs = {}
     for ip in ips.keys():
@@ -107,6 +115,7 @@ def ip_to_country(ips):
         except KeyError:
             cs[cc] = ips[ip]
     return cs
+
 
 def retrieve_chart(url, fileprefix):
     f = open("{0}.png".format(fileprefix), "w")
@@ -121,15 +130,18 @@ def retrieve_chart(url, fileprefix):
 
     return f.name
 
+
 def prefix_raw_open(fileprefix, reportname):
     f = open("{0}-{1}.dat".format(fileprefix, reportname), "w")
 
     return f
 
+
 def prefix_summary_open(fileprefix):
     f = open("{0}-summary.html".format(fileprefix), "w")
 
     return f
+
 
 def report_begin(cap_title):
     print("""\
@@ -140,6 +152,7 @@ def report_begin(cap_title):
 <title>pkg.depotd Logs: {0}</title>
 </head>
 <body>""".format(cap_title))
+
 
 def report_end():
     print("""\
@@ -157,6 +170,7 @@ def report_section_begin(cap_title, summary_file = None):
     if summary_file:
         print(msg, file=summary_file)
 
+
 def report_section_end(summary_file = None):
     msg = """</div> <!--end class=section-->"""
     print(msg)
@@ -170,11 +184,13 @@ def report_cols_begin(summary_file = None):
     if summary_file:
         print(msg, file=summary_file)
 
+
 def report_cols_end(summary_file = None):
     msg = """<br clear="all" /></div>"""
     print(msg)
     if summary_file:
         print(msg, file=summary_file)
+
 
 def report_col_begin(col, summary_file = None):
     msg = """<div class="{0}column">""".format(col)
@@ -183,13 +199,13 @@ def report_col_begin(col, summary_file = None):
     if summary_file:
         print(msg, file=summary_file)
 
+
 def report_col_end(col, summary_file = None):
     msg = """</div> <!-- end class={0}column -->""".format(col)
 
     print(msg)
     if summary_file:
         pprint(msg, file=summary_file)
-
 
 
 def report_by_date(data, title, summary_file = None):
@@ -244,6 +260,7 @@ Average {5} requests per day: {6:.1f}</p>""".format(title, total, start_day, end
     if summary_file:
         print(msg, file=summary_file)
 
+
 def report_by_ip(data, title, summary_file = None):
     total = 0
     rf = prefix_raw_open(title, "ip")
@@ -261,6 +278,7 @@ def report_by_ip(data, title, summary_file = None):
     if summary_file:
         print("<p>Distinct IP addresses: <b>{0:d}</b></p>".format(len(data.keys())), file=summary_file)
         print("<p>Total {0} retrievals: <b>{1:d}</b></p>".format(title, total), file=summary_file)
+
 
 def report_by_country(data, title, summary_file = None):
     total = 0
@@ -328,10 +346,10 @@ def report_by_country(data, title, summary_file = None):
 </div>
 <small>Color intensity linear in log of requests.</small>"""
 
-
     print(msg)
     if summary_file:
         print(msg, file=summary_file)
+
 
 def report_by_raw_agent(data, title, summary_file = None):
     rf = prefix_raw_open(title, "country")

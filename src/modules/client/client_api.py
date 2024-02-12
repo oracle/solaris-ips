@@ -89,6 +89,7 @@ def _strify(input):
     else:
         return input
 
+
 def _get_pkg_input_schema(subcommand, opts_mapping=misc.EmptyDict):
     """Get the input schema for pkg subcommand."""
 
@@ -103,6 +104,7 @@ def _get_pkg_input_schema(subcommand, opts_mapping=misc.EmptyDict):
     schema = __construct_json_schema("{0} input schema".format(subcommand),
         properties=props)
     return schema
+
 
 def _get_pkg_output_schema(subcommand):
     """Get the output schema for pkg subcommand."""
@@ -123,6 +125,7 @@ def _get_pkg_output_schema(subcommand):
     schema = __construct_json_schema("{0} output schema".format(
         subcommand), properties=props, required=required)
     return schema
+
 
 def __get_pkg_input_schema(pkg_op, opts_mapping=misc.EmptyDict):
     properties = {}
@@ -156,6 +159,7 @@ def __get_pkg_input_schema(pkg_op, opts_mapping=misc.EmptyDict):
         }
     return input_schema
 
+
 def __pkg_list_output_schema():
     data_schema = {"type": "array",
         "items": {
@@ -171,6 +175,7 @@ def __pkg_list_output_schema():
             }
         }
     return data_schema
+
 
 def __get_plan_props():
     msg_payload_item = {
@@ -307,6 +312,7 @@ def __get_plan_props():
         }
     return plan_props
 
+
 def __pkg_exact_install_output_schema():
     data_schema = {"type": "object",
         "properties": {
@@ -314,6 +320,7 @@ def __pkg_exact_install_output_schema():
             }
         }
     return data_schema
+
 
 def __pkg_install_output_schema():
     data_schema = {"type": "object",
@@ -323,6 +330,7 @@ def __pkg_install_output_schema():
         }
     return data_schema
 
+
 def __pkg_update_output_schema():
     data_schema = {"type": "object",
         "properties": {
@@ -331,6 +339,7 @@ def __pkg_update_output_schema():
         }
     return data_schema
 
+
 def __pkg_uninstall_output_schema():
     data_schema = {"type": "object",
         "properties": {
@@ -338,6 +347,7 @@ def __pkg_uninstall_output_schema():
             }
         }
     return data_schema
+
 
 def __pkg_publisher_set_output_schema():
     data_schema = {"type": "object",
@@ -349,8 +359,10 @@ def __pkg_publisher_set_output_schema():
         }
     return data_schema
 
+
 def __pkg_publisher_unset_output_schema():
     return {}
+
 
 def __pkg_publisher_output_schema():
     data_schema = {"type": "object",
@@ -377,6 +389,7 @@ def __pkg_publisher_output_schema():
         }
     return data_schema
 
+
 def __pkg_info_output_schema():
     data_schema = {"type": "object",
         "properties": {
@@ -390,6 +403,7 @@ def __pkg_info_output_schema():
     }
     return data_schema
 
+
 def __pkg_verify_output_schema():
     data_schema = {"type": "object",
         "properties": {
@@ -397,6 +411,7 @@ def __pkg_verify_output_schema():
             }
         }
     return data_schema
+
 
 def __pkg_fix_output_schema():
     data_schema = {"type": "object",
@@ -406,12 +421,14 @@ def __pkg_fix_output_schema():
         }
     return data_schema
 
+
 def _format_update_error(e, errors_json=None):
     # This message is displayed to the user whenever an
     # ImageFormatUpdateNeeded exception is encountered.
     if errors_json:
         error = {"reason": str(e), "errtype": "format_update"}
         errors_json.append(error)
+
 
 def _error_json(text, cmd=None, errors_json=None, errorType=None):
     """Prepare an error message for json output. """
@@ -438,6 +455,7 @@ def _error_json(text, cmd=None, errors_json=None, errorType=None):
         error["reason"] = ws + pkg_cmd + text_nows
         errors_json.append(error)
 
+
 def _collect_proxy_config_errors(errors_json=None):
     """If the user has configured http_proxy or https_proxy in the
     environment, collect the values. Some transport errors are
@@ -457,6 +475,7 @@ def _collect_proxy_config_errors(errors_json=None):
         err += "https_proxy: {0}\n".format(https_proxy)
     if errors_json:
         errors_json.append({"reason": err})
+
 
 def _get_fmri_args(api_inst, pargs, cmd=None, errors_json=None):
     """ Convenience routine to check that input args are valid fmris. """
@@ -481,6 +500,7 @@ def _get_fmri_args(api_inst, pargs, cmd=None, errors_json=None):
             cmd=cmd, errors_json=errors_json)
     return len(errors) == 0, res
 
+
 def __default_error_json_schema():
     """Get the default error json schema."""
 
@@ -499,6 +519,7 @@ def __default_error_json_schema():
         }
     return error_schema
 
+
 def __construct_json_schema(title, description=None, stype="object",
     properties=None, required=None, additional_prop=False):
     """Construct  json schema."""
@@ -515,6 +536,7 @@ def __construct_json_schema(title, description=None, stype="object",
         json_schema["required"] = required
     json_schema["additionalProperties"] = additional_prop
     return json_schema
+
 
 def __prepare_json(status, op=None, schema=None, data=None, errors=None):
     """Prepare json structure for returning."""
@@ -541,6 +563,7 @@ def __prepare_json(status, op=None, schema=None, data=None, errors=None):
 
     return ret_json
 
+
 def _collect_catalog_failures(cre, ignore_perms_failure=False, errors=None):
     total = cre.total
     succeeded = cre.succeeded
@@ -561,7 +584,6 @@ def _collect_catalog_failures(cre, ignore_perms_failure=False, errors=None):
             refresh_errstr += "\n"
         else:
             refresh_errstr += "\n\n" + str(err)
-
 
     partial_str = ":"
     if partial:
@@ -591,7 +613,6 @@ def _collect_catalog_failures(cre, ignore_perms_failure=False, errors=None):
         # to the actual successful total.
         return succeeded + partial + len(cre.failed)
 
-
     if errors is not None:
         error = {"reason": str(refresh_errstr),
             "errtype": "catalog_refresh"}
@@ -604,6 +625,7 @@ def _collect_catalog_failures(cre, ignore_perms_failure=False, errors=None):
             errors.append(error)
 
     return succeeded + partial
+
 
 def _list_inventory(op, api_inst, pargs,
     li_parent_sync, list_all, list_installed_newest, list_newest,
@@ -820,6 +842,7 @@ def _list_inventory(op, api_inst, pargs,
         api_inst.log_operation_end(result=RESULT_NOTHING_TO_DO)
         return __prepare_json(EXIT_OOPS, data=data, errors=errors_json)
 
+
 def _get_tracker(prog_delay=PROG_DELAY, prog_tracker=None):
     if prog_tracker:
         return prog_tracker
@@ -847,6 +870,7 @@ def _get_tracker(prog_delay=PROG_DELAY, prog_tracker=None):
                 term_delay=prog_delay)
     return progresstracker
 
+
 def _accept_plan_licenses(api_inst):
     """Helper function that marks all licenses for the current plan as
     accepted if they require acceptance."""
@@ -858,8 +882,10 @@ def _accept_plan_licenses(api_inst):
         api_inst.set_plan_license_status(pfmri, dest.license,
             accepted=True)
 
+
 display_plan_options = ["basic", "fmris", "variants/facets", "services",
     "actions", "boot-archive"]
+
 
 def __api_alloc(pkg_image, orig_cwd, prog_delay=PROG_DELAY, prog_tracker=None,
     errors_json=None):
@@ -913,6 +939,7 @@ def __api_alloc(pkg_image, orig_cwd, prog_delay=PROG_DELAY, prog_tracker=None,
         _format_update_error(e, errors_json=errors_json)
         return
 
+
 def __api_prepare_plan(operation, api_inst):
     # Exceptions which happen here are printed in the above level, with
     # or without some extra decoration done here.
@@ -956,6 +983,7 @@ def __api_prepare_plan(operation, api_inst):
             "for {op}: {err}").format(op=operation, err=str(e)))
         return __prepare_json(EXIT_OOPS, errors=errors_json)
     return __prepare_json(EXIT_OK)
+
 
 def __api_execute_plan(operation, api_inst):
     rval = None
@@ -1070,6 +1098,7 @@ def __api_execute_plan(operation, api_inst):
 
     return rval
 
+
 def __api_plan_exception(op, noexecute, verbose, api_inst, errors_json=[],
     display_plan_cb=None):
     e_type, e, e_traceback = sys.exc_info()
@@ -1164,6 +1193,7 @@ pkg:/package/pkg' as a privileged user and then retry the {op}."""
     # if we didn't deal with the exception above, pass it on.
     raise
     # NOTREACHED
+
 
 def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _omit_headers=False, _origins=None, _parsable_version=None, _quiet=False,
@@ -1304,11 +1334,13 @@ def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
     return __prepare_json(EXIT_OK, data=data)
 
+
 def __api_plan_file(api_inst):
     """Return the path to the PlanDescription save file."""
 
     plandir = api_inst.img_plandir
     return os.path.join(plandir, "plandesc")
+
 
 def __api_plan_save(api_inst, logger=None):
     """Save an image plan to a file."""
@@ -1336,6 +1368,7 @@ def __api_plan_save(api_inst, logger=None):
 
     pkg_timer.record("saving plan", logger=logger)
 
+
 def __api_plan_load(api_inst, stage, origins, logger=None):
     """Loan an image plan from a file."""
 
@@ -1358,6 +1391,7 @@ def __api_plan_load(api_inst, stage, origins, logger=None):
     if stage == API_STAGE_EXECUTE:
         __api_plan_delete(api_inst)
 
+
 def __api_plan_delete(api_inst):
     """Delete an image plan file."""
 
@@ -1366,6 +1400,7 @@ def __api_plan_delete(api_inst):
         os.unlink(path)
     except OSError as e:
         raise api_errors._convert_error(e)
+
 
 def __verify_exit_status(api_inst):
     """Determine verify exit status."""
@@ -1376,6 +1411,7 @@ def __verify_exit_status(api_inst):
         if msg_level == MSG_ERROR:
             return EXIT_OOPS
     return EXIT_OK
+
 
 def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _origins=None, _parsable_version=None, _quiet=False, _quiet_plan=False,
@@ -1452,6 +1488,7 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
     return ret
 
+
 def _exact_install(op, api_inst, pargs,
     accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
     li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
@@ -1483,6 +1520,7 @@ def _exact_install(op, api_inst, pargs,
         refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
         update_index=update_index, display_plan_cb=display_plan_cb,
         logger=logger)
+
 
 def _install(op, api_inst, pargs, accept, act_timeout, backup_be,
     backup_be_name, be_activate, be_name, li_ignore, li_erecurse,
@@ -1519,6 +1557,7 @@ def _install(op, api_inst, pargs, accept, act_timeout, backup_be,
         refresh_catalogs=refresh_catalogs, reject_list=reject_pats,
         update_index=update_index, display_plan_cb=display_plan_cb,
         logger=logger)
+
 
 def _update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
     be_activate, be_name, force, ignore_missing, li_ignore, li_erecurse,
@@ -1563,6 +1602,7 @@ def _update(op, api_inst, pargs, accept, act_timeout, backup_be, backup_be_name,
         update_index=update_index, display_plan_cb=display_plan_cb,
         logger=logger)
 
+
 def _uninstall(op, api_inst, pargs,
     act_timeout, backup_be, backup_be_name, be_activate, be_name,
     ignore_missing, li_ignore, li_erecurse, li_parent_sync, new_be, noexecute,
@@ -1590,6 +1630,7 @@ def _uninstall(op, api_inst, pargs,
         li_erecurse=li_erecurse, li_parent_sync=li_parent_sync,
         new_be=new_be, pkgs_to_uninstall=pargs, update_index=update_index,
         display_plan_cb=display_plan_cb, logger=logger)
+
 
 def _publisher_set(op, api_inst, pargs, ssl_key, ssl_cert, origin_uri,
     reset_uuid, add_mirrors, remove_mirrors, add_origins, remove_origins,
@@ -1835,6 +1876,7 @@ assistance."""), errors_json=errors_json)
     ret_json["data"] = data
     return ret_json
 
+
 def _publisher_unset(op, api_inst, pargs):
     """Function to unset publishers."""
 
@@ -1885,6 +1927,7 @@ def _publisher_unset(op, api_inst, pargs):
 
     return __prepare_json(retcode, errors=errors_json)
 
+
 def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
     inc_disabled, output_format):
     """pkg publishers. Note: publisher_a is a left-over parameter."""
@@ -1932,6 +1975,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
         api_inst.progresstracker.PURPOSE_LISTING)
 
     cert_cache = {}
+
     def get_cert_info(ssl_cert):
         if not ssl_cert:
             return None
@@ -2259,6 +2303,7 @@ def _publisher_list(op, api_inst, pargs, omit_headers, preferred_only,
                 pub_data)
     return __prepare_json(retcode, data=data, errors=errors_json, op=op)
 
+
 def _info(op, api_inst, pargs, display_license, info_local, info_remote,
     origins, quiet):
     """Display information about a package or packages.
@@ -2426,7 +2471,6 @@ def _info(op, api_inst, pargs, display_license, info_local, info_remote,
             "info.source-url": _("Source URL")
         }
 
-
         for key in addl_attr_list:
             if key in pi.attrs:
                 __append_attr_lists(addl_attr_list[key],
@@ -2478,6 +2522,7 @@ examining the catalogs:\n""")
 
     return __prepare_json(err, errors=errors_json, data=data)
 
+
 def _verify(op, api_inst, pargs, omit_headers, parsable_version, quiet, verbose,
     unpackaged, unpackaged_only, verify_paths, display_plan_cb=None, logger=None):
     """Determine if installed packages match manifests."""
@@ -2496,6 +2541,7 @@ def _verify(op, api_inst, pargs, omit_headers, parsable_version, quiet, verbose,
         _verify_paths=verify_paths, display_plan_cb=display_plan_cb,
         logger=logger)
 
+
 def _fix(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
     be_name, new_be, noexecute, omit_headers, parsable_version, quiet,
     show_licenses, verbose, unpackaged, display_plan_cb=None, logger=None):
@@ -2508,6 +2554,7 @@ def _fix(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
         be_name=be_name, new_be=new_be, _parsable_version=parsable_version,
         _unpackaged=unpackaged, display_plan_cb=display_plan_cb,
         logger=logger)
+
 
 def __refresh(api_inst, pubs, full_refresh=False):
     """Private helper method for refreshing publisher data."""
@@ -2537,6 +2584,7 @@ def __refresh(api_inst, pubs, full_refresh=False):
         return __prepare_json(EXIT_PARTIAL, errors=errors_json)
     return __prepare_json(EXIT_OK)
 
+
 def _get_ssl_cert_key(root, is_zone, ssl_cert, ssl_key):
     if ssl_cert is not None or ssl_key is not None:
         # In the case of zones, the ssl cert given is assumed to
@@ -2557,6 +2605,7 @@ def _get_ssl_cert_key(root, is_zone, ssl_cert, ssl_key):
                 ssl_key = os.path.normpath(os.path.join(
                     orig_cwd, ssl_key))
     return ssl_cert, ssl_key
+
 
 def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
     """Helper function to wrap set-publisher private methods.  Returns
@@ -2605,6 +2654,7 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
         # be printed on the same line as the spinner.
         errors_json.append({"reason": ("\n" + str(e))})
         return __prepare_json(EXIT_OOPS, errors=errors_json)
+
 
 def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
     origin_uri=None, add_mirrors=EmptyI, remove_mirrors=EmptyI,
@@ -2815,6 +2865,7 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
 
     return __prepare_json(EXIT_OK)
 
+
 def _get_orig_cwd():
     """Get the original current working directory."""
     try:
@@ -2827,6 +2878,7 @@ def _get_orig_cwd():
         except KeyError:
             orig_cwd = None
     return orig_cwd
+
 
 def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
     prog_delay=PROG_DELAY, prog_tracker=None, opts_mapping=misc.EmptyDict,
@@ -2999,6 +3051,7 @@ def __pkg(subcommand, pargs_json, opts_json, pkg_image=None,
         return api_inst, __prepare_json(EXIT_BADOPT, errors=err)
     return api_inst, func(op=subcommand, api_inst=api_inst,
         pargs=pargs, **opts)
+
 
 def __handle_errors_json(func, non_wrap_print=True, subcommand=None,
     pargs_json=None, opts_json=None, pkg_image=None,
@@ -3188,6 +3241,7 @@ def __handle_errors_json(func, non_wrap_print=True, subcommand=None,
 
     return _api_inst, ret_json
 
+
 def _pkg_invoke(subcommand=None, pargs_json=None, opts_json=None, pkg_image=None,
     prog_delay=PROG_DELAY, prog_tracker=None, opts_mapping=misc.EmptyDict,
     api_inst=None, reset_api=False, return_api=False):
@@ -3219,6 +3273,7 @@ def _pkg_invoke(subcommand=None, pargs_json=None, opts_json=None, pkg_image=None
         return _api_inst, ret_json
     else:
         return ret_json
+
 
 class ClientInterface(object):
     """Class to provide a general interface to various clients."""

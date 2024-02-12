@@ -67,6 +67,7 @@ def process(l):
         except KeyError:
             codes_other[m.group(1)] = [m.group(5)]
 
+
 def dlunits(codes, size):
     n = 0
 
@@ -75,6 +76,7 @@ def dlunits(codes, size):
             n += 1
 
     return n
+
 
 def dls_linked(codes_200, codes_206, size):
     linked = 0
@@ -92,6 +94,7 @@ def dls_linked(codes_200, codes_206, size):
                     pass
 
     return linked
+
 
 if __name__ == "__main__":
     opts, pargs = getopt.getopt(sys.argv[1:], "f:s:")

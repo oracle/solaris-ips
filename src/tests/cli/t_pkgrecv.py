@@ -59,6 +59,7 @@ try:
 except ImportError:
     sha512_supported = False
 
+
 class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
     # Cleanup after every test.
     persistent_setup = False
@@ -1051,7 +1052,6 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
             else:
                 self.pkgrepo("remove -s {0} '*'".format(uri))
 
-
         def __test_rec(duri, arg_string, pfmris):
             self.debug("\n\nNow pkgrecv'ing to {0}".format(duri))
 
@@ -1567,7 +1567,6 @@ class TestPkgrecvHTTPS(pkg5unittest.HTTPSTestClass):
         #set permissions of tmp/verboten to make it non-readable
         self.verboten = os.path.join(self.test_root, "tmp/verboten")
         os.system("chmod 600 {0}".format(self.verboten))
-
 
     def test_01_basics(self):
         """Test that transferring a package from an https repo to

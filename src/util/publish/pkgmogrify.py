@@ -54,12 +54,14 @@ Usage:
             [-O outputfile] [-P printfile] [inputfile ...]"""))
     sys.exit(exitcode)
 
+
 def error(text, exitcode=EXIT_OOPS):
     """Emit an error message prefixed by the command name """
 
     print("pkgmogrify: {0}".format(text), file=sys.stderr)
     if exitcode is not None:
         sys.exit(exitcode)
+
 
 def main_func():
     outfilename = None
@@ -147,6 +149,7 @@ def main_func():
         error(_("Cannot write output {0}").format(e))
 
     return 0
+
 
 if __name__ == "__main__":
     misc.setlocale(locale.LC_ALL, "", error)

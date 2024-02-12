@@ -60,6 +60,7 @@ svccfg_path = "/usr/sbin/svccfg"
 svcs_path = "/usr/bin/svcs"
 zlogin_path = "/usr/sbin/zlogin"
 
+
 class NonzeroExitException(Exception):
     def __init__(self, cmd, return_code, output):
         self.cmd = cmd
@@ -101,6 +102,7 @@ def __call(args, zone=None):
         raise NonzeroExitException(args, ret, buf)
     return buf
 
+
 def get_state(fmri, zone=None):
     """ return state of smf service """
 
@@ -121,8 +123,10 @@ def get_state(fmri, zone=None):
         return SMF_SVC_ENABLED
     return SMF_SVC_DISABLED
 
+
 def is_disabled(fmri, zone=None):
     return get_state(fmri, zone=zone) < SMF_SVC_TMP_ENABLED
+
 
 def check_fmris(attr, fmris, zone=None):
     """ Walk a set of fmris checking that each is fully specified with
@@ -166,6 +170,7 @@ def check_fmris(attr, fmris, zone=None):
                 "for {fmri}.").format(**locals()))
     return fmris
 
+
 def get_props(svcfmri, zone=None):
     args = (svcprop_path, "-c", svcfmri)
 
@@ -179,10 +184,12 @@ def get_props(svcfmri, zone=None):
         for l in buf
     ])
 
+
 def set_prop(fmri, prop, value, zone=None):
     args = (svccfg_path, "-s", fmri, "setprop", "{0}={1}".format(prop,
         value))
     __call(args, zone=zone)
+
 
 def get_prop(fmri, prop, zone=None):
     args = (svcprop_path, "-c", "-p", prop, fmri)
@@ -193,6 +200,7 @@ def get_prop(fmri, prop, zone=None):
     # to be unescaped back to the original state.
     string = " ".join(shlex.split(string))
     return string
+
 
 def enable(fmris, temporary=False, sync_timeout=0, zone=None):
     if not fmris:
@@ -210,6 +218,7 @@ def enable(fmris, temporary=False, sync_timeout=0, zone=None):
     # fmris could be a list so explicit cast is necessary
     __call(tuple(args) + tuple(fmris), zone=zone)
 
+
 def disable(fmris, temporary=False, sync_timeout=0, zone=None):
     if not fmris:
         return
@@ -223,6 +232,7 @@ def disable(fmris, temporary=False, sync_timeout=0, zone=None):
     # fmris could be a list so explicit cast is necessary
     __call(tuple(args) + tuple(fmris), zone=zone)
 
+
 def mark(state, fmris, zone=None):
     if not fmris:
         return
@@ -231,6 +241,7 @@ def mark(state, fmris, zone=None):
     args = [svcadm_path, "mark", state]
     # fmris could be a list so explicit cast is necessary
     __call(tuple(args) + tuple(fmris), zone=zone)
+
 
 def refresh(fmris, sync_timeout=0, zone=None):
     if not fmris:
@@ -245,6 +256,7 @@ def refresh(fmris, sync_timeout=0, zone=None):
     # fmris could be a list so explicit cast is necessary
     __call(tuple(args) + tuple(fmris), zone=zone)
 
+
 def restart(fmris, sync_timeout=0, zone=None):
     if not fmris:
         return
@@ -257,6 +269,7 @@ def restart(fmris, sync_timeout=0, zone=None):
             args.append("-T {0:d}".format(sync_timeout))
     # fmris could be a list so explicit cast is necessary
     __call(tuple(args) + tuple(fmris), zone=zone)
+
 
 def clear(fmris, sync_timeout=0, zone=None):
     if not fmris:

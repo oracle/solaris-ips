@@ -285,7 +285,6 @@ class RepoStats(object):
         if timeout:
             self.__timeout_err += 1
 
-
     def record_progress(self, bytes, seconds):
         """Record time and size of a network operation to a
         particular TransportRepoURI, represented by the RepoStats
@@ -443,7 +442,6 @@ class RepoStats(object):
                 Cused
             return self.origin_factor * b * self.origin_decay
 
-
         #
         # Quality function:
         #
@@ -495,7 +493,6 @@ class RepoStats(object):
 
         return self.__total_tx - (self.__failed_tx +
             self.__content_err +  self.__decayable_err)
-
 
     @property
     def transfer_speed(self):

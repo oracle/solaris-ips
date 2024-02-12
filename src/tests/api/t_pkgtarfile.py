@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -37,6 +37,7 @@ import shutil
 import tarfile
 import pkg.portable as portable
 import pkg.pkgtarfile as pkgtarfile
+
 
 class TestPkgTarFile(pkg5unittest.Pkg5TestCase):
 

@@ -47,11 +47,13 @@ filelist_totals["bytes"] = 0
 
 pkg_pat = re.compile("/filelist/(?P<mversion>\d+)/(?P<trailing>.*)")
 
+
 def report_filelist_by_bytes():
     print("<p>Total kilobytes sent via filelist: {0:f}</p>".format(filelist_totals["kilobytes"] + filelist_totals["bytes"]/1024))
 
     if summary_file:
         print("<p>Total kilobytes sent via filelist: {0:f}</p>".format(filelist_totals["kilobytes"] + filelist_totals["bytes"]/1024), file=summary_file)
+
 
 def count_filelist(mg, d):
     try:
@@ -71,6 +73,7 @@ def count_filelist(mg, d):
                 filelist_totals["bytes"] = filelist_totals["bytes"] % 1024
 
         # XXX should measure downtime via 503, other failure responses
+
 
 opts, args = getopt.getopt(sys.argv[1:], "a:b:sw:")
 

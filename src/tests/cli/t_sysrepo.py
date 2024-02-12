@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -54,6 +54,7 @@ import pkg.portable as portable
 from pkg.digest import DEFAULT_HASH_FUNC
 
 SYSREPO_USER = "pkg5srv"
+
 
 class TestBasicSysrepoCli(pkg5unittest.ApacheDepotTestCase):
     """Some basic tests checking that we can deal with all of our arguments
@@ -1016,7 +1017,6 @@ class TestP5pWsgi(pkg5unittest.SingleDepotTestCase):
         spec = importlib.util.spec_from_loader(loader.name, loader)
         self.sysrepo_p5p = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.sysrepo_p5p)
-
 
         # now create a simple p5p file that we can use in our tests
         self.make_misc_files(self.misc_files)

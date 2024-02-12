@@ -69,6 +69,7 @@ strip_attrs = [
     "pkg.size",
 ]
 
+
 def error(text, cmd=None):
     """Emit an error message prefixed by the command name """
 
@@ -90,6 +91,7 @@ def error(text, cmd=None):
     # This has to be a constant value as we can't reliably get our actual
     # program name on all platforms.
     emsg(ws + pkg_cmd + text_nows)
+
 
 def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more specific
@@ -114,6 +116,7 @@ Options:
 Environment:
         PKG_REPO        The path or URI of the destination repository."""))
     sys.exit(retcode)
+
 
 class SolarisBundleVisitor(object):
     """Used to gather information about the SVR4 packages we visit"""
@@ -192,6 +195,7 @@ def trans_create_repository(repo_uri, args):
         return EXIT_OOPS
     return EXIT_OK
 
+
 def trans_open(repo_uri, args):
     """DEPRECATED"""
 
@@ -222,6 +226,7 @@ def trans_open(repo_uri, args):
 
     return EXIT_OK
 
+
 def trans_append(repo_uri, args):
     """DEPRECATED"""
 
@@ -251,6 +256,7 @@ def trans_append(repo_uri, args):
         msg(t.append())
 
     return EXIT_OK
+
 
 def trans_close(repo_uri, args):
     """DEPRECATED"""
@@ -286,6 +292,7 @@ def trans_close(repo_uri, args):
             msg(val)
     return EXIT_OK
 
+
 def trans_add(repo_uri, args):
     """DEPRECATED"""
 
@@ -310,6 +317,7 @@ def trans_add(repo_uri, args):
         pub=pub)
     t.add(action)
     return EXIT_OK
+
 
 def trans_publish(repo_uri, fargs):
     """Publish packages in a single step using provided manifest data and
@@ -476,6 +484,7 @@ def trans_publish(repo_uri, fargs):
             msg(val)
     return EXIT_OK
 
+
 def trans_include(repo_uri, fargs, transaction=None):
     """DEPRECATED"""
 
@@ -576,6 +585,7 @@ def trans_include(repo_uri, fargs, transaction=None):
     else:
         return EXIT_OK
 
+
 def gen_actions(files, timestamp_files, target_files, minimal=False, visitors=[],
     use_default_owner=True):
     for filename in files:
@@ -607,6 +617,7 @@ def gen_actions(files, timestamp_files, target_files, minimal=False, visitors=[]
                 action.attrs.pop("pkg.size", None)
 
             yield action, action.name in nopub_actions
+
 
 def trans_import(repo_uri, args, visitors=[]):
     """DEPRECATED"""
@@ -668,6 +679,7 @@ def trans_import(repo_uri, args, visitors=[]):
         t.close(abandon=True)
     return ret
 
+
 def trans_generate(args, visitors=[]):
     """Generate a package manifest based on the provided sources."""
 
@@ -710,6 +722,7 @@ def trans_generate(args, visitors=[]):
 
     return EXIT_OK
 
+
 def trans_refresh_index(repo_uri, args):
     """DEPRECATED"""
 
@@ -726,6 +739,7 @@ def trans_refresh_index(repo_uri, args):
         return EXIT_OOPS
     return EXIT_OK
 
+
 def setup_transport_and_pubs(repo_uri, remote=True, ssl_key=None,
     ssl_cert=None):
 
@@ -738,6 +752,7 @@ def setup_transport_and_pubs(repo_uri, remote=True, ssl_key=None,
         ssl_cert=ssl_cert)
 
     return xport, targ_pub
+
 
 def main_func():
 
@@ -838,6 +853,7 @@ def main_func():
             cmd=subcommand, opt=e.opt))
 
     return ret
+
 
 #
 # Establish a specific exit status which means: "python barfed an exception"

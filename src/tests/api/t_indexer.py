@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -36,6 +36,7 @@ import sys
 import tempfile
 import stat
 import shutil
+
 
 class TestIndexer(pkg5unittest.Pkg5TestCase):
 
@@ -107,6 +108,7 @@ class TestIndexer(pkg5unittest.Pkg5TestCase):
         for file in os.listdir(ind._tmp_dir):
             self.assertTrue(len(open(os.path.join(ind._tmp_dir,
                 file)).readlines()) <= 1)
+
 
 if __name__ == "__main__":
     unittest.main()

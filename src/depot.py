@@ -114,6 +114,8 @@ SOCKET_TIMEOUT_DEFAULT = 60
 # converting the hyphen symbol.
 punc = string.punctuation.replace("-", "_")
 translate = str.maketrans(punc, "_" * len(string.punctuation))
+
+
 class Pkg5Dispatcher(Dispatcher):
     def __init__(self, **args):
         Dispatcher.__init__(self, translate=translate)
@@ -243,6 +245,7 @@ Environment:
                                 not provided.""")
     sys.exit(retcode)
 
+
 class OptionError(Exception):
     """Option exception. """
 
@@ -255,6 +258,7 @@ class OptionError(Exception):
         headers['X-Frame-Options'] = 'SAMEORIGIN'
         headers['X-XSS-Protection'] = '1; mode=block'
         headers['Content-Security-Policy'] = "default-src 'self';"
+
 
 if __name__ == "__main__":
 
@@ -679,6 +683,7 @@ if __name__ == "__main__":
     if not exit_ready and ssl_cert_file and ssl_key_file and \
         ssl_dialog != "builtin":
         cmdline = None
+
         def get_ssl_passphrase(*ignored):
             p = None
             try:

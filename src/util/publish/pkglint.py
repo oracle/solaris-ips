@@ -54,6 +54,7 @@ except KeyboardInterrupt:
 
 logger = None
 
+
 def error(message=""):
     """Emit an error message prefixed by the command name. """
     misc.emsg("pkglint: {0}".format(message))
@@ -61,11 +62,14 @@ def error(message=""):
     if logger is not None:
         logger.error(_("Error: {0}").format(message))
 
+
 def msg(message):
     logger.info(message)
 
+
 def debug(message):
     logger.debug(message)
+
 
 def main_func():
     """Start pkglint."""
@@ -175,6 +179,7 @@ def main_func():
     else:
         return EXIT_OK
 
+
 def list_checks(checkers, exclude, verbose=False):
     """Prints a human-readable version of configured checks."""
 
@@ -225,6 +230,7 @@ def list_checks(checkers, exclude, verbose=False):
         if exclude_items:
             msg(_("\nExcluded checks:"))
             print_list(exclude_items)
+
 
 def read_manifests(names, lint_logger):
     """Read a list of filenames, return a list of Manifest objects."""

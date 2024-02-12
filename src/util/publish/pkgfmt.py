@@ -91,6 +91,7 @@ opt_diffs = False
 opt_format = FMT_V2
 orig_opt_format = None
 
+
 def usage(errmsg="", exitcode=EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more specific
     error message.  Causes program to exit."""
@@ -104,6 +105,7 @@ Usage:
         pkgfmt [-cdu] [file1] ... """), file=sys.stderr)
 
     sys.exit(exitcode)
+
 
 def error(text, exitcode=EXIT_OOPS):
     """Emit an error message prefixed by the command name """
@@ -123,6 +125,7 @@ def error(text, exitcode=EXIT_OOPS):
 
     if exitcode is not None:
         sys.exit(exitcode)
+
 
 def read_line(f):
     """Generates the lines in the file as tuples containing
@@ -200,6 +203,7 @@ def read_line(f):
 
     if comments:
         yield None, "", comments
+
 
 def cmplines(a, b):
     """Compare two line tuples for sorting"""
@@ -303,6 +307,7 @@ def cmplines(a, b):
     # sort based on stringified action.
     return misc.cmp(str(a[0]), str(b[0]))
 
+
 def write_line(line, fileobj):
     """Write out a manifest line"""
     # write out any comments w/o changes
@@ -390,6 +395,7 @@ def write_line(line, fileobj):
         return (kvord(a), a[0])
 
     JOIN_TOK = " \\\n    "
+
     def grow(a, b, rem_values, force_nl=False):
         if opt_unwrap or not force_nl:
             lastnl = a.rfind("\n")
@@ -525,6 +531,7 @@ def write_line(line, fileobj):
         output = re.sub("^dir ", "dir  ", output)
     print(output, file=fileobj)
 
+
 def main_func():
     global opt_unwrap
     global opt_check
@@ -560,7 +567,6 @@ def main_func():
         usage(_("only one of [cdu] may be specified"))
     if opt_format not in (FMT_V1, FMT_V2):
         usage(_("unsupported format '{0}'").format(opt_format))
-
 
     def difference(in_file):
         whole_f1 = in_file.readlines()
@@ -683,6 +689,7 @@ def main_func():
                         raise
 
     return ret
+
 
 def fmt_file(in_file, out_file):
     lines = []

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -36,10 +36,12 @@ import threading
 
 import pkg.client.printengine as printengine
 
+
 class TestPrintEngine(pkg5unittest.Pkg5TestCase):
     def test_posix_printengine_tty(self):
         """Test POSIX print engine tty mode."""
         sio = io.StringIO()
+
         def __drain(masterf):
             """Drain data from masterf and discard until eof."""
             while True:
@@ -94,6 +96,7 @@ class TestPrintEngine(pkg5unittest.Pkg5TestCase):
         sio = io.StringIO()
         printengine.test_logging_printengine(sio)
         self.assertTrue(len(sio.getvalue()) > 0)
+
 
 if __name__ == "__main__":
     unittest.main()

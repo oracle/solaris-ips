@@ -369,7 +369,6 @@ class Actuator(object):
             if hasattr(act, "__call__"):
                 act()
 
-
         refresh_fmris = self.removal.get("refresh_fmri", set()) | \
             self.update.get("refresh_fmri", set()) | \
             self.install.get("refresh_fmri", set())

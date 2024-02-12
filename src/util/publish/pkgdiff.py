@@ -63,6 +63,7 @@ Usage:
             [-v name=value]... (file1 | -) (file2 | -)"""))
     sys.exit(exitcode)
 
+
 def error(text, exitcode=EXIT_PARTIAL):
     """Emit an error message prefixed by the command name """
 
@@ -70,6 +71,7 @@ def error(text, exitcode=EXIT_PARTIAL):
 
     if exitcode is not None:
         sys.exit(exitcode)
+
 
 def main_func():
 
@@ -170,6 +172,7 @@ def main_func():
             if filt not in v[vname]:
                 usage(_("Manifest {path} doesn't support "
                     "variant {vname}={filt}".format(**locals())))
+
             # remove the variant tag
             def rip(a):
                 a.attrs.pop(vname, None)
@@ -368,6 +371,7 @@ def main_func():
                     print(l)
 
     return int(different)
+
 
 if __name__ == "__main__":
     misc.setlocale(locale.LC_ALL, "", error)

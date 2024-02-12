@@ -31,6 +31,7 @@ import pkg.bundle
 import pkg.misc as misc
 from pkg.actions import *
 
+
 class TarBundle(pkg.bundle.Bundle):
 
     def __init__(self, filename, **kwargs):
@@ -73,6 +74,7 @@ class TarBundle(pkg.bundle.Bundle):
                 target=tarinfo.linkname)
         else:
             return unknown.UnknownAction(path=tarinfo.name)
+
 
 def test(filename):
     return tarfile.is_tarfile(filename)

@@ -50,17 +50,20 @@ MIME_TYPE = "application/atom+xml"
 CACHE_FILENAME = "feed.xml"
 RFC3339_FMT = "%Y-%m-%dT%H:%M:%SZ"
 
+
 def dt_to_rfc3339_str(ts):
     """Returns a string representing a datetime object formatted according
     to RFC 3339.
     """
     return ts.strftime(RFC3339_FMT)
 
+
 def rfc3339_str_to_dt(ts_str):
     """Returns a datetime object representing 'ts_str', which should be in
     the format specified by RFC 3339.
     """
     return datetime.datetime(*time.strptime(ts_str, RFC3339_FMT)[0:6])
+
 
 def fmri_to_taguri(f):
     """Generates a 'tag' uri compliant with RFC 4151.  Visit
@@ -70,6 +73,7 @@ def fmri_to_taguri(f):
         f.get_timestamp().strftime("%Y-%m-%d"),
         unquote(f.get_url_path()))
 
+
 def init(depot):
     """This function performs general initialization work that is needed
     for feeds to work correctly.
@@ -77,6 +81,7 @@ def init(depot):
 
     # Ensure any configuration changes are reflected in the feed.
     __clear_cache(depot, None)
+
 
 def set_title(depot, doc, feed, update_ts):
     """This function attaches the necessary RSS/Atom feed elements needed
@@ -134,6 +139,7 @@ add_op = ("Added", "{0} was added to the repository.")
 remove_op = ("Removed", "{0} was removed from the repository.")
 update_op = ("Updated", "{0}, a new version of an existing package, was added "
     "to the repository.")
+
 
 def add_transaction(request, doc, feed, entry, first):
     """Each transaction is an entry.  We have non-trivial content, so we
@@ -206,6 +212,7 @@ def add_transaction(request, doc, feed, entry, first):
 
     feed.appendChild(e)
 
+
 def get_updates_needed(repo, ts, pub):
     """Returns a list of the CatalogUpdate files that contain the changes
     that have been made to the catalog since the specified UTC datetime
@@ -241,6 +248,7 @@ def get_updates_needed(repo, ts, pub):
     # Ensure updates are in chronological ascending order.
     return sorted(updates)
 
+
 def update(request, depot, last, cf, pub):
     """Generate new Atom document for current updates.  The cached feed
     file is written to depot.tmp_root/CACHE_FILENAME.
@@ -267,6 +275,7 @@ def update(request, depot, last, cf, pub):
     # the fmri in the update is a 'new' package or an update to an existing
     # package.
     first = {}
+
     def get_first(f):
         stem = f.get_pkg_stem()
         if stem in first:
@@ -302,10 +311,12 @@ def update(request, depot, last, cf, pub):
 
     d.writexml(cf)
 
+
 def __get_cache_pathname(depot, pub):
     if not pub:
         return os.path.join(depot.tmp_root, CACHE_FILENAME)
     return os.path.join(depot.tmp_root, "publisher", pub, CACHE_FILENAME)
+
 
 def __clear_cache(depot, pub):
     if not pub:
@@ -319,6 +330,7 @@ def __clear_cache(depot, pub):
         raise cherrypy.HTTPError(
             http.client.INTERNAL_SERVER_ERROR,
             "Unable to clear feed cache.")
+
 
 def __cache_needs_update(depot, pub):
     """Checks to see if the feed cache file exists and if it is still
@@ -370,6 +382,7 @@ def __cache_needs_update(depot, pub):
         else:
             __clear_cache(depot, pub)
     return need_update, last
+
 
 def handle(depot, request, response, pub):
     """If there have been package updates since we last generated the feed,

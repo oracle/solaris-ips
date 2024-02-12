@@ -112,7 +112,6 @@ file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926
 """
 
 
-
 #ERROR pkglint.dupaction008        path usr/sbin/prtdiag is delivered by multiple
 #                                  action types across
 #                                  pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
@@ -2235,8 +2234,10 @@ set name=variant.arch value=i386 value=sparc
 user gcos-field="pkg(7) server UID" group=pkg5srv uid=97 username="pkg5s0v"
 """
 
+
 class TestLogFormatter(log.LogFormatter):
     """Records log messages to a buffer"""
+
     def __init__(self):
         self.messages = []
         self.ids = []
@@ -2270,6 +2271,7 @@ class TestLogFormatter(log.LogFormatter):
     def close(self):
         self.messages = []
         self.ids = []
+
 
 class TestLintEngine(pkg5unittest.Pkg5TestCase):
 
@@ -3039,7 +3041,6 @@ dir group=sys mode=0755 owner=root path=etc
                 "linting the contents of an old repository, got "
                 "{0}".format(lint_logger.ids[0]))
 
-
     def test_lint_mf_baseline(self):
         """The lint manifests in this test class should be lint-clean
         themselves - they should only report errors when linting against
@@ -3479,7 +3480,6 @@ class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
             fail_comm_pubs.format(pair))
         self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-
         # 3 identical names
         pair = FmriPair("pkg://foo.org/tst",
             "pkg://foo.org/tst")
@@ -3487,7 +3487,6 @@ class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
         self.assertTrue(commutative(pair, ignore_pubs=False),
             fail_comm_pubs.format(pair))
         self.assertTrue(is_successor(pair), fail_successor.format(pair))
-
 
         # 4 differing timestamps, same version (identical, in pkglint's view)
         pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
@@ -3626,6 +3625,7 @@ class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
             fail_newer_pubs.format(pair))
         self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
+
 def read_manifests(names, lint_logger):
     "Read a list of filenames, return a list of Manifest objects"
     manifests = []
@@ -3672,6 +3672,7 @@ def read_manifests(names, lint_logger):
                 "Manifest {0} does not declare fmri.".format(filename),
                 "lint.manifest003")
     return manifests
+
 
 if __name__ == "__main__":
     unittest.main()

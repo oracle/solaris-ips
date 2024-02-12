@@ -21,12 +21,13 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 # Some opensolaris distribution specific lint checks
 
 import pkg.lint.base as base
+
 
 class OpenSolarisActionChecker(base.ActionChecker):
     """An opensolaris.org-specific class to check actions."""

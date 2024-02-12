@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -31,10 +31,11 @@ import tarfile
 # and getgrgid for every file extracted.  This in turn leads to nscd
 # usage which slows down the install phase.  Setting these attributes
 # to undefined causes tarfile to skip these calls in
-# tarfile.gettarinfo().  This information is unnecesary as it will not
+# tarfile.gettarinfo().  This information is unnecessary as it will not
 # be used by the client.
 tarfile.pwd = None
 tarfile.grp = None
+
 
 class PkgTarFile(tarfile.TarFile):
     """PkgTarFile is a subclass of TarFile.  It implements
@@ -72,7 +73,6 @@ class PkgTarFile(tarfile.TarFile):
 
         if not filename:
             filename = tarinfo.name
-
 
         upperdirs = os.path.dirname(os.path.join(path, filename))
 

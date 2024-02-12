@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import grp
@@ -34,6 +34,7 @@ import pkg.bundle
 import pkg.actions.file
 import pkg.actions.link
 import pkg.actions.hardlink
+
 
 class DirectoryBundle(pkg.bundle.Bundle):
     """The DirectoryBundle class assists in the conversion of a directory
@@ -139,6 +140,7 @@ class DirectoryBundle(pkg.bundle.Bundle):
             return pkg.actions.directory.DirectoryAction(
                 timestamp=timestamp, mode=mode, owner=owner,
                 group=group, path=pubpath)
+
 
 def test(filename):
     return stat.S_ISDIR(os.stat(filename).st_mode)

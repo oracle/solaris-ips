@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 
 import pkg.p5p
 
@@ -52,9 +52,11 @@ p5p_indices = {}
 # at the same time.
 p5p_update_lock = threading.Lock()
 
+
 class UnknownPathException(Exception):
     """An exception thrown when a client requests a path within a p5p file
     which does not exist."""
+
     def __init__(self, path):
         self.path = path
 
@@ -65,6 +67,7 @@ class UnknownPathException(Exception):
 class MalformedQueryException(Exception):
     """An exception thrown when this wsgi application cannot parse a query
     from the client."""
+
     def __init__(self, query, reason):
         self.query = query
         self.reason = reason
@@ -76,6 +79,7 @@ class MalformedQueryException(Exception):
 class MissingArchiveException(Exception):
     """An exception thrown when the p5p file referred to by the
     configuration does not exist."""
+
     def __init__(self, path):
         self.path = path
 

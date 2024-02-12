@@ -32,6 +32,7 @@ from an_report import *
 
 ndays = 0
 
+
 def report_by_date(data, title, summary_file = None):
     global ndays
 
@@ -78,6 +79,7 @@ Period: {0} - {1} ({2:d} days)<br />
     print(msg)
     if summary_file:
         print(msg, file=summary_file)
+
 
 merge_entries_by_date = {}
 

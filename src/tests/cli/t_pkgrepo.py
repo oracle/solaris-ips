@@ -54,6 +54,7 @@ try:
 except ImportError:
     sha512_supported = False
 
+
 class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
     # Cleanup after every test.
     persistent_setup = False
@@ -3984,7 +3985,6 @@ class TestPkgrepoHTTPS(pkg5unittest.HTTPSTestClass):
         #set permissions of tmp/verboten to make it non-readable
         self.verboten = os.path.join(self.test_root, "tmp/verboten")
         os.system("chmod 600 {0}".format(self.verboten))
-
 
     def test_01_basics(self):
         """Test that running pkgrepo on an SSL-secured repo works for

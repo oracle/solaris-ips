@@ -1315,5 +1315,6 @@ class TestCorruptCatalog(pkg5unittest.Pkg5TestCase):
             catalog.Catalog, meta_root=croot,
             file_root=file_root)
 
+
 if __name__ == "__main__":
     unittest.main()

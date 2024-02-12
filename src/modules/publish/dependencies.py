@@ -76,9 +76,11 @@ LinkInfo = namedtuple("LinkInfo", ["path", "pfmri", "nearest_pfmri",
 # 'variant-combination' is the combination of variants under which the link is
 # satisfied.  'via-links' contains the links used to reach 'path.'
 
+
 class DependencyError(Exception):
     """The parent class for all dependency exceptions."""
     pass
+
 
 class DropPackageWarning(DependencyError):
     """This exception is used when a package is dropped as it cannot
@@ -93,6 +95,7 @@ class DropPackageWarning(DependencyError):
         return _("WARNING: package {0} was ignored as it cannot "
             "satisfy all dependencies:\n{1}\n").format(pkg_str,
             prune_debug_attrs(self.dep))
+
 
 class UnresolvedDependencyError(DependencyError):
     """This exception is used when no package delivers a file which is
@@ -197,6 +200,7 @@ class ExtraVariantedDependency(DependencyError):
                 rvs=s
            )
 
+
 class NeedConditionalRequireAny(DependencyError):
     """This exception is used when pkgdepend would need a dependency which
     was both require-any and conditional to properly represent the
@@ -232,6 +236,7 @@ same FMRI.  Each pair of problematic conditional dependencies follows:
             s += d1.pretty_print() + "\n"
             s += d2.pretty_print() + "\n"
         return s
+
 
 class __NotSubset(DependencyError):
     def __init__(self, diff):
@@ -278,6 +283,7 @@ def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, run_paths,
 
     return deps, manifest_errs + elist + rid_errs, warnings, missing, pkg_attrs
 
+
 def convert_to_standard_dep_actions(deps):
     """Convert pkg.base.Dependency objects to
     pkg.actions.dependency.Dependency objects."""
@@ -303,6 +309,7 @@ def convert_to_standard_dep_actions(deps):
             tmp.append(actions.depend.DependencyAction(**attrs))
         res.extend(tmp)
     return res
+
 
 def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
     """Given a list of dependencies, remove those which are satisfied by
@@ -353,10 +360,12 @@ def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
         res.append(d)
     return res, errs
 
+
 def no_such_file(action, **kwargs):
     """Function to handle dispatch of files not found on the system."""
 
     return [], [base.MissingFile(action.attrs["path"])], {}
+
 
 # Dictionary which maps codes from portable.get_file_type to the functions which
 # find dependencies for those types of files.
@@ -366,6 +375,7 @@ dispatch_dict = {
     portable.SMF_MANIFEST: smf_manifest.process_smf_manifest_deps,
     portable.UNFOUND: no_such_file
 }
+
 
 def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
     run_paths, ignore_bypass=False):
@@ -486,10 +496,12 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
         deps.extend(hardlink.process_hardlink_deps(a, pkg_vars))
     return deps, elist, warnings, missing, pkg_attrs
 
+
 def __update_pkg_attrs(pkg_attrs, new_attrs):
     """Update the pkg_attrs dictionary with the contents of new_attrs."""
     for key in new_attrs:
         pkg_attrs.setdefault(key, []).extend(new_attrs[key])
+
 
 def __verify_run_path(run_path_str):
     """Verify we've been passed a single item and ensure it contains
@@ -507,6 +519,7 @@ def __verify_run_path(run_path_str):
             "a colon-separated string.").format(portable.PD_RUN_PATH))]
     return []
 
+
 def __makelist(value):
     """Given a value, return it if that value is a list, or if it's a
     string, return a single-element list of just that string."""
@@ -519,6 +532,7 @@ def __makelist(value):
             return []
     else:
         raise ValueError("Value was not a string or a list")
+
 
 def __bypass_deps(ds, bypass, pkg_attrs):
     """Return a list of dependencies, excluding any of those that should be
@@ -604,6 +618,7 @@ def __bypass_deps(ds, bypass, pkg_attrs):
             new_ds.append(dep)
     return new_ds
 
+
 def __make_manifest(fp, basedirs=None, load_data=True):
     """Given the file path, 'fp', return a Manifest for that path."""
 
@@ -671,6 +686,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
     m.set_content(content=acts)
     return m, missing_files + action_errs
 
+
 def choose_name(fp, mfst):
     """Find the package name for this manifest.  If it's defined in a set
     action in the manifest, use that.  Otherwise use the basename of the
@@ -693,6 +709,7 @@ def choose_name(fp, mfst):
         return name, pfmri
     return unquote(os.path.basename(fp)), None
 
+
 def make_paths(file_dep):
     """Find all the possible paths which could satisfy the dependency
     'file_dep'."""
@@ -707,6 +724,7 @@ def make_paths(file_dep):
     if isinstance(rps, str):
         rps = [rps]
     return [os.path.join(rp, f) for rp in rps for f in files]
+
 
 def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
     """This method maps a path to one or more real paths and the variants
@@ -855,6 +873,7 @@ def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
 
     return res_paths, res_links
 
+
 def find_package_using_delivered_files(files_dict, links, file_dep, dep_vars,
     orig_dep_vars):
     """Maps a dependency on a file to the packages which can satisfy that
@@ -949,6 +968,7 @@ def find_package_using_delivered_files(files_dict, links, file_dep, dep_vars,
         d.attrs[path_id_prefix] = pth_id
     return res, dep_vars, errs
 
+
 def find_package(files, links, file_dep, orig_dep_vars, pkg_vars, use_system):
     """Find the packages which resolve the dependency. It returns a list of
     dependency actions with the fmri tag resolved.
@@ -999,10 +1019,12 @@ def find_package(files, links, file_dep, orig_dep_vars, pkg_vars, use_system):
     errs.extend(inst_errs)
     return res, dep_vars, errs
 
+
 def is_file_dependency(act):
     return act.name == "depend" and \
         act.attrs.get("fmri", None) == base.Dependency.DUMMY_FMRI and \
         (files_prefix in act.attrs or fullpaths_prefix in act.attrs)
+
 
 def group_by_variant_combinations(lst):
     """The goal of this function is to produce the smallest list of (info
@@ -1073,6 +1095,7 @@ def group_by_variant_combinations(lst):
         seed = new_res
     return seed
 
+
 def merge_deps(dest, src):
     """Add the information contained in src's attrs to dest."""
 
@@ -1094,6 +1117,7 @@ def merge_deps(dest, src):
                 t.extend(v)
                 dest.attrs[k] = t
 
+
 def __predicate_path_id_attrget(d):
     # d is a tuple containing two items.  d[0] is the action.  d[1]
     # is the VariantCombination for this action.  The
@@ -1104,6 +1128,7 @@ def __predicate_path_id_attrget(d):
     except KeyError:
         raise RuntimeError("Expected this to have a predicate:{0}".format(
             d[0]))
+
 
 def __collapse_conditionals(deps):
     """Under certain conditions, conditional dependencies can be transformed
@@ -1278,6 +1303,7 @@ def __collapse_conditionals(deps):
             res.extend(dep_pairs)
     return res
 
+
 def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
     """Drop any unneeded require or require any dependencies and record any
     dropped require-any dependencies which were inferred."""
@@ -1404,6 +1430,7 @@ def __remove_unneeded_require_and_require_any(deps, pkg_fmri):
 
     return res, omitted_req_any, warnings
 
+
 def __remove_extraneous_conditionals(deps, omitted_req_any):
     """Remove conditional dependencies which other dependencies have made
     unnecessary.  If an inferred require-any dependency was collapsed to a
@@ -1467,6 +1494,7 @@ def __remove_extraneous_conditionals(deps, omitted_req_any):
 
     return [(d, v) for d, v in deps if d.attrs["type"] != "conditional"] + \
         needed_cond_deps
+
 
 def combine(deps, pkg_vars, pkg_fmri, pkg_name):
     """Combine duplicate dependency actions.
@@ -1581,6 +1609,7 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
 
     return res, errs, warnings
 
+
 def split_off_variants(dep, pkg_vars, satisfied=False):
     """Take a dependency which may be tagged with variants and move those
     tags into a VariantSet."""
@@ -1595,6 +1624,7 @@ def split_off_variants(dep, pkg_vars, satisfied=False):
     dep.strip_variants()
     return dep, variants.VariantCombinations(dep_vars, satisfied=satisfied)
 
+
 def prune_debug_attrs(action):
     """Given a dependency action with pkg.debug.depend attributes
     return a matching action with those attributes removed"""
@@ -1602,6 +1632,7 @@ def prune_debug_attrs(action):
     attrs = dict((k, v) for k, v in action.attrs.items()
                  if not k.startswith(base.Dependency.DEPEND_DEBUG_PREFIX))
     return actions.depend.DependencyAction(**attrs)
+
 
 def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst,
     distro_vars=None, use_template=False):
@@ -1650,6 +1681,7 @@ def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst,
         links_dict.setdefault(f.attrs["path"], []).append(
             (pfmri, vc, f.attrs["target"]))
 
+
 def __safe_fmri_parse(txt):
     dep_name = None
     try:
@@ -1657,6 +1689,7 @@ def __safe_fmri_parse(txt):
     except fmri.IllegalFmri:
         pass
     return dep_name
+
 
 def resolve_deps(manifest_paths, api_inst, system_patterns, prune_attrs=False):
     """For each manifest given, resolve the file dependencies to package

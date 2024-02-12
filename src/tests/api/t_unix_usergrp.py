@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -35,6 +35,7 @@ import shutil
 import sys
 import tempfile
 import pkg.portable as portable
+
 
 class TestUserGroup(pkg5unittest.Pkg5TestCase):
 
@@ -152,7 +153,6 @@ tty::7:root,adm
         self.assertRaises(KeyError, portable.get_group_by_name,
             "plusgrp", self.test_root, True)
 
-
     def testUser1(self):
         if not os.path.exists("/etc/passwd"):
             return
@@ -183,7 +183,6 @@ moop:x:999:999:moop:/usr/moop:""")
         self.assertRaises(KeyError, portable.get_name_by_uid,
             12345, self.test_root, True)
 
-
     def testUser2(self):
         """ Test with a missing passwd file """
         if not os.path.exists("/etc/passwd"):
@@ -198,7 +197,6 @@ moop:x:999:999:moop:/usr/moop:""")
             portable.get_user_by_name("root", self.test_root, True))
         self.assertTrue("root" == \
             portable.get_name_by_uid(0, self.test_root, True))
-
 
     def testUser3(self):
         """ Test with an oddball/corrupt passwd file """

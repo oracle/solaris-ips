@@ -83,6 +83,7 @@ import pkg.version
 
 from pkg.server.query_parser import Query, ParseError, BooleanQueryException
 
+
 class Dummy(object):
     """Dummy object used for dispatch method mapping."""
     pass
@@ -687,7 +688,6 @@ class DepotHTTP(_Depot):
                     traceback=True)
 
             cherrypy.request.tar_stream = None
-
 
     def file_0(self, *tokens):
         """Outputs the contents of the file, named by the SHA-1 hash
@@ -1474,6 +1474,7 @@ misc.bytes_to_str(csize), pfmri, lsummary.read())
             raise cherrypy.HTTPError(http.client.NOT_FOUND, _("Unable "
                 "to generate statistics."))
         return misc.force_bytes(out + "\n")
+
 
 def nasty_before_handler(nasty_depot, maxroll=100):
     """Cherrypy Tool callable which generates various problems prior to a

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -3010,7 +3010,6 @@ close
         with open(cert_path, "rb") as f:
             cert = x509.load_pem_x509_certificate(
                 f.read(), default_backend())
-
 
         fd, new_cert = tempfile.mkstemp(dir=self.test_root)
         with os.fdopen(fd, "wb") as fh:

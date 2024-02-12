@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -36,6 +36,7 @@ import time
 
 import pkg.client.api_errors as apx
 import pkg.fmri as fmri
+
 
 class TestPkgFreeze(pkg5unittest.SingleDepotTestCase):
     persistent_setup = True

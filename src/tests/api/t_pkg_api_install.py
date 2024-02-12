@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -48,6 +48,7 @@ from urllib.parse import urlunparse
 from urllib.request import pathname2url
 
 PKG_CLIENT_NAME = "pkg"
+
 
 class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -32,6 +32,7 @@ import unittest
 import stat
 from io import open
 from pkg.misc import force_text
+
 
 class TestPkgSMFActuators(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
@@ -576,6 +577,7 @@ stop/type astring method
             "svcadm restart svc:/system/test_restart_svc:default")
         os.unlink(zlogin_output)
 
+
 class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
     persistent_setup = True
@@ -625,7 +627,6 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
             open badencoding@1.0,5.11-0
             add file tmp/release-note-7 mode=0644 owner=root group=bin path=/usr/share/doc/release-notes/release-note-7 release-note=feature/pkg/self@0
             close """
-
 
     multi_unicode = u"Eels are best smoked\nМоё судно на воздушной подушке полно угрей\nHovercraft can be smoked, too.\n"
     multi_ascii = "multi-line release notes\nshould work too,\nwe'll see if they do.\n"

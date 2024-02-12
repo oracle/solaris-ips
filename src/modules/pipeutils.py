@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -110,6 +110,7 @@ logging.getLogger("jsonrpclib.SimpleJSONRPCServer").addHandler(
 
 # debugging
 pipeutils_debug = (os.environ.get("PKG_PIPEUTILS_DEBUG", None) is not None)
+
 
 class PipeFile(object):
     """Object which makes a pipe look like a "file" object.
@@ -361,6 +362,7 @@ class PipeSocket(PipeFile):
     def setsockopt(self, *args):
         """set socket opt."""
         pass
+
 
 # pylint seems to be panic about these.
 # PipedHTTP: Class has no __init__ method; pylint: disable=W0232

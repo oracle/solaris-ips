@@ -174,7 +174,6 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
             publisher.ProxyURI("http://foo.com"),
             publisher.ProxyURI("http://bar.com")])
 
-
     def test_02_repository(self):
         """Verify that a Repository object can be created, copied,
         modified, and used as expected."""

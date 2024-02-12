@@ -35,6 +35,7 @@ import pkg.misc as misc
 from pkg._varcet import _allow_facet
 from pkg.misc import EmptyI, ImmutableDict
 
+
 class Facets(dict):
     # store information on facets; subclass dict
     # and maintain ordered list of keys sorted
@@ -470,7 +471,6 @@ class Facets(dict):
         if self.__inherited_ro is None:
             self.__inherited_ro = ImmutableDict(self.__inherited)
         return self.__inherited_ro
-
 
     def allow_action(self, action, publisher=None):
         return _allow_facet(self, action, publisher=publisher)

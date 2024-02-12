@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -33,6 +33,7 @@ import os
 import sys
 import pkg.client.api_errors as api_errors
 import pkg.client.bootenv as bootenv
+
 
 class TestBootEnv(pkg5unittest.Pkg5TestCase):
 

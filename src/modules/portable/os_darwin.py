@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -35,6 +35,7 @@ from .os_unix import \
     split_path, get_root, assert_mode
 
 import macostools
+
 
 def copyfile(src, dst):
     """

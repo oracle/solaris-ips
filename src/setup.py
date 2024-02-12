@@ -562,7 +562,6 @@ class pylint_func(Command):
         proto = os.path.join(root_dir, py_install_dir)
         sys.path.insert(0, proto)
 
-
         # Insert tests directory onto sys.path so any custom checkers
         # can be found.
         sys.path.insert(0, os.path.join(pwd, 'tests'))
@@ -613,6 +612,7 @@ class pylint_func_quiet(pylint_func):
 class pylint_func_py3k(pylint_func):
     def run(self, quiet=False, py3k=False):
         pylint_func.run(self, py3k=True)
+
 
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
@@ -1001,6 +1001,7 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
                 dfp.write(buf)
                 first_buf = False
 
+
 # Make file_util use our version of _copy_file_contents
 file_util._copy_file_contents = _copy_file_contents
 
@@ -1280,6 +1281,7 @@ class MyUnixCCompiler(UnixCCompiler):
 
         os.chdir(cwd)
 
+
 distutils.ccompiler.compiler_class['myunix'] = (
     'unixccompiler', 'MyUnixCCompiler',
     'standard Unix-style compiler with a link stage modified for Solaris'
@@ -1288,6 +1290,7 @@ distutils.ccompiler.compiler_class['myunix'] = (
 
 def my_new_compiler(plat=None, compiler=None, verbose=0, dry_run=0, force=0):
     return MyUnixCCompiler(None, dry_run, force)
+
 
 if osname == 'sunos':
     distutils.ccompiler.new_compiler = my_new_compiler
@@ -1576,8 +1579,10 @@ class clobber_func(Command):
 
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         # nuke everything
         print("deleting " + dist_dir)
@@ -1675,6 +1680,7 @@ class Extension(distutils.core.Extension):
         sources = [str(s) for s in sources]
         distutils.core.Extension.__init__(self, str(name), sources, **kwargs)
         self.build_64 = build_64
+
 
 # These are set to real values based on the platform, down below
 compile_args = None
