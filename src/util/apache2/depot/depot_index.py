@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 
 import atexit
 import cherrypy
@@ -74,8 +74,10 @@ gettext.install("/")
 # Python interpreter.)
 KEEP_BUSY_INTERVAL = 120
 
+
 class DepotException(Exception):
     """Super class for all exceptions raised by depot_index."""
+
     def __init__(self, request, message):
         self.request = request
         self.message = message
@@ -803,6 +805,7 @@ class Pkg5Dispatch(object):
                 raise cherrypy.HTTPError(
                     status=http.client.INTERNAL_SERVER_ERROR,
                     message="".join(traceback.format_exc(e)))
+
 
 wsgi_depot = WsgiDepot()
 dispatcher = Pkg5Dispatch(wsgi_depot)

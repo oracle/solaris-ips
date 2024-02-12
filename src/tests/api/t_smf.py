@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -33,6 +33,7 @@ import unittest
 import pkg.smf as smf
 
 from pkg.client.debugvalues import DebugValues
+
 
 class TestSMF(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)

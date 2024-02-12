@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 #
 
 import hashlib
@@ -189,10 +189,12 @@ for key in HASH_ALGS:
 ALL_HASH_ATTRS = (DEFAULT_HASH_ATTRS + DEFAULT_CHASH_ATTRS +
     DEFAULT_GELF_HASH_ATTRS)
 
+
 def is_hash_attr(attr_name):
     """Tells whether or not the named attribute contains a hash value."""
 
     return attr_name in ALL_HASH_ATTRS
+
 
 def _get_hash_dics(hash_type):
     """Based on the 'hash_type', return a tuple describing the ranking of
@@ -236,6 +238,7 @@ class ContentHash(dict):
 
         "extract_method:hash_alg": "hash_val"
     """
+
     def __init__(self, vals):
         dict.__init__(self)
 

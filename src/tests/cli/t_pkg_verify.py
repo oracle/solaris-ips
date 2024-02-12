@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -35,6 +35,7 @@ import subprocess
 import tempfile
 import time
 import unittest
+
 
 class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
     # Tests in this suite use the read only data directory
@@ -308,7 +309,6 @@ sys::3:root,bin,adm
         self.pkg_verify("-v -p /usr -p /usr/bin/bobcat_link")
         self.assertTrue("ERROR" not in self.output
             and self.output.count("OK") == 1)
-
 
         # When multiple paths are given to pkg verify, if any of them
         # are not packaged in the image it should report the file not found.
@@ -760,6 +760,7 @@ sys::3:root,bin,adm
             == "unpackaged")
         self.assertTrue("pkg://test/foo@1.0,5.11-0:20160229T095441Z"
             not in out_json["item-messages"])
+
 
 if __name__ == "__main__":
     unittest.main()

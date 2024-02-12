@@ -22,13 +22,14 @@
 #
 
 #
-# Copyright (c) 2016, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2016, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
 if __name__ == "__main__":
     testutils.setup_environment("../../../proto")
 import pkg5unittest
+
 
 class TestPkgSolverErrors(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)

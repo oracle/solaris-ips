@@ -134,6 +134,7 @@ POSSIBLE_USES = [CODE_SIGNING_USE, CERT_SIGNING_USE, CRL_SIGNING_USE]
 # system-repository.
 SYSREPO_PROXY = "<sysrepo>"
 
+
 class RepositoryURI(object):
     """Class representing a repository URI and any transport-related
     information."""
@@ -157,7 +158,6 @@ class RepositoryURI(object):
     def __init__(self, uri, priority=None, ssl_cert=None, ssl_key=None,
         trailing_slash=True, proxy=None, system=False, proxies=None,
         disabled=False):
-
 
         # Must set first.
         self.__trailing_slash = trailing_slash
@@ -1196,7 +1196,6 @@ class Publisher(object):
     # from during __copy__.
     _source_object_id = None
 
-
     def __init__(self, prefix, alias=None, catalog=None, client_uuid=None,
         disabled=False, meta_root=None, repository=None,
         transport=None, sticky=True, props=None, revoked_ca_certs=EmptyI,
@@ -1227,7 +1226,6 @@ class Publisher(object):
         self.transport = transport
         self.meta_root = meta_root
         self.sticky = sticky
-
 
         self.__sig_policy = None
         self.__delay_validation = False

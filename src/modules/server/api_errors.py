@@ -20,11 +20,12 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 class ApiException(Exception):
     """Base exception class for all server.api exceptions."""
+
     def __init__(self, *args):
         Exception.__init__(self, *args)
         if args:
@@ -38,6 +39,7 @@ class VersionException(ApiException):
     """Exception used to indicate that the client's requested api version
     is not supported.
     """
+
     def __init__(self, expected_version, received_version):
         ApiException.__init__(self)
         self.expected_version = expected_version

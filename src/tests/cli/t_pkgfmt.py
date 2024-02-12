@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -38,6 +38,7 @@ import tempfile
 import unittest
 
 import pkg.portable
+
 
 class TestPkgFmt(pkg5unittest.CliTestCase):
     pkgcontents = \

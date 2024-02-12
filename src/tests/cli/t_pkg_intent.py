@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -167,7 +167,6 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
         # Verify that no entries are present
         self.assertTrue(not entries)
 
-
     def test_1_install_uninstall(self):
         """Verify that the install and uninstall of a single package
         sends the expected intent information."""
@@ -205,9 +204,9 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
         }))
 
     def test_2_upgrade(self):
-        """Verify the the install of a single package, and then an
-        upgrade (install of newer version) of that package sends the
-        expected intent information."""
+        """Verify the install of a single package, and then an upgrade
+        (install of newer version) of that package sends the expected
+        intent information."""
 
         plist = self.pkgsend_bulk(self.durl, (self.foo10, self.foo11))
         api_obj = self.image_create(self.durl)
@@ -252,7 +251,6 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
 
         self.__do_install(api_obj, ["bar@1.0"])
         self.__do_uninstall(api_obj, ["bar", "foo"])
-
 
         foo = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True)
         bar = fmri.PkgFmri(plist[1]).get_fmri(anarchy=True)

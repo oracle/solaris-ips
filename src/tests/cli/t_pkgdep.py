@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -1073,7 +1073,6 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     d.attrs[dependencies.type_prefix],
                     "script")
 
-
     def setUp(self):
         pkg5unittest.SingleDepotTestCase.setUp(self)
         self.rurl1 = self.dcs[1].get_repo_url()
@@ -1272,6 +1271,7 @@ SYMBOL_SCOPE {
                 bar { AUXILIARY=xxx.so };
 };
 """
+
         def __check_res(es, ms, pkg_attrs):
             self.assertEqual(len(es), 0,
                 "\n".join([str(d) for d in es]))
@@ -2040,6 +2040,7 @@ int main() { return 1; }
         deps, errs, warnings, unused_fmris, external_deps = \
             dependencies.resolve_deps([a_pth, b_pth], None, [],
                 prune_attrs=False)
+
         def check_res(deps, errs):
             self.assertEqual(len(errs), 0,
                 "\n" + "\n\n".join([str(s) for s in errs]))
@@ -2537,6 +2538,7 @@ dir group=bin mode=0755 owner=root path=bad_b/bin variant.foo=b
         deps, errs, warnings, unused_fmris, external_deps = \
             dependencies.resolve_deps([a_pth, c_pth], api_obj, ["*"],
                 prune_attrs=False)
+
         def bad_b_link_check_res(deps, errs):
             self.assertEqual(len(errs), 1,
                 "\n".join([str(s) for s in errs]))
@@ -3171,6 +3173,7 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
             self.test_proto_dir, tp))
         self.check_res("", self.errout)
         self.check_res(self.res_bypass, self.output)
+
 
 if __name__ == "__main__":
     unittest.main()

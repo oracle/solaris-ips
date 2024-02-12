@@ -105,6 +105,7 @@ repo_modified = False
 repo_finished = False
 repo_uri = None
 
+
 def error(text, cmd=None):
     """Emit an error message prefixed by the command name """
 
@@ -114,7 +115,6 @@ def error(text, cmd=None):
     else:
         text = "\n{0}: {1}".format(PKG_CLIENT_NAME, text)
 
-
     # If the message starts with whitespace, assume that it should come
     # *before* the command-name prefix.
     text_nows = text.lstrip()
@@ -123,6 +123,7 @@ def error(text, cmd=None):
     # This has to be a constant value as we can't reliably get our actual
     # program name on all platforms.
     emsg(ws + text_nows)
+
 
 def cleanup(no_msg=False):
     """Remove temporary directories. Print error msg in case operation
@@ -143,6 +144,7 @@ To re-try the operation, run the following commands:
     if temp_root:
         shutil.rmtree(temp_root)
         temp_root = None
+
 
 def usage(usage_error=None, cmd=None, retcode=pkgdefs.EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more specific
@@ -179,8 +181,8 @@ Options:
         -?/--help       Print this message.
 """))
 
-
     sys.exit(retcode)
+
 
 def abort(err=None, retcode=pkgdefs.EXIT_OOPS):
     """To be called when a fatal error is encountered."""
@@ -192,6 +194,7 @@ def abort(err=None, retcode=pkgdefs.EXIT_OOPS):
 
     cleanup()
     sys.exit(retcode)
+
 
 def fetch_catalog(src_pub, xport, temp_root):
     """Fetch the catalog from src_uri."""
@@ -205,6 +208,7 @@ def fetch_catalog(src_pub, xport, temp_root):
     src_pub.refresh(full_refresh=True, immediate=True)
 
     return src_pub.catalog
+
 
 def get_latest(cat):
     """ Get latest packages (surface) from given catalog.
@@ -220,6 +224,7 @@ def get_latest(cat):
         matches[m] = matching[m][0]
 
     return matches
+
 
 def get_matching_pkgs(cat, patterns):
     """Get the matching pkg FMRIs from catalog 'cat' based on the input
@@ -246,6 +251,7 @@ def get_matching_pkgs(cat, patterns):
 
     return list(matching.keys())
 
+
 def get_manifest(repo, pub, pfmri):
     """ Retrieve a manifest with FMRI 'pfmri' of publisher 'pub' from
     repository object 'repo'. """
@@ -261,6 +267,7 @@ def get_manifest(repo, pub, pfmri):
             file=path, err=str(e), rroot=repo.root))
     return mani
 
+
 def get_tracker():
     try:
         progresstracker = \
@@ -269,6 +276,7 @@ def get_tracker():
         progresstracker = progress.CommandLineProgressTracker()
     progresstracker.set_major_phase(progresstracker.PHASE_UTILITY)
     return progresstracker
+
 
 def subs_undef_fmri_str(fmri_str, latest_ref_pkgs):
     """ Substitute correct dependency FMRI if no counterpart can be found in
@@ -284,6 +292,7 @@ def subs_undef_fmri_str(fmri_str, latest_ref_pkgs):
         return fmri_str
 
     return ndpfmri.get_short_fmri(anarchy=True)
+
 
 def get_dep_fmri_str(fmri_str, pkg, act, latest_ref_pkgs, reversioned_pkgs,
     ref_xport):
@@ -340,6 +349,7 @@ def get_dep_fmri_str(fmri_str, pkg, act, latest_ref_pkgs, reversioned_pkgs,
     # If a varcet changed we might not find the matching action.
     return subs_undef_fmri_str(fmri_str, latest_ref_pkgs)
 
+
 def adjust_dep_action(pkg, act, latest_ref_pkgs, reversioned_pkgs, ref_xport):
     """Adjust dependency FMRIs of action 'act' if it is of type depend.
     The adjusted action will reference only FMRIs which are present in the
@@ -377,6 +387,7 @@ def adjust_dep_action(pkg, act, latest_ref_pkgs, reversioned_pkgs, ref_xport):
 
     return nact
 
+
 def use_ref(a, deps, ignores):
     """Determine if the given action indicates that the pkg can be
     reversioned."""
@@ -403,6 +414,7 @@ def use_ref(a, deps, ignores):
         return True
 
     return False
+
 
 def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
     cmp_policy, ref_repo, ref, ref_xport_cfg):
@@ -706,6 +718,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
 
     return True
 
+
 def add_missing_files(target_repo, pub, latest_pkg, pfmri, rmani, ref, ref_repo,
     ref_xport, ref_xport_cfg, ref_pub):
     """Add missing data from reference repository to target repository."""
@@ -759,6 +772,7 @@ def add_missing_files(target_repo, pub, latest_pkg, pfmri, rmani, ref, ref_repo,
             sr.RepositoryFileNotFoundError) as e:
             abort(err=_("Could not reversion file "
             "{path}: {err}").format(path=h, err=str(e)))
+
 
 def main_func():
 

@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -63,6 +63,7 @@ try:
     sha512_supported = True
 except ImportError:
     sha512_supported = False
+
 
 class _TestHelper(object):
     """Private helper class for shared functionality between test
@@ -152,7 +153,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
-
 
     bar12 = """
             open bar@1.2,5.11-0
@@ -1135,7 +1135,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             self.secret2, self.secret3, self.secret4, self.secret5,
             self.secret6])
 
-
         # Need to create an image in /var/tmp since sysattrs don't work
         # in tmpfs.
         self.debug(self.rurl)
@@ -1993,7 +1992,6 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
 
             )
 
-
     def setUp(self):
         pkg5unittest.SingleDepotTestCase.setUp(self)
         self.pkgsend_bulk(self.rurl, self.pkgs)
@@ -2465,7 +2463,6 @@ class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
 
-
     pkg11 = """
             open pkg1@1.1,5.11-0
             add depend type=require fmri=pkg:/pkg2@1.1
@@ -2689,7 +2686,6 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             close
         """
 
-
     gold10 = """
             open gold@1.0,5.11-0
             add file tmp/gold-passwd1 mode=0644 owner=root group=bin path=etc/passwd preserve=true
@@ -2749,7 +2745,6 @@ class TestPkgInstallUpgrade(_TestHelper, pkg5unittest.SingleDepotTestCase):
             add user username=Kermit group=adm home-dir=/export/home/Kermit
             close
         """
-
 
     iron10 = """
             open iron@1.0,5.11-0
@@ -3458,7 +3453,6 @@ adm
         self.pkg("uninstall elfhash")
 
     def test_upgrade1(self):
-
         """ Upgrade torture test.
             Send package amber@1.0, bronze1.0; install bronze1.0, which
             should cause amber to also install.
@@ -3624,7 +3618,6 @@ adm
             ],
         )
 
-
         # test 2: change an editable file's path within a package
         self.pkg("{0} --parsable=0 gold@1.0".format(install_cmd))
         self.pkg("verify -v")
@@ -3655,7 +3648,6 @@ adm
         )
         self.pkg("verify -v")
 
-
         # test 3: move an editable file between packages and change its path
         self.pkg("{0} --parsable=0 gold@1.0 silver@1.0".format(install_cmd))
         self.pkg("verify -v")
@@ -3683,7 +3675,6 @@ adm
         self.file_contains(file_path, test_str)
 
         self.pkg("uninstall --parsable=0 gold silver")
-
 
         # test 4: move /etc/passwd between packages and ensure that we
         # can still uninstall a user at the same time.
@@ -5157,7 +5148,6 @@ adm
         self.file_contains(
             "var/.migrate/user/noodles/blah.conf", "moo")
 
-
     def dest_file_valid(self, plist, pkg, src, dest):
         """Used to verify that the dest item's mode, attrs, timestamp,
         etc. match the src items's matching action as expected."""
@@ -5375,7 +5365,6 @@ adm:NP:6445::::::
             "cat" : " ",
             "empty" : ""
     }
-
 
     foo10 = """
             open foo@1.0,5.11-0
@@ -6074,7 +6063,6 @@ adm:NP:6445::::::
                 open simpleuser3@2
                 add user username=wombat group=root gcos-field="& has explict password" login-shell=/bin/bash uid=99 password=$5$C6451mtT$PDg63UKGtFr7FHkMSxUhdTcd0XBtHTnKXNN7RpJe/h1 shell-change-ok=true
                 close"""
-
 
         self.pkgsend_bulk(self.rurl, (self.basics0, simpleusers))
         self.image_create(self.rurl)
@@ -8512,7 +8500,6 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         self.pkg("refresh")
         self.pkg("install foo@1.1")
 
-
     def test_var_pkg_left_alone(self):
         """ Sanity check to ensure that the code for creating
         a bad_dir creates a good copy other than what's specified
@@ -8631,6 +8618,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
     """Test cases for obsolete packages."""
 
     persistent_setup = True
+
     def test_basic_install(self):
         foo1 = """
                     open foo@1
@@ -8998,7 +8986,6 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-
         self.pkgsend_bulk(self.rurl, t6ap1_1)
         self.image_create(self.rurl)
 
@@ -9216,7 +9203,6 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
         self.pkg("{0} netbooze".format(install_cmd))
         self.pkg("list pkg:/developer/netbooze")
         self.pkg("list pkg:/netbooze", exit=1)
-
 
     def test_basic_12(self):
         """Upgrade a package across a rename to an ambiguous name."""
@@ -9895,7 +9881,6 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
         self.plist = self.pkgsend_bulk(self.rurl, (self.licensed10,
             self.licensed12, self.licensed13, self.baz10,
             self.nonascii10, self.utf8enc10, self.unsupported10))
-
 
     def test_01_install_update(self):
         """Verifies that install and update handle license
@@ -10973,7 +10958,6 @@ adm
             pkgs.append(s)
 
         self.plist = self.pkgsend_bulk(self.rurl, pkgs)
-
 
     def test_conflictgroupid_install(self):
         """Test conflict group IDs will not cause user action failure.

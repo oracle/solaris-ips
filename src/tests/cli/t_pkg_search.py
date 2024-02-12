@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -49,6 +49,7 @@ try:
     sha512_supported = True
 except ImportError:
     sha512_supported = False
+
 
 class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -289,7 +290,6 @@ adm:NP:6445::::::
 """,
         }
 
-
     res_local_pkg_ret_pkg = set([
         pkg_headers,
         "pkg:/example_pkg@1.0-0\n"
@@ -306,7 +306,6 @@ adm:NP:6445::::::
         "pkg.content-hash file   ['file:sha512t_256:8e3b2cea6dc6c4954cf8205bff833ead1f2eb3d4850525544cde0242c971452d', 'gzip:sha512t_256:8846fa174b11c8241080d58796509ef3f86f1dba119f318d32e5ca1b2be33f91'] pkg:/example_pkg@1.0-0\n",
         'hash                                     file   bin/example_path pkg:/example_pkg@1.0-0\n'
     ]) | res_remote_path
-
 
     res_remote_url = set([
          headers,
@@ -724,7 +723,6 @@ adm:NP:6445::::::
             self.headers,
             "path       dir    bin   pkg:/example_pkg@1.0-0\n"
         ])
-
 
         res_11_action = set([
             self.headers,

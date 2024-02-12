@@ -21,11 +21,12 @@
 #
 
 #
-# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2014, 2024, Oracle and/or its affiliates.
 #
 
 import os
 import subprocess
+
 
 class CertGenerator(object):
     """A class which creates certificates."""

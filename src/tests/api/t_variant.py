@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import copy
@@ -33,13 +33,13 @@ import pkg5unittest
 import unittest
 import pkg.variant as variant
 
+
 class TestVariants(pkg5unittest.Pkg5TestCase):
 
     def __check_equal(self, v1, v2):
         self.assertEqual(sorted(v1.keys()), sorted(v2.keys()))
         for k in v1:
             self.assertEqual(sorted(v1[k]), sorted(v2[k]))
-
 
     def test_vct(self):
         """Test functionality of VariantCombinationTemplates."""

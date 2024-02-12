@@ -35,6 +35,7 @@ import pkg.fmri as fmri
 import os
 import sys
 
+
 class TestFMRI(pkg5unittest.Pkg5TestCase):
 
     pkg_name_valid_chars = {
@@ -304,6 +305,7 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
 
         self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
             "BRCMbnx@0.5.aa,5.aa-0.aa")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 
 import os
 import sys
 import platform
 import tempfile
+
 
 def setup_environment(path_to_proto, debug=False, system_test=False):
     """ Set up environment for doing testing.

@@ -27,6 +27,7 @@ from pylint.interfaces import IAstroidChecker
 from pylint.checkers import BaseChecker
 from astroid.modutils import get_module_part
 
+
 class MultiPlatformAPIChecker(BaseChecker):
     """
     This class implements a pylint extension which checks for the use
@@ -182,6 +183,7 @@ class MultiPlatformAPIChecker(BaseChecker):
             fullname = '.'.join(name[:i + 1])
             if fullname in self.VERBOTEN:
                 self.add_message('E0901', args=(fullname), node=node)
+
 
 def register(linter):
     """required method to auto register this checker"""

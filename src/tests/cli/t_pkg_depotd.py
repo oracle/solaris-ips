@@ -52,6 +52,7 @@ import pkg.p5i as p5i
 import re
 import subprocess
 
+
 class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
     persistent_setup = True
@@ -595,6 +596,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 except:
                     raise RuntimeError("Feed cache file "
                         "not found at '{0}'.".format(feed))
+
         def get_feed(durl, pub=""):
             start_time = time.time()
             got = False
@@ -1032,7 +1034,6 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
             index = 0
             assert entries[0][0].prefix == "org.opensolaris.pending"
             assert entries[1][0].prefix == "test"
-
 
         # Now verify that the parsed response has the expected data.
         pub, pkglist = entries[index]

@@ -207,5 +207,6 @@ class TestAltroot(pkg5unittest.Pkg5TestCase):
         for func, args in invoke:
             self.__bad_img_prefix(func, args)
 
+
 if __name__ == "__main__":
     unittest.main()

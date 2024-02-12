@@ -33,6 +33,7 @@ import unittest
 
 import pkg.fmri as fmri
 
+
 class TestCommandLine(pkg5unittest.ManyDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
     persistent_setup = True
@@ -46,7 +47,7 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
     def test_pkg_bogus_opts(self):
         """ pkg bogus option checks """
 
-        # create a image to avoid non-existant image messages
+        # create a image to avoid non-existent image messages
         self.image_create(self.rurl1)
 
         self.pkg("uninstall -@ foo", exit=2)

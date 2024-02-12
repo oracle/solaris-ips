@@ -276,6 +276,7 @@ class ImagePlan(object):
     def bytes_added(self):
         """get the (approx) number of bytes added"""
         return self.pd._bytes_added
+
     @property
     def cbytes_added(self):
         """get the (approx) number of bytes needed in download cache"""
@@ -285,6 +286,7 @@ class ImagePlan(object):
     def bytes_avail(self):
         """get the (approx) number of bytes space available"""
         return self.pd._bytes_avail
+
     @property
     def cbytes_avail(self):
         """get the (approx) number of download space available"""
@@ -539,7 +541,6 @@ class ImagePlan(object):
 
         solver_inst.add_triggered_op(trigger_op, exec_op,
             triggered_fmris)
-
 
     def __decode_pkg_actuator_attrs(self, action, op):
         """Read and decode pkg actuator data from action 'action'."""
@@ -1084,7 +1085,6 @@ class ImagePlan(object):
         assert fmri_changes is not None
         self.__finish_plan(plandesc.EVALUATED_PKGS,
             fmri_changes=fmri_changes)
-
 
     def plan_set_mediators(self, new_mediators):
         """Determine the changes needed to set the specified mediators.
@@ -3326,6 +3326,7 @@ class ImagePlan(object):
 
         # Group action types by namespace groups
         kf = operator.attrgetter("namespace_group")
+
         # Unequal types are not comparable in Python 3, therefore
         # convert them to the same type 'int' first.
         def key(a):
@@ -3855,7 +3856,6 @@ class ImagePlan(object):
                     self.pd._bytes_added,
                     self.pd._bytes_avail,
                     _("Root filesystem"))
-
 
     def evaluate(self):
         """Given already determined fmri changes,
@@ -5634,7 +5634,6 @@ class ImagePlan(object):
         if self.invalid_meds and not self.image.is_zone():
             medmsg = self.__make_med_msg()
             raise api_errors.InvalidMediatorTarget(medmsg)
-
 
     def __is_image_empty(self):
         try:

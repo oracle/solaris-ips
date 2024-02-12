@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2014, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -32,6 +32,7 @@ import pkg5unittest
 import os
 import pkg.misc as misc
 import time
+
 
 class TestPkgHydrate(pkg5unittest.ManyDepotTestCase):
     # Tests in this suite use the read only data directory.

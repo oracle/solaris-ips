@@ -66,6 +66,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.misc import PKG_RO_FILE_MODE
 logger = global_settings.logger
 
+
 class TransportCfg(object):
     """Contains configuration needed by the transport for proper
     operations.  Clients must create one of these objects, and then pass
@@ -512,6 +513,7 @@ class GenericTransportCfg(TransportCfg):
     user_agent = property(__get_user_agent,
         doc="A string that identifies the user agent for the transport.")
 
+
 class LockedTransport(object):
     """A decorator class that wraps transport functions, calling
     their lock and unlock methods.  Due to implementation differences
@@ -532,6 +534,7 @@ class LockedTransport(object):
             finally:
                 lock.release()
         return wrapper
+
 
 def _convert_repouris(repolist):
     """Given a list of RepositoryURI objects, expand them into a list of
@@ -588,7 +591,6 @@ class Transport(object):
             except tx.mDNSException:
                 # Not fatal.  Suppress.
                 pass
-
 
     def reset(self):
         """Resets the transport.  This needs to be done
@@ -911,7 +913,6 @@ class Transport(object):
                     failures.append(e)
                 else:
                     raise e
-
 
             if gave_up:
                 # If the transport gave up due to excessive
@@ -2673,6 +2674,7 @@ class Transport(object):
     def _make_opener(cache_path):
         if cache_path is None:
             return
+
         def opener():
             f = open(cache_path, "rb")
             return f
@@ -3492,6 +3494,7 @@ class MultiFile(MultiXfr):
         if self._hash:
             self._transport._get_files(self)
 
+
 class MultiFileNI(MultiFile):
     """A transport object for performing multi-file requests
     using pkg actions.  This takes care of matching the publisher
@@ -3656,6 +3659,7 @@ class MultiFileNI(MultiFile):
 # The following two methods are to be used by clients without an Image that
 # need to configure a transport and or publishers.
 
+
 def setup_publisher(repo_uri, prefix, xport, xport_cfg,
     remote_prefix=False, remote_publishers=False, ssl_key=None,
     ssl_cert=None):
@@ -3722,6 +3726,7 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
 
     # Return first publisher in list
     return newpubs[0]
+
 
 def setup_transport():
     """Initialize the transport and transport configuration. The caller

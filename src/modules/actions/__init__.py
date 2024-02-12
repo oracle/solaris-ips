@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -92,6 +92,7 @@ class ActionError(Exception):
     def __str__(self):
         raise NotImplementedError()
 
+
 class ActionRetry(ActionError):
     def __init__(self, *args):
         ActionError.__init__(self)
@@ -100,6 +101,7 @@ class ActionRetry(ActionError):
     def __str__(self):
         return _("Need to try installing {action} again").format(
             action=self.actionstr)
+
 
 class UnknownActionError(ActionError):
     def __init__(self, *args):
@@ -116,6 +118,7 @@ class UnknownActionError(ActionError):
         return _("unknown action type '{type}' in action "
             "'{action}'").format(type=self.type,
             action=self.actionstr)
+
 
 class MalformedActionError(ActionError):
     def __init__(self, *args):
@@ -232,12 +235,14 @@ class InvalidActionAttributesError(ActionError):
 # _actions module init needs the exception objects.
 from ._actions import fromstr
 
+
 def attrsfromstr(string):
     """Create an attribute dict given a string w/ key=value pairs.
 
     Raises MalformedActionError if the attributes have syntactic problems.
     """
     return fromstr("unknown {0}".format(string)).attrs
+
 
 def internalizelist(atype, args, ahash=None, basedirs=None):
     """Create an action instance based on a sequence of "key=value" strings.
@@ -321,6 +326,7 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
         basedirs=basedirs)
     return action, local_path
 
+
 def internalizestr(string, basedirs=None, load_data=True):
     """Create an action instance based on a sequence of strings.
     This function also translates external representations of actions with
@@ -343,6 +349,7 @@ def internalizestr(string, basedirs=None, load_data=True):
     local_path, used_basedir = set_action_data(action.hash, action,
         basedirs=basedirs)
     return action, local_path, used_basedir
+
 
 def set_action_data(payload, action, basedirs=None, bundles=None):
     """Sets the data field of an action using the information in the

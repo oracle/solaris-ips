@@ -35,6 +35,7 @@ import datetime
 import os
 import sys
 
+
 class TestVersion(pkg5unittest.Pkg5TestCase):
     def setUp(self):
         self.d1 = version.DotSequence("1.1.3")

@@ -43,6 +43,7 @@ typemap = {
         stat.S_IFSOCK: "socket"
 }
 
+
 class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
     """XXX Need a class comment."""
 
@@ -191,6 +192,7 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
         if self.hollow and act:
             act.attrs[self.hollow_attr] = "true"
         return act
+
 
 def test(filename):
     if not os.path.isfile(filename):

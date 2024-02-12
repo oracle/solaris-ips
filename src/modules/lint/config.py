@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 # aspects of pkglint configuration
@@ -48,11 +48,13 @@ defaults = {
 # Ensure the order of the items is the same.
 defaults = OrderedDict(sorted(defaults.items(), key=lambda t: t[0]))
 
+
 class PkglintConfigException(Exception):
     """An exception thrown when something fatal happens while reading the
     config.
     """
     pass
+
 
 class PkglintConfig(object):
     def __init__(self, config_file=None):

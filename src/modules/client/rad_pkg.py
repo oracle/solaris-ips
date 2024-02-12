@@ -56,6 +56,7 @@ rad2pkg_cmds_mapping = {
     "exact_install": "exact-install"
     }
 
+
 def __init_prog_tracker(prog_event_handler, prog_delay):
     """Initialize progress tracker."""
 
@@ -63,6 +64,7 @@ def __init_prog_tracker(prog_event_handler, prog_delay):
         prog_event_handler=prog_event_handler,
         term_delay=prog_delay)
     return progresstracker
+
 
 def __correspond_pkg_cmd(rad_operation):
     """Need to replace rad operation names with pkg subcommand."""
@@ -73,11 +75,13 @@ def __correspond_pkg_cmd(rad_operation):
         pkg_cmd = rad_operation
     return pkg_cmd
 
+
 def rad_get_input_schema(operation):
     """Get the input schema for RAD operation."""
 
     pkg_cmd = __correspond_pkg_cmd(operation)
     return entry._get_pkg_input_schema(pkg_cmd, opts_mapping)
+
 
 def rad_get_output_schema(operation):
     """Get the output schema for RAD operation."""
@@ -85,8 +89,10 @@ def rad_get_output_schema(operation):
     pkg_cmd = __correspond_pkg_cmd(operation)
     return entry._get_pkg_output_schema(pkg_cmd)
 
+
 def rad_get_progress_schema():
     return progress.RADProgressTracker.get_json_schema()
+
 
 def rad_pkg(subcommand, pargs_json=None, opts_json=None, pkg_image=None,
     prog_event_handler=None, prog_delay=PROG_DELAY):
@@ -116,6 +122,7 @@ def rad_pkg(subcommand, pargs_json=None, opts_json=None, pkg_image=None,
             ret_json = {"status": UNANTICIPATED, "errors": [{"reason":
                 str(ex)}]}
         return ret_json
+
 
 def is_image(img_root):
     img_prefixes = ["var/pkg", ".org.opensolaris,pkg"]
@@ -166,12 +173,14 @@ def set_any(attr):
         setattr(self, attr, val)
     return delegate_set
 
+
 def get_any(attr):
     """General getter generation function."""
 
     def delegate_get(self):
         return getattr(self, attr)
     return delegate_get
+
 
 def eliminateNoneOpts(**opts):
     """Eliminate all None value options, since RAD client will always
@@ -654,6 +663,7 @@ class PkgImage(object):
         ret_json = self.__pkg("unset-publisher", pargs_json=publishers,
             opts_json=None, mode=mode)
         return self.__handle_error(ret_json)
+
 
 #
 # Mapping of the internal option name to an alternate name that user provided

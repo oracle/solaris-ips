@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -42,14 +42,18 @@ import pkg.arch as arch
 from pkg.sysattr import fgetattr, fsetattr
 from pkg.sysattr import get_attr_dict as get_sysattr_dict
 
+
 def get_isainfo():
     return arch.get_isainfo()
+
 
 def get_release():
     return arch.get_release()
 
+
 def get_platform():
     return arch.get_platform()
+
 
 def get_file_type(actions):
     t_fd, t_path = tempfile.mkstemp()

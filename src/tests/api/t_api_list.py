@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -42,6 +42,7 @@ import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
+
 
 class TestApiList(pkg5unittest.ManyDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
@@ -475,7 +476,7 @@ add set name=pkg.description value="{desc}"
         self.assertEqual(len(returned), 42)
 
         # Next, check no variants case (which has to be done
-        # programatically).
+        # programmatically).
         self.__test_list(api.ImageInterface.LIST_ALL, api_obj=api_obj,
             num_expected=34, variants=False)
 

@@ -28,7 +28,7 @@
 """
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 #---------
@@ -54,21 +54,31 @@ CMS_LEN = 6              # Cpio Magic String length
 
 BLOCKSIZE = 512
 
+
 class CpioError(Exception):
     """Base exception."""
     pass
+
+
 class ExtractError(CpioError):
     """General exception for extract errors."""
     pass
+
+
 class ReadError(CpioError):
     """Exception for unreadble cpio archives."""
     pass
+
+
 class CompressionError(CpioError):
     """Exception for unavailable compression methods."""
     pass
+
+
 class StreamError(CpioError):
     """Exception for unsupported operations on stream-like CpioFiles."""
     pass
+
 
 #---------------------------
 # internal stream interface
@@ -96,6 +106,7 @@ class _LowLevelFile:
 
     def write(self, s):
         os.write(self.fd, s)
+
 
 class _Stream:
     """Class that serves as an adapter between CpioFile and
@@ -307,6 +318,7 @@ class _Stream:
         return t[:size]
 # class _Stream
 
+
 #------------------------
 # Extraction file object
 #------------------------
@@ -402,6 +414,7 @@ class ExFileObject(object):
         """
         self.closed = True
 #class ExFileObject
+
 
 #------------------
 # Exported Classes
@@ -519,6 +532,7 @@ class CpioInfo(object):
             return ExFileObject(self.cpiofile, self)
         else:
             return None
+
 
 class CpioFile(object):
     """The CpioFile Class provides an interface to cpio archives.
@@ -928,6 +942,7 @@ class CpioFile(object):
         self.find_next_archive(padding)
         return CpioFile(cfobj=self)
 
+
 class CpioIter:
     def __init__(self, cpiofile):
         self.cpiofile = cpiofile
@@ -952,6 +967,7 @@ class CpioIter:
 
     next = __next__
 
+
 def is_cpiofile(name):
 
     magic = open(name).read(CMS_LEN)
@@ -963,6 +979,7 @@ def is_cpiofile(name):
         return True
 
     return False
+
 
 if __name__ == "__main__":
     print(is_cpiofile(sys.argv[1]))

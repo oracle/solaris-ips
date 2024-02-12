@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -41,6 +41,7 @@ import unittest
 import pkg.misc as misc
 import pkg.actions as action
 from pkg.actions.generic import Action
+
 
 class TestMisc(pkg5unittest.Pkg5TestCase):
 
@@ -115,6 +116,7 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
         # correctly).
         libc = ctypes.CDLL('libc.so')
         self.assertEqual(psinfo.pr_zoneid, libc.getzoneid())
+
 
 if __name__ == "__main__":
     unittest.main()

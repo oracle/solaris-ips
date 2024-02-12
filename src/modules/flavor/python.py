@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -34,6 +34,7 @@ import pkg.flavor.depthlimitedmf as modulefinder
 
 from pkg.misc import force_str
 from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR
+
 
 class PythonModuleMissingPath(base.DependencyAnalysisError):
     """Exception that is raised when a module reports a module as a
@@ -161,6 +162,7 @@ class PythonDependency(base.PublishingDependency):
 py_bin_re = re.compile(
     r"^\#\!\s*/usr/bin/([^/]+/)?python(?P<major>\d+)\.(?P<minor>\d+)")
 py_lib_re = re.compile(r"^usr/lib/python(?P<major>\d+)\.(?P<minor>\d+)/")
+
 
 def process_python_dependencies(action, pkg_vars, script_path, run_paths):
     """Analyze the file delivered by the action for any python dependencies.

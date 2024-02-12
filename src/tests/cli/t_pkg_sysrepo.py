@@ -45,6 +45,7 @@ try:
 except ImportError:
     sha512_supported = False
 
+
 class PC(object):
     """This class contains publisher configuration used for setting up the
     depots and https apache instances needed by the tests."""
@@ -66,6 +67,7 @@ class PC(object):
         self.signature_policy = sig_pol
         self.required_names = req_names
         self.origins = origins
+
 
 class TestSysrepo(pkg5unittest.ApacheDepotTestCase):
     """Tests pkg interaction with the system repository."""
@@ -720,7 +722,6 @@ three=self.durl3)
         self.assertRaises(tx.TransportFailures, self._api_install,
             api_obj, ["foo"], refresh_catalogs=False)
         self._api_install(api_obj, ["bar"], refresh_catalogs=False)
-
 
         sc.conf = self.apache_confs["test12-test3"]
         self.pkg("list -a")
@@ -2328,7 +2329,6 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI\tPROXY
         self.pkg("publisher -F tsv")
         self.assertTrue(self.durl2 not in self.output)
         self.assertTrue(self.durl5 not in self.output)
-
 
     __smf_cmds_template = { \
         "usr/bin/svcprop" : """\

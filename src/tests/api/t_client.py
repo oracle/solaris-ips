@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -38,6 +38,7 @@ import unittest
 from pkg.client import global_settings
 logger = global_settings.logger
 
+
 class _LogFilter(logging.Filter):
     def __init__(self, max_level=logging.CRITICAL):
         logging.Filter.__init__(self)
@@ -45,6 +46,7 @@ class _LogFilter(logging.Filter):
 
     def filter(self, record):
         return record.levelno <= self.max_level
+
 
 class TestSettings(pkg5unittest.Pkg5TestCase):
 
@@ -97,6 +99,7 @@ class TestSettings(pkg5unittest.Pkg5TestCase):
         self.assertNotEqual(global_settings.error_log_handler, error_h)
 
         logging.shutdown()
+
 
 if __name__ == "__main__":
     unittest.main()

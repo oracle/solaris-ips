@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -40,6 +40,7 @@ import sys
 import tempfile
 import time
 import unittest
+
 
 class TestPkgApi(pkg5unittest.SingleDepotTestCase):
     # restart the depot for every test
@@ -150,7 +151,6 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
   "version": 1
 }
 """
-
 
     misc_files = ["copyright.baz", "copyright.licensed", "libc.so.1",
         "license.licensed", "license.licensed.addendum"]
@@ -925,6 +925,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
         else:
             raise RuntimeError("Expected write_syspub to raise "
                 "an exception.")
+
 
 if __name__ == "__main__":
     unittest.main()

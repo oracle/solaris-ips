@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -38,13 +38,13 @@ import pkg.client.image as image
 import pkg.portable.util as util
 import pkg.portable as portable
 
+
 class TestPlat(pkg5unittest.Pkg5TestCase):
 
     def testbasic(self):
         portable.get_isainfo()
         portable.get_release()
         portable.get_platform()
-
 
     def testAdmin(self):
         if os.name == 'posix' and os.getuid() == 0:
@@ -157,6 +157,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
         # cleanup
         os.chdir(cwd)
         shutil.rmtree(tdir1)
+
 
 if __name__ == "__main__":
     unittest.main()

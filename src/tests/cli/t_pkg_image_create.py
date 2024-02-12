@@ -247,7 +247,6 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
         if saved_sysrepo_env:
             os.environ["PKG_SYSREPO_URL"] = saved_sysrepo_env
 
-
         # Verify that simple paths to file repositories can be used
         # (not just file:// URIs).
         mirrors = " ".join(
@@ -495,6 +494,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
 
 class TestImageCreateNoDepot(pkg5unittest.CliTestCase):
     persistent_setup = True
+
     def test_bad_image_create(self):
         """ Create image from non-existent server """
 
@@ -543,6 +543,7 @@ class TestImageCreateNoDepot(pkg5unittest.CliTestCase):
         self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
             self.pkg, "image-create -p test1=ftp://{0}1 -p test2=http://{1}2:abc".format(
             self.bogus_url, self.bogus_url))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -45,6 +45,7 @@ from pkg.misc import EmptyI, force_str
 FILE_OPEN_TIMEOUT_SECS = 1
 MAX_TOKEN_COUNT = 100
 
+
 class QueryLexer(object):
     """This class defines the lexer used to separate parse queries into
     its constituents.  It's written for Ply, a python implementation for
@@ -364,6 +365,7 @@ class QueryParser(object):
         self.lexer.set_input(input)
         return self.parser.parse(lexer=self.lexer)
 
+
 class QueryException(Exception):
     pass
 
@@ -620,6 +622,7 @@ class BooleanQuery(object):
         self.__check_return_types()
         return None
 
+
 class AndQuery(BooleanQuery):
     """Class representing AND queries in the AST."""
 
@@ -650,12 +653,12 @@ class AndQuery(BooleanQuery):
             lc_set, rc_set = BooleanQuery.search(self, *args)
             return self.sorted(lc_set & rc_set)
 
-
     def __str__(self):
         return "({0!s} AND {1!s})".format(self.lc, self.rc)
 
     def __repr__(self):
         return "({0!r} AND {1!r})".format(self.lc, self.rc)
+
 
 class OrQuery(BooleanQuery):
     """Class representing OR queries in the AST."""
@@ -707,6 +710,7 @@ class OrQuery(BooleanQuery):
 
     def __repr__(self):
         return "({0!r} OR {1!r})".format(self.lc, self.rc)
+
 
 class PkgConversion(object):
     """Class representing a change from returning actions to returning
@@ -767,6 +771,7 @@ class PkgConversion(object):
         """Makes this node return packages instead of actions.
         Returns None because no changes need to be made to the tree."""
         return None
+
 
 class PhraseQuery(object):
     """Class representing a phrase search in the AST"""
@@ -868,6 +873,7 @@ class PhraseQuery(object):
         insertion into the tree."""
         return PkgConversion(self)
 
+
 class FieldQuery(object):
     """Class representing a structured query in the AST."""
 
@@ -923,6 +929,7 @@ class FieldQuery(object):
         itself. It then returns the new node to its parent for
         insertion into the tree."""
         return PkgConversion(self)
+
 
 class TopQuery(object):
     """Class which must be at the top of all valid ASTs, and may only be
@@ -984,7 +991,6 @@ class TopQuery(object):
         self.query.set_info(start_point=start_point,
             num_to_return=num_to_return, **kwargs)
 
-
     def search(self, *args):
         """Perform search by taking the result of the child's search
         and transforming and subselecting the results.  None is passed
@@ -1008,6 +1014,7 @@ class TopQuery(object):
         if new_child:
             self.query = new_child
         return None
+
 
 class TermQuery(object):
     """Class representing the a single query term in the AST.  This is an

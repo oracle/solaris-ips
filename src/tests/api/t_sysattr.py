@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2014, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -32,6 +32,7 @@ import os
 import re
 import tempfile
 import unittest
+
 
 class TestSysattr(pkg5unittest.Pkg5TestCase):
 

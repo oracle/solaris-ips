@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -39,6 +39,7 @@ import pkg.client.api as api
 import pkg.client.publisher as publisher
 
 LIST_ALL = api.ImageInterface.LIST_ALL
+
 
 class TestApiRefresh(pkg5unittest.ManyDepotTestCase):
 

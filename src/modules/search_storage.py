@@ -45,6 +45,7 @@ BYTE_OFFSET_FILE = 'token_byte_offset.v1'
 FULL_FMRI_HASH_FILE = 'full_fmri_list.hash'
 FMRI_OFFSETS_FILE = 'fmri_offsets.v1'
 
+
 def consistent_open(data_list, directory, timeout = 1):
     """Opens all data holders in data_list and ensures that the
     versions are consistent among all of them.
@@ -479,6 +480,7 @@ class IndexStoreListDict(IndexStoreBase):
         """
         IndexStoreBase._protected_write_dict_file(self, path,
             version_num, (self._decode_func(l) for l in self._list))
+
     def read_dict_file(self):
         """Reads in a dictionary previously stored using the above
         call
@@ -504,6 +506,7 @@ class IndexStoreListDict(IndexStoreBase):
         of indexing.
         """
         return len(self._list)
+
 
 class IndexStoreDict(IndexStoreBase):
     """Class used when only entity -> id lookup is needed
@@ -538,6 +541,7 @@ class IndexStoreDict(IndexStoreBase):
         of indexing.
         """
         return len(self._dict)
+
 
 class IndexStoreDictMutable(IndexStoreBase):
     """Dictionary which allows dynamic update of its storage
@@ -609,6 +613,7 @@ class IndexStoreDictMutable(IndexStoreBase):
         """
         return 0
 
+
 class IndexStoreSetHash(IndexStoreBase):
     def __init__(self, file_name):
         IndexStoreBase.__init__(self, file_name)
@@ -664,6 +669,7 @@ class IndexStoreSetHash(IndexStoreBase):
         of indexing."""
         return 0
 
+
 class IndexStoreSet(IndexStoreBase):
     """Used when only set membership is desired.
     This is currently designed for exclusive use
@@ -671,6 +677,7 @@ class IndexStoreSet(IndexStoreBase):
     is only seen in the read_and_discard_matching_from_argument
     method.
     """
+
     def __init__(self, file_name):
         IndexStoreBase.__init__(self, file_name)
         self._set = set()

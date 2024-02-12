@@ -34,23 +34,30 @@ import sys
 import os
 import pkg.misc as misc
 
+
 def dotseq(num):
     return version.DotSequence("5.111111")
+
 
 def dotseq_different(num):
     return version.DotSequence("5.{0:d}".format(num))
 
+
 def vers(num):
     return version.Version("0.5.11-0.111:20090428T172804Z")
+
 
 def vers_different(num):
     return version.Version("0.5.11,5.11-0.{0:d}:{1:0=8d}T172804Z".format(num, num))
 
+
 def mfmri(num):
     return fmri.PkgFmri("pkg:/SUNWttf-google-droid@0.5.11,5.11-0.121:20090816T233516Z")
 
+
 def mfmri_different(num):
     return fmri.PkgFmri("pkg:/SUNWttf-google-{0:d}@0.5.11,5.11-0.{1:d}:{2:0=8d}T233516Z".format(num, num, num))
+
 
 collection = []
 funcs = [dotseq, dotseq_different, vers, vers_different, mfmri, mfmri_different]

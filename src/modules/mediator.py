@@ -27,6 +27,7 @@ import re
 import pkg.misc as misc
 import pkg.version as version
 
+
 def valid_mediator(value):
     """Returns a tuple of (valid, error) indicating whether the provided
     string is a valid name for a link mediation.  'valid' is a boolean
@@ -37,6 +38,7 @@ def valid_mediator(value):
             return True, None
     return False, _("'{0}' is not a valid mediator; only alphanumeric "
         "characters are allowed").format(value)
+
 
 def valid_mediator_version(value):
     """Returns a tuple of (valid, error) indicating whether the provided
@@ -55,6 +57,7 @@ def valid_mediator_version(value):
         return False, _("'{value}' is not a valid mediator-version: "
             "{error}").format(**locals())
     return False, _("'{0}' is not a valid mediator-version").format(value)
+
 
 def parse_mediator_implementation(value):
     """Parses the provided mediator implementation string for a link and
@@ -87,6 +90,7 @@ def parse_mediator_implementation(value):
 
     return impl_name, impl_ver
 
+
 def valid_mediator_implementation(value, allow_empty_version=False):
     """Returns a tuple of (valid, error) indicating whether the provided
     string is a valid mediator implementation for mediated links.  'valid' is
@@ -118,6 +122,7 @@ def valid_mediator_implementation(value, allow_empty_version=False):
         "alphanumeric characters and a version dot-sequence following a "
         "single '@' are allowed").format(value)
 
+
 def valid_mediator_priority(value):
     """Returns a tuple of (valid, error) indicating whether the provided
     string is a valid mediator priority for mediated links.  'valid' is
@@ -128,12 +133,14 @@ def valid_mediator_priority(value):
     return False, _("'{0}' is not a valid mediator-priority; valid values "
         "are 'site' or 'vendor'").format(value)
 
+
 # A ranking dictionary used by cmp_mediations for sorting mediatoins based on
 # mediator priority for mediated links.
 _MED_PRIORITIES = {
     "site": 1,
     "vendor": 2
 }
+
 
 def cmp_mediations(a, b):
     """Custom mediation sorting routine.  Sort is done by
@@ -165,6 +172,7 @@ def cmp_mediations(a, b):
         # Invert version sort so greatest is first.
         return res * -1
     return 0
+
 
 def mediator_impl_matches(a, b):
     """Returns a boolean indicating whether two given mediator implementation

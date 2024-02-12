@@ -51,6 +51,7 @@ import pkg.server.query_parser as sqp
 
 from pkg.misc import N_, compute_compressed_attrs, EmptyDict
 
+
 class TransportRepo(object):
     """The TransportRepo class handles transport requests.
     It represents a repo, and provides the same interfaces as
@@ -1946,6 +1947,7 @@ class _FilesystemRepo(TransportRepo):
 
         return header
 
+
 class _ArchiveRepo(TransportRepo):
     """Private implementation of transport repository logic for repositories
     contained within an archive.
@@ -2349,6 +2351,7 @@ class ProgressCallback(object):
 
         return 0
 
+
 class CatalogProgress(ProgressCallback):
     """This class bridges the interfaces between a ProgressTracker's
     refresh code and the progress callback for that's provided by Pycurl."""
@@ -2375,7 +2378,6 @@ class CatalogProgress(ProgressCallback):
         #
         pass
 
-
     def progress_callback(self, dltot, dlcur, ultot, ulcur):
         """Called by pycurl/libcurl framework to update
         progress tracking."""
@@ -2393,6 +2395,7 @@ class CatalogProgress(ProgressCallback):
             self.progtrack.refresh_progress(None, new_progress)
 
         return 0
+
 
 class ManifestProgress(ProgressCallback):
     """This class bridges the interfaces between a ProgressTracker's
@@ -2417,6 +2420,7 @@ class ManifestProgress(ProgressCallback):
             return -1
         self.progtrack.manifest_fetch_progress(completion=False)
         return 0
+
 
 class FileProgress(ProgressCallback):
     """This class bridges the interfaces between a ProgressTracker

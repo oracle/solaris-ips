@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -42,6 +42,7 @@ import pkg.client.api_errors as apx
 import pkg.client.history as history
 import pkg.misc as misc
 import pkg.portable as portable
+
 
 class TestHistory(pkg5unittest.Pkg5TestCase):
     # This is to prevent setup() being called for each test.

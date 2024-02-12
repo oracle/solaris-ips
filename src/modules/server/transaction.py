@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 import calendar
@@ -46,6 +46,7 @@ try:
     haveelf = True
 except ImportError:
     haveelf = False
+
 
 class TransactionError(Exception):
     """Base exception class for all Transaction exceptions."""

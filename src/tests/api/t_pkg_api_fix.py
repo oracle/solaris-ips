@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2014, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -30,6 +30,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import pkg.client.api_errors as api_errors
+
 
 class TestPkgApiFix(pkg5unittest.SingleDepotTestCase):
 
@@ -67,6 +68,7 @@ class TestPkgApiFix(pkg5unittest.SingleDepotTestCase):
             lambda *args, **kwargs: list(
                 api_inst.gen_plan_fix(*args, **kwargs)),
             ["amber@-1.0"])
+
 
 if __name__ == "__main__":
     unittest.main()

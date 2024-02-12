@@ -692,6 +692,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
         arc = pkg.p5p.Archive(arc_path, mode="r",
             archive_index=archive_index)
         ext_tmp_dir = tempfile.mkdtemp(dir=self.test_root)
+
         def verify_catalog(pub, pfmris):
             for pname in ("catalog.attrs", "catalog.base.C",
                 "catalog.dependency.C", "catalog.summary.C"):
@@ -1018,6 +1019,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
         self.assertRaisesStringify(AssertionError, arc.get_index)
         arc.close()
         os.unlink(arc_path)
+
 
 if __name__ == "__main__":
     unittest.main()

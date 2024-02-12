@@ -75,6 +75,7 @@ _orderdict = dict((k, i) for i, k in enumerate((
 # EmptyI for argument defaults; no import to avoid pkg.misc dependency.
 EmptyI = tuple()
 
+
 def quote_attr_value(s):
     """Returns a properly quoted version of the provided string suitable for
     use as an attribute value for actions in string form."""
@@ -87,6 +88,7 @@ def quote_attr_value(s):
         return '"{0}"'.format(s.replace("\"", "\\\""))
     return s
 
+
 class NSG(type):
     """This metaclass automatically assigns a subclass of Action a
     namespace_group member if it hasn't already been specified.  This is a
@@ -94,6 +96,7 @@ class NSG(type):
     don't want to hardcode something arbitrary and unique."""
 
     __nsg = 0
+
     def __new__(mcs, name, bases, dict):
         nsg = None
 
@@ -948,6 +951,7 @@ class Action(metaclass=NSG):
         info = []
 
         abort = False
+
         def ftype_to_name(ftype):
             assert ftype is not None
             tmap = {

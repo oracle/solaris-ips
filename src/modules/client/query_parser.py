@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 import os
 import sys
@@ -35,8 +35,10 @@ import pkg.query_parser as qp
 from pkg.query_parser import BooleanQueryException, ParseError, QueryLengthExceeded
 import itertools
 
+
 class QueryLexer(qp.QueryLexer):
     pass
+
 
 class QueryParser(qp.QueryParser):
     """This class exists so that the classes the parent class query parser
@@ -53,6 +55,7 @@ class QueryParser(qp.QueryParser):
             assert hasattr(mod, class_name)
             tmp[class_name] = getattr(mod, class_name)
         self.query_objs = tmp
+
 
 # Because many classes do not have client specific modifications, they
 # simply subclass the parent module's classes.
@@ -310,7 +313,7 @@ class TermQuery(qp.TermQuery):
         The "manifest_func" parameter is a function which maps fmris to
         the path to their manifests.
 
-        The "excludes" paramter is a list of variants defined in the
+        The "excludes" parameter is a list of variants defined in the
         image."""
 
         assert self._data_main_dict.get_file_handle() is not None

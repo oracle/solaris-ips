@@ -38,6 +38,7 @@ import pkg.client.pkgdefs as pkgdefs
 # dependency.
 EmptyI = tuple()
 
+
 class ApiException(Exception):
     def __init__(self, *args):
         Exception.__init__(self)
@@ -49,6 +50,7 @@ class ApiException(Exception):
     @property
     def verbose_info(self):
         return self.__verbose_info
+
 
 class SuidUnsupportedError(ApiException):
     def __str__(self):
@@ -74,6 +76,7 @@ class HistoryLoadException(HistoryException):
     The first argument should be an exception object related to the
     error encountered.
     """
+
     def __init__(self, *args):
         HistoryException.__init__(self, *args)
         self.parse_failure = isinstance(self.error, expat.ExpatError)
@@ -103,6 +106,7 @@ class HistoryPurgeException(HistoryException):
     error encountered.
     """
     pass
+
 
 class ImageLockedError(ApiException):
     """Used to indicate that the image is currently locked by another thread
@@ -135,6 +139,7 @@ class ImageLockedError(ApiException):
         return _("The image cannot be modified as it is currently "
             "in use by another package client.")
 
+
 class ImageLockingFailedError(ApiException):
     """Used to indicate that the image could not be locked."""
 
@@ -147,8 +152,10 @@ class ImageLockingFailedError(ApiException):
         return _("Failed to lock the image rooted at {0}: {1}").format(
             self.root_dir, self.err)
 
+
 class ImageNotFoundException(ApiException):
     """Used when an image was not found"""
+
     def __init__(self, user_specified, user_dir, root_dir):
         ApiException.__init__(self)
         self.user_specified = user_specified
@@ -172,8 +179,10 @@ class ImageFormatUpdateNeeded(ApiException):
             "and must be updated before the requested operation can be "
             "performed.").format(self.path)
 
+
 class ImageInsufficentSpace(ApiException):
     """Used when insuffcient space exists for proposed operation"""
+
     def __init__(self, needed, avail, use):
         self.needed = needed
         self.avail = avail
@@ -377,11 +386,14 @@ class RebootNeededOnLiveImageException(ApiException):
 class CanceledException(ApiException):
     pass
 
+
 class PlanMissingException(ApiException):
     pass
 
+
 class NoPackagesInstalledException(ApiException):
     pass
+
 
 class PermissionsException(ApiException):
     def __init__(self, path):
@@ -399,6 +411,7 @@ class PermissionsException(ApiException):
 Could not complete the operation because of insufficient permissions.
 Please try the command again as a privileged user.
 """)
+
 
 class FileInUseException(PermissionsException):
     def __init__(self, path):
@@ -761,6 +774,7 @@ class ConflictingActionError(ApiException):
     def __init__(self, data):
         self._data = data
 
+
 class ConflictingActionErrors(ApiException):
     """A container for multiple ConflictingActionError exception objects
     that can be raised as a single exception."""
@@ -770,6 +784,7 @@ class ConflictingActionErrors(ApiException):
 
     def __str__(self):
         return "\n\n".join((str(err) for err in self.__errors))
+
 
 class DuplicateActionError(ConflictingActionError):
     """Multiple actions of the same type have been delivered with the same
@@ -795,6 +810,7 @@ class DuplicateActionError(ConflictingActionError):
                 "can be installed.")
 
         return s
+
 
 class InconsistentActionTypeError(ConflictingActionError):
     """Multiple actions of different types have been delivered with the same
@@ -826,6 +842,7 @@ class InconsistentActionTypeError(ConflictingActionError):
             s += _("\nThis package must be corrected before it "
                 "can be installed.")
         return s
+
 
 class InconsistentActionAttributeError(ConflictingActionError):
     """Multiple actions of the same type representing the same object have
@@ -1046,6 +1063,7 @@ def list_to_lang(l):
         list="".join(elementtemplate.format(i) for i in l[:-1]),
         tail=l[-1]
    )
+
 
 class ActionExecutionError(ApiException):
     """Used to indicate that action execution (such as install, remove,
@@ -1453,6 +1471,7 @@ class IndexingException(SearchException):
 
 class CorruptedIndexException(IndexingException):
     """This is used when the index is not in a correct state."""
+
     def __str__(self):
         return _("The search index appears corrupted.")
 
@@ -1460,6 +1479,7 @@ class CorruptedIndexException(IndexingException):
 class InconsistentIndexException(IndexingException):
     """This is used when the existing index is found to have inconsistent
     versions."""
+
     def __init__(self, e):
         IndexingException.__init__(self, e)
         self.exception = e
@@ -1483,11 +1503,13 @@ class IndexLockedException(IndexingException):
 class ProblematicPermissionsIndexException(IndexingException):
     """ This is used when the indexer is unable to create, move, or remove
     files or directories it should be able to. """
+
     def __str__(self):
         return "Could not remove or create " \
             "{0} because of incorrect " \
             "permissions. Please correct this issue then " \
             "rebuild the index.".format(self.cause)
+
 
 class WrapIndexingException(ApiException):
     """This exception is used to wrap an indexing exception during install,
@@ -1580,6 +1602,7 @@ def _str_autofix(self):
 class InvalidDepotResponseException(ApiException):
     """Raised when the depot doesn't have versions of operations
     that the client needs to operate successfully."""
+
     def __init__(self, url, data):
         ApiException.__init__(self)
         self.url = url
@@ -1708,9 +1731,11 @@ class InvalidResourceLocation(ApiException):
     def __str__(self):
         return _("'{0}' is not a valid location.").format(self.data)
 
+
 class BEException(ApiException):
     def __init__(self):
         ApiException.__init__(self)
+
 
 class InvalidBENameException(BEException):
     def __init__(self, be_name):
@@ -1720,6 +1745,7 @@ class InvalidBENameException(BEException):
     def __str__(self):
         return _("'{0}' is not a valid boot environment name.").format(
             self.be_name)
+
 
 class DuplicateBEName(BEException):
     """Used to indicate that there is an existing boot environment
@@ -1741,6 +1767,7 @@ class DuplicateBEName(BEException):
         return _("The boot environment '{be_name}' already "
                  "exists in zone '{zonename}'.").format(**d)
 
+
 class BENamingNotSupported(BEException):
     def __init__(self, be_name):
         BEException.__init__(self)
@@ -1751,9 +1778,11 @@ class BENamingNotSupported(BEException):
 Boot environment naming during package install is not supported on this
 version of Solaris. Please update without the --be-name option.""")
 
+
 class UnableToCopyBE(BEException):
     def __str__(self):
         return _("Unable to clone the current boot environment.")
+
 
 class UnableToRenameBE(BEException):
     def __init__(self, orig, dest):
@@ -1770,6 +1799,7 @@ class UnableToRenameBE(BEException):
 A problem occurred while attempting to rename the boot environment
 currently named {orig} to {dest}.""").format(**d)
 
+
 class UnableToMountBE(BEException):
     def __init__(self, be_name, be_dir):
         BEException.__init__(self)
@@ -1779,6 +1809,7 @@ class UnableToMountBE(BEException):
     def __str__(self):
         return _("Unable to mount {name} at {mt}").format(
             name=self.name, mt=self.mountpoint)
+
 
 class BENameGivenOnDeadBE(BEException):
     def __init__(self, be_name):
@@ -1801,6 +1832,7 @@ class UnrecognizedOptionsToInfo(ApiException):
         for o in self._opts:
             s += _(" '") + str(o) + _("'")
         return s
+
 
 class IncorrectIndexFileHash(ApiException):
     """This is used when the index hash value doesn't match the hash of the
@@ -1980,6 +2012,7 @@ class RemoveSyspubOrigin(PublisherError):
         return _("Unable to remove origin '{0}' since it is provided "
             "by the system repository.").format(self.data)
 
+
 class RemoveSyspubMirror(PublisherError):
     """Used to indicate that a system publisher mirror may not be
     removed."""
@@ -2113,6 +2146,7 @@ class UnknownRepositoryMirror(PublisherError):
     def __str__(self):
         return _("Unknown repository mirror '{0}'.").format(self.data)
 
+
 class UnsupportedRepositoryOperation(TransportError):
     """The publisher has no active repositories that support the
     requested operation."""
@@ -2222,6 +2256,7 @@ class UnsupportedProxyURI(PublisherError):
                 uri=self.data, scheme=scheme)
         return _("The specified proxy URI uses an unsupported scheme."
             " Currently the only supported scheme is: http://.")
+
 
 class BadProxyURI(PublisherError):
     """Used to indicate that a proxy URI is not syntactically valid."""
@@ -2441,6 +2476,7 @@ class MissingRequiredNamesException(SigningException):
             "couldn't be found.\n{missing}").format(pub_str=pub_str,
             missing="\n".join(self.missing_names))
 
+
 class UnsupportedCriticalExtension(SigningException):
     """Exception used when a certificate in the chain of trust uses a
     critical extension pkg doesn't understand."""
@@ -2458,6 +2494,7 @@ class UnsupportedCriticalExtension(SigningException):
             s.oid._name, s.value) for s in self.cert.subject),
             name=self.ext.oid._name, val=self.ext.value)
 
+
 class InvalidCertificateExtensions(SigningException):
     """Exception used when a certificate in the chain of trust has
     invalid extensions."""
@@ -2474,6 +2511,7 @@ class InvalidCertificateExtensions(SigningException):
             s.oid._name, s.value) for s in self.cert.subject),
             error=self.error)
         return s
+
 
 class InappropriateCertificateUse(SigningException):
     """Exception used when a certificate in the chain of trust has been used
@@ -2497,6 +2535,7 @@ class InappropriateCertificateUse(SigningException):
             s.oid._name, s.value) for s in self.cert.subject),
             use=self.use, name=self.ext.oid._name,
             val=self.val)
+
 
 class PathlenTooShort(InappropriateCertificateUse):
     """Exception used when a certificate in the chain of trust has been used
@@ -2793,6 +2832,7 @@ class ServerReturnError(ApiException):
 class MissingFileArgumentException(ApiException):
     """This exception is used when a file was given as an argument but
     no such file could be found."""
+
     def __init__(self, path):
         ApiException.__init__(self)
         self.path = path
@@ -2903,6 +2943,7 @@ def _convert_error(e, ignored_errors=EmptyI):
     if e.errno == errno.EROFS:
         return ReadOnlyFileSystemException(e.filename)
     return e
+
 
 class LinkedImageException(ApiException):
 
@@ -3322,12 +3363,14 @@ providing a version at which to freeze them.""")
                 self.versionless_uninstalled)]
         return "\n".join(res)
 
+
 class InvalidFreezeFile(ApiException):
     """Used to indicate the freeze state file could not be loaded."""
 
     def __str__(self):
         return _("The freeze state file '{0}' is invalid.").format(
             self.data)
+
 
 class UnknownFreezeFileVersion(ApiException):
     """Used when the version on the freeze state file isn't the version
@@ -3345,6 +3388,7 @@ class UnknownFreezeFileVersion(ApiException):
             found=self.found,
             loc=self.loc,
        )
+
 
 class InvalidOptionError(ApiException):
     """Used to indicate an issue with verifying options passed to a certain
@@ -3419,6 +3463,7 @@ class InvalidOptionError(ApiException):
         else:
             return _("invalid option(s): ") + " ".join(self.options)
 
+
 class InvalidOptionErrors(ApiException):
 
     def __init__(self, errors):
@@ -3439,6 +3484,7 @@ class InvalidOptionErrors(ApiException):
         for e in self.errors:
             msgs.append(str(e))
         return "\n".join(msgs)
+
 
 class UnexpectedLinkError(ApiException):
     """Used to indicate that an image state file has been replaced
@@ -3482,11 +3528,13 @@ class PkgUnicodeDecodeError(UnicodeDecodeError):
         return "{0}. You passed in {1!r} {2}".format(s, self.obj,
             type(self.obj))
 
+
 class UnsupportedVariantGlobbing(ApiException):
     """Used to indicate that globbing for variant is not supported."""
 
     def __str__(self):
         return _("Globbing is not supported for variants.")
+
 
 class UnsupportedFacetChange(ApiException):
     """Used to indicate an unsupported facet change."""
@@ -3498,6 +3546,7 @@ class UnsupportedFacetChange(ApiException):
     def __str__(self):
         return _("Changing '{facet}' to '{value}' is not supported.".
                  format(facet=self.facet, value=self.value))
+
 
 class InvalidMediatorTarget(ApiException):
     """ Used to indicate if the target of a mediated link is missing,

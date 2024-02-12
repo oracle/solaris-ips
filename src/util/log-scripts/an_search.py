@@ -50,6 +50,7 @@ search_by_failure = {}
 
 pkg_pat = re.compile("/search/(?P<mversion>\d+)/(?P<keywords>.*)")
 
+
 def emit_search_report(summary_file, searchtype, label, results):
     print("<pre>")
     for i, n in results:
@@ -94,7 +95,6 @@ def emit_search_report(summary_file, searchtype, label, results):
                 """.format(label=label, searchtype=searchtype), file=summary_file)
 
 
-
 def report_search_by_failure():
     sfi = sorted(search_by_failure.items(), reverse=True, key=lambda k_v: (k_v[1], k_v[0]))
     emit_search_report(summary_file, "failed", "Misses", sfi)
@@ -114,7 +114,6 @@ def count_search(mg, d):
         search_by_ip[mg["ip"]] += 1
     except KeyError:
         search_by_ip[mg["ip"]] = 1
-
 
     pm = pkg_pat.search(mg["uri"])
     if pm is not None:
@@ -146,7 +145,6 @@ def count_search(mg, d):
 
         # XXX should measure downtime via 503, other failure responses
 
-
     agent = pkg_agent_pat.search(mg["agent"])
     if agent is None:
         return
@@ -157,6 +155,7 @@ def count_search(mg, d):
         search_by_arch[ag["arch"]] += 1
     except KeyError:
         search_by_arch[ag["arch"]] = 1
+
 
 opts, args = getopt.getopt(sys.argv[1:], "a:b:sw:")
 

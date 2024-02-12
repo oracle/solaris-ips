@@ -2,7 +2,7 @@
 # Copyright (c) 2001, 2016, 2003, 2016, 2005, 2016, 2007, 2016, 2009 Python
 # Software Foundation; All Rights Reserved
 #
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 
 
 """A standalone version of ModuleFinder which limits the depth of exploration
@@ -36,6 +36,7 @@ from importlib.machinery import EXTENSION_SUFFIXES
 PD_DEFAULT_RUNPATH = "$PKGDEPEND_RUNPATH"
 
 python_path = "PYTHONPATH"
+
 
 class ModuleInfo(object):
     """This class contains information about from where a python module
@@ -241,7 +242,6 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
             if isinstance(c, type(co)):
                 res.extend(self.scan_code(c, m))
         return res
-
 
     def _safe_import_hook(self, name, caller, fromlist, level=-1):
         """Wrapper for self.import_hook() that won't raise ImportError.

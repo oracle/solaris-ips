@@ -85,6 +85,7 @@ img_root_prefix = "var/pkg"
 
 IMG_PUB_DIR = "publisher"
 
+
 class Image(object):
     """An Image object is a directory tree containing the laid-down contents
     of a self-consistent graph of Packages.
@@ -1903,7 +1904,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 elif act.attrs.get("overlay"):
                     yield act, [], [], [], "overlaid"
                     continue
-
 
             progresstracker.plan_add_progress(
                 progresstracker.PLAN_PKG_VERIFY, nitems=0)
@@ -4366,7 +4366,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
         if not self.__avoid_set_altered:
             return
-
 
         state_file = os.path.join(self._statedir, "avoid_set")
         tmp_file   = os.path.join(self._statedir, "avoid_set.new")

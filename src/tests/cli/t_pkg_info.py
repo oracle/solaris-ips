@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -35,6 +35,7 @@ import unittest
 import pkg.catalog as catalog
 import pkg.actions as actions
 import pkg.fmri as fmri
+
 
 class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
@@ -695,7 +696,6 @@ Packaging Date: {pkg_date}
           FMRI: {pkg_fmri}
 """.format(pkg_date=pkg_date, pkg_fmri=pfmri.get_fmri(include_build=False))
         self.assertEqualDiff(expected, actual)
-
 
         # Next, verify that a renamed package (for all variants),
         # but that is missing a dependency for the current variant

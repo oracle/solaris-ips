@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import abc
@@ -44,6 +44,7 @@ import pkg.misc as misc
 
 valid_hash_algs = ("sha256", "sha384", "sha512")
 valid_sig_algs = ("rsa",)
+
 
 class SignatureAction(generic.Action):
     """Class representing the signature-type packaging object."""

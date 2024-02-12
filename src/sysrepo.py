@@ -125,13 +125,16 @@ manifest 0
 SYSREPO_USER = "pkg5srv"
 SYSREPO_GROUP = "pkg5srv"
 
+
 class SysrepoException(Exception):
     pass
+
 
 @atexit.register
 def cleanup():
     """To be called at program finish."""
     pass
+
 
 def error(text, cmd=None):
     """Emit an error message prefixed by the command name """
@@ -155,6 +158,7 @@ def error(text, cmd=None):
     # program name on all platforms.
     logger.error(ws + pkg_cmd + text_nows)
 
+
 def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more
     specific error message.  Causes program to exit.
@@ -170,6 +174,7 @@ Usage:
                 [-T http_timeout] [-w http_proxy] [-W https_proxy]
      """))
     sys.exit(retcode)
+
 
 def _get_image(image_dir):
     """Return a pkg.client.api.ImageInterface for the provided
@@ -198,6 +203,7 @@ def _get_image(image_dir):
     os.chdir(cdir)
     return api_inst
 
+
 def _clean_publisher(uri):
     """ Remove the HTTP_PORT from the uri otherwise the rewrite rules 
     (in the mako file) will incorporate it with the subsequent use of
@@ -219,6 +225,7 @@ def _clean_publisher(uri):
             str(urlresult.port), "")).geturl()
     return uri
 
+
 def _clean_pub_info(pub_info):
     """ Fix up the publisher information so that any uri key does not
     have the HTTP_PORT in it.
@@ -229,6 +236,7 @@ def _clean_pub_info(pub_info):
         clean_pub_info[cleanuri] = pub_info[uri]
 
     return clean_pub_info
+
 
 def _follow_redirects(uri_list, http_timeout):
     """ Follow HTTP redirects from servers.  Needed so that we can create
@@ -245,6 +253,7 @@ def _follow_redirects(uri_list, http_timeout):
     class SysrepoRedirectHandler(HTTPRedirectHandler):
         """ A HTTPRedirectHandler that saves URIs we've been
         redirected to along the path to our eventual destination."""
+
         def __init__(self):
             self.redirects = set()
 
@@ -275,6 +284,7 @@ def _follow_redirects(uri_list, http_timeout):
             timed_out = True
 
     return sorted(list(ret_uris)), timed_out
+
 
 def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
     """Determine if pub_info and no_uri_pubs objects, which may have been
@@ -346,6 +356,7 @@ def __validate_pub_info(pub_info, no_uri_pubs, api_inst):
                     pub.prefix, no_uri_pubs))
     return
 
+
 def _load_publisher_info(api_inst, image_dir):
     """Loads information about the publishers configured for the
     given ImageInterface from image_dir in a format identical to that
@@ -416,6 +427,7 @@ def _load_publisher_info(api_inst, image_dir):
 
     return clean_pub_info, no_uri_pubs
 
+
 def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
     """Stores a given pair of (uri_pub_map, no_uri_pubs) objects to a
     configuration cache file beneath image_dir."""
@@ -446,6 +458,7 @@ def _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir):
         error(_("Unable to store config to {cache_path}: {e}").format(
             **locals()))
 
+
 def _valid_proxy(proxy):
     """Checks the given proxy string to make sure that it does not contain
     any authentication details since these are not supported by ProxyRemote.
@@ -457,6 +470,7 @@ def _valid_proxy(proxy):
     if len(netloc_parts) == 1:
         return True
     return False
+
 
 def _get_publisher_info(api_inst, http_timeout, image_dir):
     """Returns information about the publishers configured for the given
@@ -575,6 +589,7 @@ def _get_publisher_info(api_inst, http_timeout, image_dir):
         _store_publisher_info(uri_pub_map, no_uri_pubs, image_dir)
     return uri_pub_map, no_uri_pubs
 
+
 def _chown_cache_dir(dir):
     """Sets ownership for cache directory as pkg5srv:bin"""
 
@@ -589,6 +604,7 @@ def _chown_cache_dir(dir):
                 "{err}").format(
                 user=SYSREPO_USER, group="bin",
                 err=err))
+
 
 def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
     cache_size, uri_pub_map, http_proxy, https_proxy):
@@ -696,6 +712,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
         raise SysrepoException(
             _("Unable to write sysrepo_httpd.conf: {0}").format(err))
 
+
 def _write_crypto_conf(runtime_dir, uri_pub_map):
     """Writes the proxy-creds-${pub}.pem file, containing keys and
     certificates in order for the system repository to proxy to https
@@ -730,6 +747,7 @@ def _write_crypto_conf(runtime_dir, uri_pub_map):
     except OSError as err:
         raise SysrepoException(
             _("unable to write crypto.txt file: {0}").format(err))
+
 
 def _write_publisher_response(uri_pub_map, htdocs_path, template_dir):
     """Writes static html for all file-repository-based publishers that
@@ -772,6 +790,7 @@ def _write_publisher_response(uri_pub_map, htdocs_path, template_dir):
         raise SysrepoException(
             _("unable to write publisher response: {0}").format(err))
 
+
 def _write_versions_response(htdocs_path):
     """Writes a static versions/0 response for the system repository."""
 
@@ -787,6 +806,7 @@ def _write_versions_response(htdocs_path):
     except OSError as err:
         raise SysrepoException(
             _("Unable to write versions response: {0}").format(err))
+
 
 def _write_sysrepo_response(api_inst, htdocs_path, uri_pub_map, no_uri_pubs):
     """Writes a static syspub/0 response for the system repository."""
@@ -807,10 +827,12 @@ def _write_sysrepo_response(api_inst, htdocs_path, uri_pub_map, no_uri_pubs):
         raise SysrepoException(
             _("Unable to write syspub response: {0}").format(err))
 
+
 def _uri_hash(uri):
     """Returns a string hash of the given URI"""
     # Unicode-objects must be encoded before hashing
     return digest.DEFAULT_HASH_FUNC(misc.force_bytes(uri)).hexdigest()
+
 
 def _chown_runtime_dir(runtime_dir):
     """Change the ownership of all files under runtime_dir to our sysrepo
@@ -828,6 +850,7 @@ def _chown_runtime_dir(runtime_dir):
                 user=SYSREPO_USER, group=SYSREPO_GROUP,
                 err=err))
 
+
 def cleanup_conf(runtime_dir=None):
     """Destroys an old configuration."""
     try:
@@ -835,6 +858,7 @@ def cleanup_conf(runtime_dir=None):
     except OSError as err:
         raise SysrepoException(
             _("Unable to cleanup old configuration: {0}").format(err))
+
 
 def refresh_conf(image_root="/", port=None, runtime_dir=None,
     log_dir=None, template_dir=None, host="127.0.0.1", cache_dir=None,
@@ -884,6 +908,7 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
         error(err)
         ret = EXIT_OOPS
     return ret
+
 
 def main_func():
     global_settings.client_name = PKG_CLIENT_NAME
@@ -956,6 +981,7 @@ def main_func():
         cache_size=cache_size, http_timeout=http_timeout,
         http_proxy=http_proxy, https_proxy=https_proxy)
     return ret
+
 
 #
 # Establish a specific exit status which means: "python barfed an exception"

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -56,7 +56,6 @@ class TestPkgCollidingLinks(pkg5unittest.SingleDepotTestCase):
         add link path=/2 target=./link_target_2
         close"""
 
-
     misc_files = [p for p in pkg_A.split() if "tmp/link_target" in p]
 
     def setUp(self):
@@ -90,6 +89,7 @@ class TestPkgCollidingLinks(pkg5unittest.SingleDepotTestCase):
         self.pkg("uninstall pkg_B pkg_C")
         self.pkg("verify")
 
+
 class TestPkgCollidingHardLinks(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
     persistent_setup = True
@@ -122,9 +122,7 @@ class TestPkgCollidingHardLinks(pkg5unittest.SingleDepotTestCase):
         add depend type=require fmri=pkg_A@1.0,5.11-0
         close"""
 
-
     misc_files = [p for p in pkg_A.split() if "tmp/link_target" in p]
-
 
     def setUp(self):
         pkg5unittest.SingleDepotTestCase.setUp(self)
@@ -174,6 +172,7 @@ class TestPkgCollidingHardLinks(pkg5unittest.SingleDepotTestCase):
         self.pkg("uninstall pkg_B pkg_C")
         self.pkg("verify")
         self.check_link_count(1)
+
 
 if __name__ == "__main__":
     unittest.main()

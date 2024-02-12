@@ -50,6 +50,7 @@ import pkg.version
 
 from pkg.misc import EmptyDict, EmptyI
 
+
 class _JSONWriter(object):
     """Private helper class used to serialize catalog data and generate
     signatures."""
@@ -750,6 +751,7 @@ class CatalogPart(CatalogPartBase):
         pub_sort = None
         if pubs:
             pos = dict((p, i) for (i, p) in enumerate(pubs))
+
             def pub_key(a):
                 astem, apub = a.split("!", 1)
                 return (astem, pos[apub])
@@ -2237,6 +2239,7 @@ class Catalog(object):
         # as a basis for determining whether to apply specific
         # updates.
         old_parts = self._attrs.parts
+
         def apply_incremental(name):
             # Load the CatalogUpdate from the path specified.
             # (Which is why __get_update is not used.)
@@ -3886,12 +3889,14 @@ def verify(filename):
 
     catobj.validate(require_signatures=True)
 
+
 # Methods used by Catalog classes.
 def datetime_to_ts(dt):
     """Take datetime object dt, and convert it to a ts in ISO-8601
     format. """
 
     return dt.isoformat()
+
 
 def datetime_to_basic_ts(dt):
     """Take datetime object dt, and convert it to a ts in ISO-8601
@@ -3905,6 +3910,7 @@ def datetime_to_basic_ts(dt):
         # Assume UTC.
         val += "Z"
     return val
+
 
 def datetime_to_update_ts(dt):
     """Take datetime object dt, and convert it to a ts in ISO-8601
@@ -3921,15 +3927,18 @@ def datetime_to_update_ts(dt):
         val += "Z"
     return val
 
+
 def now_to_basic_ts():
     """Returns the current UTC time as timestamp in ISO-8601 basic
     format."""
     return datetime_to_basic_ts(datetime.datetime.utcnow())
 
+
 def now_to_update_ts():
     """Returns the current UTC time as timestamp in ISO-8601 basic
     partial format."""
     return datetime_to_update_ts(datetime.datetime.utcnow())
+
 
 def ts_to_datetime(ts):
     """Take timestamp ts in ISO-8601 format, and convert it to a
@@ -3947,6 +3956,7 @@ def ts_to_datetime(ts):
     except ValueError:
         usec = 0
     return datetime.datetime(year, month, day, hour, minutes, sec, usec)
+
 
 def basic_ts_to_datetime(ts):
     """Take timestamp ts in ISO-8601 basic format, and convert it to a

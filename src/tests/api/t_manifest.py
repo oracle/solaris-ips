@@ -48,6 +48,7 @@ path_to_parent = os.path.relpath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path_to_parent)
 import pkg5unittest
 
+
 class TestManifest(pkg5unittest.Pkg5TestCase):
 
     def setUp(self):
@@ -275,7 +276,6 @@ link path=usr/lib/amd64/libjpeg.so target=libjpeg.so.62.0.0
         for d in diffs:
             self.assertEqual(type(d[0]), type(d[1]))
 
-
     def test_diffs8(self):
         """ ASSERT: changes in checksum are detected """
 
@@ -343,7 +343,6 @@ link path=usr/lib/amd64/libjpeg.so target=libjpeg.so.62.0.0
             self.assertEqual(type(d[0]), type(d[1]))
             self.assertEqual(d[0].attrs["target"], "old")
             self.assertEqual(d[1].attrs["target"], "new")
-
 
     def test_dups1(self):
         """ Test the duplicate search.  /bin shouldn't show up, since

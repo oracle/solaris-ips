@@ -48,6 +48,7 @@ from pkg.client.pkgdefs import *
 
 p_update_index = 0
 
+
 def pkg_err_verify(string, fmri):
     # Ignore package version as how it's displayed can change.
     substring = fmri.split("@", 1)[0]
@@ -56,6 +57,7 @@ def pkg_err_verify(string, fmri):
 Expected "{0}" to be contained in:
 {1}
 """.format(substring, string))
+
 
 def apx_verify(e, e_type, e_member=None):
 
@@ -83,6 +85,7 @@ Got a {2} exception with a differnt type:
 
 {3}
 """.format(str(e_type), e_member, str(type(e)), traceback.format_exc()))
+
 
 def assertRaises(validate_cb, func, *args, **kwargs):
     (validate_func, validate_args) = validate_cb
@@ -143,6 +146,7 @@ class TestLinkedImageName(pkg5unittest.Pkg5TestCase):
                 "e_type": apx.LinkedImageException,
                 "e_member": "cmd_output_invalid"}),
                 li.zone._zonename)
+
 
 class TestApiLinked(pkg5unittest.ManyDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
@@ -493,7 +497,6 @@ action: {1}
 error: {2}
 warning: {3}
 pinfo: {4}""".format(pfmri, str(act), str(err), str(warn), str(pinfo)))
-
 
     def assertKnownPkgCount(self, api_objs, i, pl_init, offset=0):
         apio = api_objs[i]
@@ -1067,7 +1070,6 @@ packages known:
         # make sure the error message mentions both synced packages.
         pkg_err_verify(str(e), self.p_sync3_name[1])
         pkg_err_verify(str(e), self.p_sync4_name[1])
-
 
     def test_sync_nosolver(self):
         """Verify that the solver is not invoked when syncing in-sync

@@ -53,6 +53,7 @@ pkgremote_debug = (
     DebugValues["pkgremote_debug"] is not None or
     os.environ.get("PKG_PKGREMOTE_DEBUG", None) is not None)
 
+
 class PkgRemote(object):
     """This class is used to perform packaging operation on an image.  It
     utilizes the "remote" subcommand within the pkg.1 client to manipulate

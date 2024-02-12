@@ -131,6 +131,7 @@ PATH_TRANSFORM_NONE = ("/", "/")
 
 LI_RVTuple = collections.namedtuple("LI_RVTuple", "rvt_rv rvt_e rvt_p_dict")
 
+
 def _li_rvtuple_check(rvtuple):
     """Sanity check a linked image operation return value tuple.
     The format of said tuple is:
@@ -159,6 +160,7 @@ def _li_rvtuple_check(rvtuple):
     # return the value that was passed in
     return rvtuple
 
+
 def _li_rvdict_check(rvdict):
     """Given a linked image return value dictionary, sanity check all the
     entries."""
@@ -171,6 +173,7 @@ def _li_rvdict_check(rvdict):
 
     # return the value that was passed in
     return rvdict
+
 
 def _li_rvdict_exceptions(rvdict):
     """Given a linked image return value dictionary, return a list of any
@@ -185,6 +188,7 @@ def _li_rvdict_exceptions(rvdict):
         for rvtuple in rvdict.values()
         if rvtuple.rvt_e is not None
     ]
+
 
 def _li_rvdict_raise_exceptions(rvdict):
     """If an exception was encountered while operating on a linked
@@ -202,6 +206,7 @@ def _li_rvdict_raise_exceptions(rvdict):
     if exceptions:
         # multiple exceptions encountered
         raise apx.LinkedImageException(bundle=exceptions)
+
 
 class LinkedImagePlugin(object):
     """This class is a template that all linked image plugins should
@@ -402,6 +407,7 @@ class LinkedImageName(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
 
 class LinkedImage(object):
     """A LinkedImage object is used to manage the linked image aspects of
@@ -2123,7 +2129,6 @@ class LinkedImage(object):
 
         '_pd' a PlanDescription pointer."""
 
-
         lic_all = reduce(operator.add,
             [i[1] for i in _lic_op_vectors], [])
         lic_num = len(lic_all)
@@ -2516,7 +2521,6 @@ class LinkedImage(object):
         # sync in the child.
         #
 
-
         # To improve performance we assume the child is already in sync,
         # so if its linked image metadata isn't changing then the child
         # won't need any updates so there will be no need to recurse
@@ -2818,7 +2822,6 @@ class LinkedImageChild(object):
                 if old_data == new_data:
                     updated = False
 
-
             # If we're not actually updating any data, or if we
             # were just doing a test to see if the data has
             # changed, then delete the temporary data file.
@@ -2857,7 +2860,6 @@ class LinkedImageChild(object):
         # save the planned parent facets
         return self.__push_data(self.child_path, self.__path_pfacets,
             pfacets, tmp, test)
-
 
     def __push_props(self, tmp=False, test=False):
         """Sync linked image properties data to a child image.
@@ -3433,6 +3435,7 @@ def get_pubs(img):
         for p in img.get_sorted_publishers(inc_disabled=False)
     ]
 
+
 def get_packages(img, pd=None):
     """Figure out the current (or planned) list of packages in img."""
 
@@ -3453,6 +3456,7 @@ def get_packages(img, pd=None):
 
     # paranoia
     return frozenset(ppkgs)
+
 
 def get_inheritable_facets(img, pd=None):
     """Get Facets from an image that a child should inherit.
@@ -3591,6 +3595,7 @@ def get_inheritable_facets(img, pd=None):
 
     return pfacets
 
+
 # ---------------------------------------------------------------------------
 # Utility Functions
 #
@@ -3622,6 +3627,7 @@ def save_data(path, data, root="/", catch_exception=True):
         if catch_exception:
             raise apx._convert_error(e)
         raise e
+
 
 def load_data(path, missing_ok=False, root="/", decode=True,
     catch_exception=False):
@@ -3691,6 +3697,7 @@ def PkgDecoder(dct):
         rvdct[k] = v
     return rvdct
 
+
 def rm_dict_ent(d, keys):
     """Remove a set of keys from a dictionary."""
     return dict([
@@ -3698,6 +3705,7 @@ def rm_dict_ent(d, keys):
             for k, v in d.items()
             if k not in keys
     ])
+
 
 def _rterr(li=None, lic=None, lin=None, path=None, err=None,
     bad_cp=None,
@@ -3769,6 +3777,7 @@ def _rterr(li=None, lic=None, lin=None, path=None, err=None,
     raise RuntimeError(
         "{0}: {1}{2}".format(err_prefix, err, err_suffix))
 
+
 # ---------------------------------------------------------------------------
 # Functions for accessing files in the current root
 #
@@ -3782,6 +3791,7 @@ def path_exists(path, root="/"):
         # pylint: disable=W0212
         raise apx._convert_error(e)
 
+
 def path_isdir(path):
     """Simple wrapper for accessing files in the current root."""
 
@@ -3791,6 +3801,7 @@ def path_isdir(path):
         # W0212 Access to a protected member
         # pylint: disable=W0212
         raise apx._convert_error(e)
+
 
 def path_mkdir(path, mode):
     """Simple wrapper for accessing files in the current root."""
@@ -3802,6 +3813,7 @@ def path_mkdir(path, mode):
         # pylint: disable=W0212
         raise apx._convert_error(e)
 
+
 def path_unlink(path, noent_ok=False):
     """Simple wrapper for accessing files in the current root."""
 
@@ -3812,10 +3824,10 @@ def path_unlink(path, noent_ok=False):
         # pylint: disable=W0212
         raise apx._convert_error(e)
 
+
 # ---------------------------------------------------------------------------
 # Functions for managing images which may be in alternate roots
 #
-
 def path_transform_applicable(path, path_transform):
     """Check if 'path_transform' can be applied to 'path'."""
 
@@ -3832,6 +3844,7 @@ def path_transform_applicable(path, path_transform):
         return True
     return False
 
+
 def path_transform_applied(path, path_transform):
     """Check if 'path_transform' has been applied to 'path'."""
 
@@ -3842,6 +3855,7 @@ def path_transform_applied(path, path_transform):
     # Reverse the transform.
     path_transform = (path_transform[1], path_transform[0])
     return path_transform_applicable(path, path_transform)
+
 
 def path_transform_apply(path, path_transform):
     """Apply the 'path_transform' to 'path'."""
@@ -3857,12 +3871,14 @@ def path_transform_apply(path, path_transform):
     assert path_transform_applicable(path, path_transform)
     return os.path.join(nroot, path[len(oroot):])
 
+
 def path_transform_revert(path, path_transform):
     """Unapply the 'path_transform' from 'path'."""
 
     # Reverse the transform.
     path_transform = (path_transform[1], path_transform[0])
     return path_transform_apply(path, path_transform)
+
 
 def compute_path_transform(opath, npath):
     """Given an two paths create a transform that can be used to translate

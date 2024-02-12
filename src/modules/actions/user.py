@@ -40,6 +40,7 @@ except ImportError:
 import pkg.client.api_errors as apx
 import pkg.actions
 
+
 class UserAction(generic.Action):
     """Class representing a user packaging object."""
 
@@ -124,7 +125,6 @@ class UserAction(generic.Action):
         cur_attrs["ftpuser"] = str(ftp.getuser(username)).lower()
 
         return (pw, gr, ftp, cur_attrs)
-
 
     def install(self, pkgplan, orig, retry=False):
         """client-side method that adds the user...

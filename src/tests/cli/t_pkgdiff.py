@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -31,6 +31,7 @@ import pkg5unittest
 
 import os
 import unittest
+
 
 class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
     # Cleanup after every test.
@@ -138,7 +139,6 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             file bar elfarch=i386 elfbits=32 chash=bar elfhash=abcd path=bin/cat pkg.content-hash=gelf:sha512t_256:mnop pkg.content-hash=gelf.unsigned:sha512t_256:efgh pkg.content-hash=file:sha512t_256:qrst
             file nohash elfarch=i386 elfbits=64 elfhash=abcd path=bin/false pkg.content-hash=gelf:sha512t_256:abcd pkg.content-hash=gelf.unsigned:sha512t_256:abcd pkg.content-hash=gelf:sha3_384:wxyz pkg.content-hash=gelf.unsigned:sha3_384:wxyz
             """
-
 
     def setUp(self):
         pkg5unittest.SingleDepotTestCase.setUp(self)

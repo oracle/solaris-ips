@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -43,6 +43,7 @@ import pkg.pipeutils
 
 from pkg.client.debugvalues import DebugValues
 from pkg.misc import AsyncCall, AsyncCallException
+
 
 class TestAsyncRPC(pkg5unittest.Pkg5TestCase):
 

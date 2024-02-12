@@ -42,6 +42,7 @@ CONSTRAINT_BRANCH_MINOR = 102
 
 CONSTRAINT_SEQUENCE = 300
 
+
 class VersionError(Exception):
     """Base exception class for all version errors."""
 
@@ -51,6 +52,7 @@ class VersionError(Exception):
 
 class IllegalDotSequence(VersionError):
     """Used to indicate that the specified DotSequence is not valid."""
+
 
 class DotSequence(list):
     """A DotSequence is the typical "x.y.z" string used in software
@@ -246,6 +248,7 @@ class MatchingDotSequence(DotSequence):
 
 class IllegalVersion(VersionError):
     """Used to indicate that the specified version string is not valid."""
+
 
 class Version(object):
     """Version format is release[,build_release]-branch:datetime, which we
@@ -645,7 +648,6 @@ class Version(object):
 class MatchingVersion(Version):
     """An alternative for Version with (much) weaker rules about its format.
     This is intended to accept user input with globbing characters."""
-
 
     __slots__ = ["match_latest", "__original"]
 

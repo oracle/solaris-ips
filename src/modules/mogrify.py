@@ -75,6 +75,7 @@ def add_transform(transforms, printinfo, transform, filename, lineno):
             raise RuntimeError(
                 _("transform ({0}) has 'set' operation syntax error"
                 ).format(transform))
+
         def set_func(action, matches, pkg_attrs, filename, lineno):
             newattr = substitute_values(attr, action, matches,
                 pkg_attrs, filename, lineno)
@@ -328,6 +329,7 @@ def add_transform(transforms, printinfo, transform, filename, lineno):
 
     transforms.append((types, attrdict, operation, filename, lineno, transform))
 
+
 def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=None, quote=False):
     """Substitute tokens in messages which can be expanded to the action's
     attribute values."""
@@ -448,6 +450,7 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
     newmsg += msg[prevend:]
     return newmsg
 
+
 def attrval_as_list(attrdict, key):
     """Return specified attribute as list;
     an empty list if no such attribute exists"""
@@ -458,10 +461,13 @@ def attrval_as_list(attrdict, key):
         val = [val]
     return val
 
+
 class PkgAction(pkg.actions.generic.Action):
     name = "pkg"
+
     def __init__(self, attrs):
         self.attrs = attrs
+
 
 def apply_transforms(transforms, action, pkg_attrs, verbose, act_filename,
     act_lineno):
@@ -580,6 +586,7 @@ def searching_open(filename, includes, try_cwd=False):
 
     raise RuntimeError(_("File not found: \'{0}\'").format(filename))
 
+
 def apply_macros(s, macros):
     """Apply macro subs defined on command line... keep applying
     macros until no translations are found."""
@@ -592,6 +599,7 @@ def apply_macros(s, macros):
         else:
             break # no more substitutable tokens
     return s
+
 
 def read_file(tp, ignoreincludes, transforms, macros, printinfo, includes,
     error_print_cb=None):
@@ -661,6 +669,7 @@ def read_file(tp, ignoreincludes, transforms, macros, printinfo, includes,
 
     return ret
 
+
 def process_error(msg, error_cb=None):
     """Print the error message or raise the actual exception if no
     error printing callback specified."""
@@ -669,6 +678,7 @@ def process_error(msg, error_cb=None):
         error_cb(msg)
     else:
         raise
+
 
 def process_mog(file_args, ignoreincludes, verbose, includes, macros,
     printinfo, output, error_cb=None, sys_supply_files=[]):

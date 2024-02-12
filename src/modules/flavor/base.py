@@ -32,6 +32,7 @@ import pkg.variant as variant
 
 from pkg.portable import PD_DEFAULT_RUNPATH
 
+
 class DependencyAnalysisError(Exception):
     pass
 
@@ -62,6 +63,7 @@ class MissingFile(DependencyAnalysisError):
                 dirs="\n".join(
                 ["\t" + d for d in sorted(self.dirs)]))
 
+
 class MultipleDefaultRunpaths(DependencyAnalysisError):
     """Exception that is raised when multiple $PGKDEPEND_RUNPATH tokens
     are found in a pkg.depend.runpath attribute value."""
@@ -73,6 +75,7 @@ class MultipleDefaultRunpaths(DependencyAnalysisError):
         return _(
             "More than one $PKGDEPEND_RUNPATH token was set on the "
             "same action in this manifest.")
+
 
 class InvalidDependBypassValue(DependencyAnalysisError):
     """Exception that is raised when we encounter an incorrect
@@ -355,6 +358,7 @@ class PublishingDependency(Dependency):
         attrs = {
                 "type": "require"
         }
+
         def process_path(path_to_check):
             res = []
             # Find the potential real paths that path_to_check could

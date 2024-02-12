@@ -51,11 +51,13 @@ manifest_by_ver_pkg = {}
 
 pkg_pat = re.compile("/manifest/(?P<mversion>\d+)/(?P<stem>[^@]*)@(?P<version>.*)")
 
+
 def report_manifest_by_arch():
     print("<pre>")
     for i in manifest_by_arch.keys():
         print(i, manifest_by_arch[i])
     print("</pre>")
+
 
 def report_manifest_by_pkg():
     print("<pre>")
@@ -63,11 +65,13 @@ def report_manifest_by_pkg():
         print(i, n)
     print("</pre>")
 
+
 def report_manifest_by_ver_pkg():
     print("<pre>")
     for i, n in (sorted(manifest_by_ver_pkg.items(), key=lambda k_v: (k_v[1], k_v[0]))):
         print(i, n)
     print("</pre>")
+
 
 def count_manifest(mg, d):
     try:
@@ -102,6 +106,7 @@ def count_manifest(mg, d):
         manifest_by_arch[ag["arch"]] += 1
     except KeyError:
         manifest_by_arch[ag["arch"]] = 1
+
 
 opts, args = getopt.getopt(sys.argv[1:], "a:b:sw:")
 

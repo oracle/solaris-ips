@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a legacy packaging object
@@ -38,6 +38,7 @@ import time
 
 from . import generic
 from pkg import misc
+
 
 class LegacyAction(generic.Action):
     """Class representing a legacy SVr4 packaging object."""

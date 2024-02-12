@@ -57,6 +57,7 @@ PKG_CLIENT_NAME = "pkgdepend"
 
 DEFAULT_SUFFIX = ".res"
 
+
 def format_update_error(e):
     # This message is displayed to the user whenever an
     # ImageFormatUpdateNeeded exception is encountered.
@@ -65,6 +66,7 @@ def format_update_error(e):
     emsg(_("To continue, the target image must be upgraded "
         "before it can be used.  See pkg(1) update-format for more "
         "information."))
+
 
 def error(text, cmd=None):
     """Emit an error message prefixed by the command name """
@@ -84,6 +86,7 @@ def error(text, cmd=None):
     # This has to be a constant value as we can't reliably get our actual
     # program name on all platforms.
     emsg(ws + "pkgdepend: " + text_nows)
+
 
 def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more specific
@@ -108,6 +111,7 @@ Environment:
         PKG_IMAGE"""))
 
     sys.exit(retcode)
+
 
 def generate(args):
     """Produce a list of file dependencies from a manfiest and a proto
@@ -214,6 +218,7 @@ def generate(args):
         emsg(e)
         retcode = EXIT_OOPS
     return retcode
+
 
 def resolve(args, img_dir):
     """Take a list of manifests and resolve any file dependencies, first
@@ -386,6 +391,7 @@ def resolve(args, img_dir):
         emsg(w)
     return ret_code
 
+
 def __resolve_echo_line(l):
     """Given a line from a manifest, determines whether that line should
     be repeated in the output file if echo manifest has been set."""
@@ -398,6 +404,7 @@ def __resolve_echo_line(l):
         return True
     else:
         return not act.name == "depend"
+
 
 def __echo_manifest(pth, out_func, strip_newline=False):
     try:
@@ -427,6 +434,7 @@ def __echo_manifest(pth, out_func, strip_newline=False):
         emsg(_("Could not open {0} to echo manifest").format(
             manifest_path))
 
+
 def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
     """Write the resolved package dependencies to stdout.
 
@@ -451,6 +459,7 @@ def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
         for d in pkg_deps[p]:
             msg(d)
     return ret_code
+
 
 def write_res(deps, out_file, echo_manifest, manifest_path):
     """Write the dependencies resolved, and possibly the manifest, to the
@@ -480,6 +489,7 @@ def write_res(deps, out_file, echo_manifest, manifest_path):
         out_fh.write("{0}\n".format(d))
     out_fh.close()
     return ret_code
+
 
 def pkgdeps_to_dir(pkg_deps, manifest_paths, out_dir, suffix, echo_manifest):
     """Given an output directory, for each manifest given, writes the
@@ -523,6 +533,7 @@ def pkgdeps_to_dir(pkg_deps, manifest_paths, out_dir, suffix, echo_manifest):
             ret_code = tmp_rc
     return ret_code
 
+
 def pkgdeps_in_place(pkg_deps, manifest_paths, suffix, echo_manifest):
     """Given an output directory, for each manifest given, writes the
     dependencies resolved to a file in the output directory.
@@ -552,6 +563,7 @@ def pkgdeps_in_place(pkg_deps, manifest_paths, suffix, echo_manifest):
         if not ret_code:
             ret_code = tmp_rc
     return ret_code
+
 
 def main_func():
     try:
@@ -587,6 +599,7 @@ def main_func():
         return resolve(pargs, img_dir)
     else:
         usage(_("unknown subcommand '{0}'").format(subcommand))
+
 
 #
 # Establish a specific exit status which means: "python barfed an exception"

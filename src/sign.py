@@ -64,6 +64,7 @@ PKG_CLIENT_NAME = "pkgsign"
 
 repo_cache = {}
 
+
 def error(text, cmd=None):
     """Emit an error message prefixed by the command name """
 
@@ -73,7 +74,6 @@ def error(text, cmd=None):
     else:
         text = "{0}: {1}".format(PKG_CLIENT_NAME, text)
 
-
     # If the message starts with whitespace, assume that it should come
     # *before* the command-name prefix.
     text_nows = text.lstrip()
@@ -82,6 +82,7 @@ def error(text, cmd=None):
     # This has to be a constant value as we can't reliably get our actual
     # program name on all platforms.
     emsg(ws + text_nows)
+
 
 def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more specific
@@ -97,6 +98,7 @@ Usage:
 
     sys.exit(retcode)
 
+
 def fetch_catalog(src_pub, xport, temp_root):
     """Fetch the catalog from src_uri."""
 
@@ -109,6 +111,7 @@ def fetch_catalog(src_pub, xport, temp_root):
     src_pub.refresh(True, True)
 
     return src_pub.catalog
+
 
 def __make_tmp_cert(d, pth):
     try:
@@ -123,6 +126,7 @@ def __make_tmp_cert(d, pth):
     with os.fdopen(fd, "wb") as fh:
         fh.write(cert.public_bytes(serialization.Encoding.PEM))
     return fp
+
 
 def main_func():
     global_settings.client_name = "pkgsign"
@@ -377,6 +381,7 @@ def main_func():
         return EXIT_OOPS
     finally:
         shutil.rmtree(temp_root)
+
 
 #
 # Establish a specific exit status which means: "python barfed an exception"

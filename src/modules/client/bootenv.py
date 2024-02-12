@@ -60,10 +60,12 @@ except ImportError:
             # be imported.
             pass
 
+
 class GenericBootEnv(object):
     """This class contains common functions used by both bemgmt module
     and the older pylibbe module.
     """
+
     def __init__(self, img, progress_tracker=None):
         self.be_name = None
         self.dataset = None
@@ -423,7 +425,6 @@ class BeadmV2BootEnv(GenericBootEnv):
             return (be_obj.name)
         except Exception:
             raise api_errors.BENamingNotSupported("")
-
 
     def create_backup_be(self, be_name=None):
         """Create a backup BE if the BE being modified is the live one.
@@ -1044,7 +1045,6 @@ class BeadmV1BootEnv(GenericBootEnv):
             raise api_errors.BENameGivenOnDeadBE(be_name)
 
     def init_image_recovery(self, img, be_name=None):
-
         """Initialize for an update.
         If a be_name is given, validate it.
         If we're operating on a live BE then clone the
@@ -1107,7 +1107,6 @@ class BeadmV1BootEnv(GenericBootEnv):
             logger.error(_("pkg: '{cmd}' failed. \nwith "
                 "a return code of {ret:d}.").format(
                 cmd=" ".join(cmd), ret=ret))
-
 
     def activate_image(self, set_active=True):
         """Activate a clone of the BE being operated on.
@@ -1246,7 +1245,6 @@ beadm activate {be_name_clone}
                 bename=self.be_name))
 
     def destroy_snapshot(self):
-
         """Destroy a snapshot of the BE being operated on.
         Note that this will destroy the last created
         snapshot and does not support destroying
@@ -1258,7 +1256,6 @@ beadm activate {be_name_clone}
                 "{0}").format(self.snapshot_name))
 
     def restore_install_uninstall(self):
-
         """Restore a failed install or uninstall attempt.
         Clone the snapshot, mount the BE and
         notify user of its existence. Rollback
@@ -1435,6 +1432,7 @@ class BootEnvNull(object):
     @staticmethod
     def activate_install_uninstall():
         pass
+
 
 if "bemgmt" in locals():
     BootEnv = BeadmV2BootEnv

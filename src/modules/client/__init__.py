@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 # Missing docstring; pylint: disable=C0111
@@ -31,6 +31,7 @@ import os
 import sys
 
 __all__ = ["global_settings"]
+
 
 class _LogFilter(logging.Filter):
     def __init__(self, max_level=logging.CRITICAL):

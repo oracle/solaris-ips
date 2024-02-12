@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 """object to map content hashes to file paths
@@ -59,6 +59,7 @@ to asses the scalability of the different layouts."""
 
 
 import os
+
 
 class Layout(object):
     """This class is the parent class to all layouts. It defines the
@@ -109,6 +110,7 @@ def get_default_layouts():
     layouts defined above."""
 
     return [V1Layout(), V0Layout()]
+
 
 def get_preferred_layout():
     """This function returns the single preferred layout to use."""

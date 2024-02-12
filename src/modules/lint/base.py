@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import configparser
@@ -38,9 +38,11 @@ class LintException(Exception):
     the linting."""
     pass
 
+
 class DuplicateLintedAttrException(Exception):
     """An exception thrown when we've found duplicate pkg.linted* keys."""
     pass
+
 
 class Checker(object):
     """A base class for all lint checks.  pkg.lint.engine discovers classes
@@ -364,6 +366,7 @@ def get_checkers(module, config):
 
     return (checkers, excluded_checkers)
 
+
 def linted(manifest=None, action=None, lint_id=None):
     """Determine whether a given action or manifest is marked as linted.
     We check for manifest or action attributes set to "true" where
@@ -384,6 +387,7 @@ def linted(manifest=None, action=None, lint_id=None):
         return _linted_action(action, lint_id)
     return False
 
+
 def _linted_action(action, lint_id):
     """Determine whether a given action is marked as linted"""
     linted = "pkg.linted.{0}".format(lint_id)
@@ -399,6 +403,7 @@ def _linted_action(action, lint_id):
                     "in {actions}").format(key=key,
                     action=str(action)))
     return False
+
 
 def _linted_manifest(manifest, lint_id):
     """Determine whether a given manifest is marked as linted"""

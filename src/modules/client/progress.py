@@ -46,10 +46,12 @@ from pkg.client import global_settings
 from pkg.client import printengine
 logger = global_settings.logger
 
+
 class ProgressTrackerException(Exception):
     """Thrown if a ProgressTracker determines that it can't be instantiated.
     For example, the tracker which depends on a UNIX style terminal should
     throw this exception if it can't find a valid terminal."""
+
     def __str__(self):
         return "ProgressTrackerException: {0}".format(
             " ".join(self.args))
@@ -343,6 +345,7 @@ class OutSpec(object):
 
     __nonzero__ = __bool__
 
+
 class TrackerItem(object):
     """This class describes an item of interest in tracking progress
     against some "bucket" of work (for example, searching a filesystem for
@@ -512,6 +515,7 @@ class GoalTrackerItem(TrackerItem):
             info = " ({0})".format(str(self.curinfo))
         return "<{0}: {1}{2}>".format(self.name, self.pair(), info)
 
+
 #
 # This implements a decorator which is used to mark methods in
 # this class as abstract-- needing to be implemented by subclasses.
@@ -661,6 +665,7 @@ class ProgressTrackerBackend(object):
     @pt_abstract
     def _reversion(self, pfmri, outspec):
         pass
+
 
 class ProgressTrackerFrontend(object):
     """This essentially abstract class forms the interface that other
@@ -2727,6 +2732,7 @@ class RADProgressTracker(CommandLineProgressTracker):
         }
         return json_schema
 
+
 class LinkedChildProgressTracker(CommandLineProgressTracker):
     """This tracker is used for recursion with linked children.
     This is intended for use only by linked images."""
@@ -2753,6 +2759,7 @@ class LinkedChildProgressTracker(CommandLineProgressTracker):
             if not inspect.ismethod(boundmeth):
                 continue
             setattr(self, methname, __donothing)
+
 
 class FancyUNIXProgressTracker(ProgressTracker):
     """This progress tracker is designed for UNIX-like OS's-- those which

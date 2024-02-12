@@ -21,11 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import pkg.client.api_errors as apx
 from functools import total_ordering
+
 
 @total_ordering
 class Policy(object):
@@ -105,6 +106,7 @@ class Ignore(Policy):
         for s in sigs:
             s.retrieve_chain_certs(pub)
 
+
 Policy._policies[Ignore.name] = Ignore
 
 
@@ -124,7 +126,9 @@ class Verify(Policy):
         for s in sigs:
             s.verify_sig(acts, pub, trust_anchors, use_crls)
 
+
 Policy._policies[Verify.name] = Verify
+
 
 class RequireSigs(Policy):
     """This policy that all signatures present are valid and insists that
@@ -150,6 +154,7 @@ class RequireSigs(Policy):
         if not verified:
             raise apx.RequiredSignaturePolicyException(pub)
 
+
 Policy._policies[RequireSigs.name] = RequireSigs
 
 
@@ -160,6 +165,7 @@ class RequireNames(Policy):
 
     strictness = 4
     name = "require-names"
+
     def __init__(self, req_names, *args, **kwargs):
         assert req_names, "RequireNames requires at least one name " \
             "to be passed to the constructor."
@@ -192,6 +198,7 @@ class RequireNames(Policy):
         if other > self:
             return other
         return RequireNames(self.required_names | other.required_names)
+
 
 Policy._policies[RequireNames.name] = RequireNames
 

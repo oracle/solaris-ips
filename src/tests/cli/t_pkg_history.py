@@ -40,6 +40,7 @@ import unittest
 import xml.etree.ElementTree
 from pkg.misc import force_str
 
+
 class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
     persistent_setup = True
@@ -586,6 +587,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
             + ", ".join(unicode_locales))
         env = { "LC_ALL": unicode_list[0] }
         self.pkg("history", env_arg=env)
+
 
 if __name__ == "__main__":
     unittest.main()

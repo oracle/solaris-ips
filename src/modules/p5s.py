@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 import copy
@@ -37,6 +37,7 @@ from pkg.client.imageconfig import DEF_TOKEN
 from pkg.misc import force_bytes
 
 CURRENT_VERSION = 0
+
 
 def parse(proxy_host, data):
     """Reads the pkg(7) publisher JSON formatted data at 'location'
@@ -155,6 +156,7 @@ def parse(proxy_host, data):
     except (api_errors.PublisherError, TypeError, ValueError) as e:
         raise api_errors.InvalidP5SFile(str(e))
     return pubs, props
+
 
 def write(fileobj, pubs, cfg):
     """Writes the publisher, repository, and provided package names to the

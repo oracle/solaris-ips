@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -33,6 +33,7 @@ import pkg.solver as solver
 import os
 import sys
 
+
 class TestSolver(pkg5unittest.Pkg5TestCase):
 
     def test_no_solution(self):
@@ -40,6 +41,7 @@ class TestSolver(pkg5unittest.Pkg5TestCase):
 
     def test_solution(self):
         cnf_test(working_test_case.splitlines())
+
 
 def cnf_test(lines):
     s = solver.msat_solver()

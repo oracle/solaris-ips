@@ -1625,7 +1625,6 @@ class TestMultiPublisherRepo(pkg5unittest.ManyDepotTestCase):
             open pkg://another-pub/baz@1,5.11-0
             close """
 
-
     def setUp(self):
         # This test suite needs actual depots.
         pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])

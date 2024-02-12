@@ -112,11 +112,13 @@ OUTPUT_DOTS = 0         # Dots ...
 OUTPUT_VERBOSE = 1      # Verbose
 OUTPUT_PARSEABLE = 2    # Machine readable
 
+
 class TestStopException(Exception):
     """An exception used to signal that all testing should cease.
     This is a framework-internal exception that tests should not
     raise"""
     pass
+
 
 class TestSkippedException(Exception):
     """An exception used to signal that a test was skipped.
@@ -124,9 +126,9 @@ class TestSkippedException(Exception):
     reason.  Test cases can raise this to the framework
     that some prerequisite of the test is unsatisfied.  A string
     explaining the error should be passed at construction.  """
+
     def __str__(self):
         return "Test Skipped: " + " ".join(self.args)
-
 
 
 #
@@ -145,6 +147,7 @@ CLIENT_API_VERSION = 82
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
+
 class Pkg5CommonException(AssertionError):
     def __init__(self, com = ""):
         Pkg5TestCase.failureException.__init__(self, com)
@@ -153,6 +156,7 @@ class Pkg5CommonException(AssertionError):
     ",---------------------------------------------------------------------\n"
     botdivider = \
     "`---------------------------------------------------------------------\n"
+
     def format_comment(self, comment):
         if comment is not None:
             comment = comment.expandtabs()
@@ -221,6 +225,7 @@ class DebugLogHandler(logging.Handler):
 
     def emit(self, record):
         self.test_case.debug(record)
+
 
 def setup_logging(test_case):
     # Ensure logger messages output by unit tests are redirected
@@ -1224,7 +1229,6 @@ class _Pkg5TestResult(unittest._TextTestResult):
             mstr = "MISMATCH"
         return "{0}|{1}|{2}".format(mstr, actual, expected)
 
-
     @staticmethod
     def fmt_prefix_with(instr, prefix):
         res = ""
@@ -1318,7 +1322,6 @@ class _Pkg5TestResult(unittest._TextTestResult):
         # but iff the result disagrees with the baseline.
         if self.bailonfail and bresult == baseline.BASELINE_MISMATCH:
             self.dobailout(test)
-
 
     def addError(self, test, err):
         errtype, errval = err[:2]
@@ -1538,6 +1541,7 @@ def find_names(s):
     c = l[1].split(".")[0]
     return mod, c
 
+
 def q_makeResult(s, o, b, bail_on_fail, show_on_expected_fail, a, cov):
     """Construct a test result for use in the parallel test suite."""
 
@@ -1545,6 +1549,7 @@ def q_makeResult(s, o, b, bail_on_fail, show_on_expected_fail, a, cov):
         show_on_expected_fail=show_on_expected_fail, archive_dir=a)
     res.coverage = cov
     return res
+
 
 def q_run(inq, outq, i, o, baseline_filepath, bail_on_fail,
     show_on_expected_fail, a, cov, port, suite_name):
@@ -2287,6 +2292,7 @@ class DepotTracebackException(Pkg5CommonException):
         str += self.format_output(None, self.__output)
         return str
 
+
 class TracebackException(Pkg5CommonException):
     def __init__(self, command, output=None, comment=None, debug=None):
         Pkg5CommonException.__init__(self)
@@ -2305,6 +2311,7 @@ class TracebackException(Pkg5CommonException):
         if self.__debug is not None and self.__debug != "":
             str += self.format_debug(self.__debug)
         return str
+
 
 class UnexpectedExitCodeException(Pkg5CommonException):
     def __init__(self, command, expected, got, output=None, comment=None):
@@ -2333,9 +2340,11 @@ class UnexpectedExitCodeException(Pkg5CommonException):
     def exitcode(self):
         return self.__got
 
+
 class PkgSendOpenException(Pkg5CommonException):
     def __init__(self, com = ""):
         Pkg5CommonException.__init__(self, com)
+
 
 class CliTestCase(Pkg5TestCase):
     bail_on_fail = False
@@ -3733,6 +3742,7 @@ class ApacheDepotTestCase(ManyDepotTestCase):
     # test cases.
     ac = property(fget=__get_ac)
 
+
 class HTTPSTestClass(ApacheDepotTestCase):
     # Tests in this suite use the read only data directory.
     need_ro_data = True
@@ -4164,6 +4174,7 @@ SSLRandomSeed connect builtin
 </VirtualHost>
 """
 
+
 loc_tag = """
         <Location /{server-path}>
                 SSLVerifyDepth 1
@@ -4302,11 +4313,13 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         os.mkdir(cmd_path)
         return cmd_path
 
+
 def debug(s):
     s = str(s)
     for x in s.splitlines():
         if g_debug_output:
             print("# {0}".format(x), file=sys.stderr)
+
 
 def mkdir_eexist_ok(p):
     try:
@@ -4314,6 +4327,7 @@ def mkdir_eexist_ok(p):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
+
 
 def env_sanitize(pkg_cmdpath, dv_keep=None):
     if dv_keep is None:
@@ -4362,6 +4376,7 @@ def env_sanitize(pkg_cmdpath, dv_keep=None):
 
     # always get detailed data from the solver
     DebugValues["plan"] = True
+
 
 def fakeroot_create():
 
@@ -4417,6 +4432,7 @@ def fakeroot_create():
 
     return fakeroot, fakeroot_cmdpath
 
+
 def eval_assert_raises(ex_type, eval_ex_func, func, *args):
     try:
         func(*args)
@@ -4427,8 +4443,10 @@ def eval_assert_raises(ex_type, eval_ex_func, func, *args):
     else:
         raise RuntimeError("Function did not raise exception.")
 
+
 class ApacheStateException(Exception):
     pass
+
 
 class ApacheController(object):
 
@@ -4642,6 +4660,7 @@ class ApacheController(object):
     def url(self):
         return self.__url
 
+
 class SysrepoController(ApacheController):
 
     def __init__(self, conf, port, work_dir, testcase=None, https=False):
@@ -4659,6 +4678,7 @@ class SysrepoController(ApacheController):
         except URLError:
             return False
         return True
+
 
 class HttpDepotController(ApacheController):
 

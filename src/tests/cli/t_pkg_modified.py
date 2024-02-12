@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2016, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2016, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -29,6 +29,7 @@ import pkg5unittest
 
 import os
 import unittest
+
 
 class TestPkgModified(pkg5unittest.SingleDepotTestCase):
     # Tests in this suite use the read only data directory.

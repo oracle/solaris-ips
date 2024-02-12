@@ -38,6 +38,7 @@ try:
 except ImportError:
     sha512_supported = False
 
+
 class TestPkgSha(pkg5unittest.Pkg5TestCase):
     """A class tests the sha512_t module."""
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 
@@ -33,6 +33,7 @@
 import pkg.indexer as indexer
 import pkg.search_storage as ss
 from pkg.misc import EmptyI
+
 
 class Indexer(indexer.Indexer):
     def __init__(self, image, get_manf_func, get_manifest_path,

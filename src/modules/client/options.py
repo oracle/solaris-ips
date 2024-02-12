@@ -124,6 +124,7 @@ DISPLAY_LICENSE       = "display_license"
 INFO_LOCAL            = "info_local"
 INFO_REMOTE           = "info_remote"
 
+
 def opts_table_cb_info(api_inst, opts, opts_new):
     opts_new[ORIGINS] = set()
     for e in opts[ORIGINS]:
@@ -138,6 +139,7 @@ def opts_table_cb_info(api_inst, opts, opts_new):
     elif opts_new[INFO_LOCAL] and opts_new[INFO_REMOTE]:
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
             [INFO_LOCAL, INFO_REMOTE])
+
 
 def __parse_set_props(args):
     """"Parse set property options that were specified on the command
@@ -160,6 +162,7 @@ def __parse_set_props(args):
         set_props[p] = v
 
     return set_props
+
 
 def __parse_prop_values(args, add=True):
     """"Parse add or remove property values options that were specified
@@ -186,9 +189,11 @@ def __parse_prop_values(args, add=True):
 
     return props_values
 
+
 def opts_table_cb_pub_list(api_inst, opts, opts_new):
     if opts[OUTPUT_FORMAT] is None:
         opts_new[OUTPUT_FORMAT] = "default"
+
 
 def opts_table_cb_pub_props(api_inst, opts, opts_new):
     opts_new[SET_PROPS] = __parse_set_props(opts[SET_PROPS])
@@ -196,6 +201,7 @@ def opts_table_cb_pub_props(api_inst, opts, opts_new):
     opts_new[REMOVE_PROP_VALUES] = __parse_prop_values(
         opts[REMOVE_PROP_VALUES], add=False)
     opts_new[UNSET_PROPS] = set(opts[UNSET_PROPS])
+
 
 def opts_table_cb_pub_search(api_inst, opts, opts_new):
     if opts[SEARCH_BEFORE] and opts[SEARCH_AFTER]:
@@ -209,6 +215,7 @@ def opts_table_cb_pub_search(api_inst, opts, opts_new):
     if opts[SEARCH_AFTER] and opts[SEARCH_FIRST]:
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
             [SEARCH_AFTER, SEARCH_FIRST])
+
 
 def opts_table_cb_pub_opts(api_inst, opts, opts_new):
     del opts_new[PUB_DISABLE]
@@ -332,6 +339,7 @@ def opts_table_cb_pub_opts(api_inst, opts, opts_new):
         opts_new[REPO_URI] = misc.parse_uri(opts[REPO_URI],
             cwd=_orig_cwd)
 
+
 def opts_table_cb_beopts(api_inst, opts, opts_new):
 
     # synthesize require_new_be and deny_new_be into new_be
@@ -369,6 +377,7 @@ def opts_table_cb_beopts(api_inst, opts, opts_new):
         opts_new[BACKUP_BE] = True
     if opts[NO_BACKUP_BE]:
         opts_new[BACKUP_BE] = False
+
 
 def opts_table_cb_li_ignore(api_inst, opts, opts_new):
 
@@ -427,6 +436,7 @@ def opts_table_cb_li_ignore(api_inst, opts, opts_new):
 
     opts_new[LI_IGNORE] = api_inst.parse_linked_name_list(li_ignore)
 
+
 def opts_table_cb_li_no_psync(api_inst, opts, opts_new):
     # if a target child linked image was specified, the no-parent-sync
     # option doesn't make sense since we know that both the parent and
@@ -445,6 +455,7 @@ def opts_table_cb_li_no_psync(api_inst, opts, opts_new):
         raise InvalidOptionError(InvalidOptionError.REQUIRED,
             [LI_TARGET_LIST, LI_PARENT_SYNC])
 
+
 def opts_table_cb_unpackaged(api_inst, opts, opts_new):
     # Check whether unpackaged and unpackaged_only options are used
     # together.
@@ -452,6 +463,7 @@ def opts_table_cb_unpackaged(api_inst, opts, opts_new):
     if opts[UNPACKAGED] and opts[UNPACKAGED_ONLY]:
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
             [UNPACKAGED, UNPACKAGED_ONLY])
+
 
 def opts_table_cb_path_no_unpackaged(api_inst, opts, opts_new):
     # Check whether path options is used with either unpackaged
@@ -464,6 +476,7 @@ def opts_table_cb_path_no_unpackaged(api_inst, opts, opts_new):
     if opts[VERIFY_PATHS] and opts[UNPACKAGED_ONLY]:
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
             [VERIFY_PATHS, UNPACKAGED_ONLY])
+
 
 def __parse_linked_props(args):
     """"Parse linked image property options that were specified on the
@@ -492,10 +505,12 @@ def __parse_linked_props(args):
 
     return linked_props
 
+
 def opts_table_cb_li_props(api_inst, opts, opts_new):
     """convert linked image prop list into a dictionary"""
 
     opts_new[LI_PROPS] = __parse_linked_props(opts[LI_PROPS])
+
 
 def opts_table_cb_li_target(api_inst, opts, opts_new):
     # figure out which option the user specified
@@ -542,6 +557,7 @@ def opts_table_cb_li_target(api_inst, opts, opts_new):
     opts_new[LI_TARGET_LIST] = \
         api_inst.parse_linked_name_list(li_target_list)
 
+
 def opts_table_cb_li_target1(api_inst, opts, opts_new):
     # figure out which option the user specified
     if opts[LI_NAME]:
@@ -567,6 +583,7 @@ def opts_table_cb_li_target1(api_inst, opts, opts_new):
     if ORIGINS in opts and opts[ORIGINS]:
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
             [arg1, ORIGINS])
+
 
 def opts_table_cb_li_recurse(api_inst, opts, opts_new):
 
@@ -632,6 +649,7 @@ def opts_table_cb_li_recurse(api_inst, opts, opts_new):
     if opts_new[LI_ERECURSE] and IGNORE_MISSING in opts:
         opts_new[IGNORE_MISSING] = True
 
+
 def opts_table_cb_no_headers_vs_quiet(api_inst, opts, opts_new):
     # check if we accept the -q option
     if QUIET not in opts:
@@ -641,6 +659,7 @@ def opts_table_cb_no_headers_vs_quiet(api_inst, opts, opts_new):
     if opts[QUIET]:
         opts_new[OMIT_HEADERS] = True
 
+
 def opts_table_cb_q(api_inst, opts, opts_new):
     # Be careful not to overwrite global_settings.client_output_quiet
     # because it might be set "True" from elsewhere, e.g. in
@@ -648,19 +667,23 @@ def opts_table_cb_q(api_inst, opts, opts_new):
     if opts[QUIET] is True:
         global_settings.client_output_quiet = True
 
+
 def opts_table_cb_v(api_inst, opts, opts_new):
     global_settings.client_output_verbose = opts[VERBOSE]
+
 
 def opts_table_cb_nqv(api_inst, opts, opts_new):
     if opts[VERBOSE] and opts[QUIET]:
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
             [VERBOSE, QUIET])
 
+
 def opts_table_cb_publishers(api_inst, opts, opts_new):
     publishers = set()
     for p in opts[PUBLISHERS]:
         publishers.add(p)
     opts_new[PUBLISHERS] = publishers
+
 
 def opts_table_cb_parsable(api_inst, opts, opts_new):
     if opts[PARSABLE_VERSION] is not None and opts.get(VERBOSE, False):
@@ -684,11 +707,13 @@ def opts_table_cb_parsable(api_inst, opts, opts_new):
         opts_new[QUIET] = True
         global_settings.client_output_quiet = True
 
+
 def opts_table_cb_origins(api_inst, opts, opts_new):
     origins = set()
     for o in opts[ORIGINS]:
         origins.add(misc.parse_uri(o, cwd=_orig_cwd))
     opts_new[ORIGINS] = origins
+
 
 def opts_table_cb_stage(api_inst, opts, opts_new):
     if opts[STAGE] is None:
@@ -698,6 +723,7 @@ def opts_table_cb_stage(api_inst, opts, opts_new):
     if opts_new[STAGE] not in pkgdefs.api_stage_values:
         raise InvalidOptionError(msg=_("invalid operation stage: "
             "'{0}'").format(opts[STAGE]))
+
 
 def opts_cb_li_attach(api_inst, opts, opts_new):
     if opts[ATTACH_PARENT] and opts[ATTACH_CHILD]:
@@ -719,6 +745,7 @@ def opts_cb_li_attach(api_inst, opts, opts_new):
             raise InvalidOptionError(
                 InvalidOptionError.INCOMPAT,
                 [ATTACH_CHILD, LI_IGNORE_LIST])
+
 
 def opts_table_cb_md_only(api_inst, opts, opts_new):
     # if the user didn't specify linked-md-only we're done
@@ -752,6 +779,7 @@ def opts_table_cb_md_only(api_inst, opts, opts_new):
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
             [arg1, REJECT_PATS])
 
+
 def opts_cb_list(api_inst, opts, opts_new):
     if opts_new[ORIGINS] and opts_new[LIST_UPGRADABLE]:
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
@@ -781,6 +809,7 @@ def opts_cb_list(api_inst, opts, opts_new):
         raise InvalidOptionError(InvalidOptionError.INCOMPAT,
             [QUIET, VERBOSE])
 
+
 def opts_cb_int(k, api_inst, opts, opts_new, minimum=None):
 
     if k not in opts or opts[k] is None:
@@ -806,6 +835,7 @@ def opts_cb_int(k, api_inst, opts, opts_new, minimum=None):
     # update the new options array to make the value an integer
     opts_new[k] = v
 
+
 def opts_cb_fd(k, api_inst, opts, opts_new):
     opts_cb_int(k, api_inst, opts, opts_new, minimum=0)
 
@@ -815,6 +845,7 @@ def opts_cb_fd(k, api_inst, opts, opts_new):
     except OSError:
         # not a valid file descriptor
         raise InvalidOptionError(msg=err, options=[k])
+
 
 def opts_table_cb_concurrency(api_inst, opts, opts_new):
     if opts[CONCURRENCY] is None:
@@ -831,6 +862,7 @@ def opts_table_cb_concurrency(api_inst, opts, opts_new):
 
     # remove concurrency from parameters dict
     del opts_new[CONCURRENCY]
+
 
 def opts_table_cb_actuators(api_inst, opts, opts_new):
 
@@ -860,6 +892,7 @@ def opts_table_cb_actuators(api_inst, opts, opts_new):
 #       and it is optional.
 #       {}: json schema.
 #
+
 
 opts_table_info = [
     opts_table_cb_info,
@@ -1314,6 +1347,7 @@ pkg_op_opts = {
     pkgdefs.PKG_OP_VERIFY         : opts_verify
 }
 
+
 def get_pkg_opts(op, add_table=None):
     """Get the available options for a particular operation specified by
     'op'. If the client uses custom pkg_op_opts tables they can be specified
@@ -1328,6 +1362,7 @@ def get_pkg_opts(op, add_table=None):
     except KeyError:
         opts = None
     return opts
+
 
 def get_pkg_opts_defaults(op, opt, add_table=None):
     """ Get the default value for a certain option 'opt' of a certain
@@ -1346,6 +1381,7 @@ def get_pkg_opts_defaults(op, opt, add_table=None):
             opt_name, default, dummy_valid_args, dummy_schema = o
         if opt_name == opt:
             return default
+
 
 def opts_assemble(op, api_inst, opts, add_table=None, cwd=None):
     """Assembly of the options for a specific operation. Options are read in

@@ -20,11 +20,12 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 import os
 import platform
 import re
+
 
 def get_canonical_os_type():
     """ 
@@ -39,6 +40,7 @@ def get_canonical_os_type():
         return 'windows'
     else:
         return 'unknown'
+
 
 def get_canonical_os_name():
     """
@@ -57,6 +59,7 @@ def get_canonical_os_name():
         return 'windows'
 
     return 'unknown'
+
 
 def get_os_release():
     """

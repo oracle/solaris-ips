@@ -447,6 +447,7 @@ def _zoneadm_list_parse(line, cmd, output):
 
     return z_name, z_state, z_path, z_brand
 
+
 def _list_zones(root, path_transform):
     """Get the zones associated with the image located at 'root'.  We
     return a dictionary where the keys are zone names and the values are
@@ -525,6 +526,7 @@ def _list_zones(root, path_transform):
         rv[z_name] = (z_rootpath, z_state)
 
     return rv
+
 
 def list_running_zones():
     """Return dictionary with currently running zones of the system in the

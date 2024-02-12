@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -318,7 +318,6 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
             self.bogus_url))
         self.pkg("set-publisher --no-refresh -c {0} test1".format(cert_path))
         self.pkg("set-publisher --no-refresh -k {0} test1".format(key_path))
-
 
         # This test relies on using the same implementation used in
         # image.py __store_publisher_ssl() which sets the paths to the
@@ -797,6 +796,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
         entries = self.__get_cache_entries(dc)
         expected = self.__gen_expected(11)
         self.assertEqualDiff(entries, expected)
+
 
 if __name__ == "__main__":
     unittest.main()

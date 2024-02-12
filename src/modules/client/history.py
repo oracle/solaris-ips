@@ -104,6 +104,7 @@ error_results = {
     MemoryError: RESULT_FAILED_OUTOFMEMORY,
 }
 
+
 class _HistoryOperation(object):
     """A _HistoryOperation object is a representation of data about an
     operation that a pkg(7) client has performed.  This class is private

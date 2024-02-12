@@ -47,6 +47,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 
 CURRENT_API_VERSION = 12
 
+
 class BaseInterface(object):
     """This class represents a base API object that is provided by the
     server to clients.  A base API object is required when creating
@@ -69,6 +70,7 @@ class BaseInterface(object):
 class _Interface(object):
     """Private base class used for api interface objects.
     """
+
     def __init__(self, version_id, base):
         compatible_versions = set([CURRENT_API_VERSION])
         if version_id not in compatible_versions:
@@ -78,6 +80,7 @@ class _Interface(object):
         self._depot = base._depot
         self._pub = base._pub
         self._request = base._request
+
 
 class CatalogInterface(_Interface):
     """This class presents an interface to server catalog objects that

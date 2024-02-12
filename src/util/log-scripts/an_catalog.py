@@ -70,11 +70,13 @@ catalog_by_raw_agent = {}
 catalog_by_pkg_version = {}
 catalog_by_arch = {}
 
+
 def report_catalog_by_arch():
     print("<pre>")
     for i in catalog_by_arch.keys():
         print(i, catalog_by_arch[i])
     print("</pre>")
+
 
 def report_catalog_by_raw_agent(summary_file = None):
     print("<pre>")
@@ -82,11 +84,13 @@ def report_catalog_by_raw_agent(summary_file = None):
         print(i, n)
     print("</pre>")
 
+
 def report_catalog_by_pkg_version():
     print("<pre>")
     for i, n in (sorted(catalog_by_pkg_version.items(), key=lambda k_v: (k_v[1], k_v[0]))):
         print(i, n)
     print("</pre>")
+
 
 def report_catalog_by_lang():
     labels = ""
@@ -115,6 +119,7 @@ def report_catalog_by_lang():
     fname = retrieve_chart("http://chart.apis.google.com/chart?{0}".format(url, "lang"))
     print ("<img src=\"{0}\" />".format(fname))
 
+
 def count_catalog(mg, d):
 
     try:
@@ -125,7 +130,6 @@ def count_catalog(mg, d):
         catalog_by_ip[mg["ip"]] += 1
     except KeyError:
         catalog_by_ip[mg["ip"]] = 1
-
 
     try:
         if d not in catalog_by_ip_active[mg["ip"]]:
@@ -153,6 +157,7 @@ def count_catalog(mg, d):
         catalog_by_pkg_version[ag["pversion"]] += 1
     except KeyError:
         catalog_by_pkg_version[ag["pversion"]] = 1
+
 
 opts, args = getopt.getopt(sys.argv[1:], "a:b:sw:")
 

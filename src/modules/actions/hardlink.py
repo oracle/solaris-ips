@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a (hard) link packaging object
@@ -36,6 +36,7 @@ import stat
 
 from pkg import misc
 from pkg.client.api_errors import ActionExecutionError
+
 
 class HardLinkAction(link.LinkAction):
     """Class representing a hardlink-type packaging object."""

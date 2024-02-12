@@ -296,6 +296,7 @@ class SolarisPackageDirBundle(pkg.bundle.Bundle):
 
         return actions
 
+
 def test(filename):
     if os.path.isfile(os.path.join(filename, "pkginfo")) and \
         os.path.isfile(os.path.join(filename, "pkgmap")):

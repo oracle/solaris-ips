@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 """This program converts a directory structure from the V0layout to the
@@ -41,6 +41,7 @@ from pkg.client import global_settings
 from pkg.misc import emsg, PipeError, setlocale
 
 logger = global_settings.logger
+
 
 def error(text, cmd=None):
     """Emit an error message prefixed by the command name """
@@ -63,6 +64,7 @@ def error(text, cmd=None):
     # This has to be a constant value as we can't reliably get our actual
     # program name on all platforms.
     logger.error(ws + pkg_cmd + text_nows)
+
 
 def main_func():
     if len(sys.argv) != 2:

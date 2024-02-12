@@ -138,6 +138,7 @@ RESULT_FAILED_UNKNOWN = history.RESULT_FAILED_UNKNOWN
 # Globals.
 logger = global_settings.logger
 
+
 class _LockedGenerator(object):
     """This is a private class and should not be used by API consumers.
 
@@ -1698,7 +1699,6 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         li_parent_sync=True, li_erecurse=None, new_be=True, noexecute=False,
         pubcheck=True, refresh_catalogs=True, reject_list=misc.EmptyI,
         repos=None, update_index=True):
-
         """This is a generator function that yields a PlanDescription
         object.  If parsable_version is set, it also yields dictionaries
         containing plan information for child images.

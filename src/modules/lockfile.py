@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import errno
@@ -36,6 +36,7 @@ import pkg.client.api_errors as api_errors
 
 from pkg.client import global_settings
 from pkg.misc import DummyLock
+
 
 class LockFile(object):
     """A class that provides generic lockfile support.  This
@@ -229,11 +230,13 @@ def client_lock_get_str(lockstr):
     except ValueError:
         return lockdict
 
+
 def client_lock_set_str():
     lock_ts = pkg.catalog.now_to_basic_ts()
 
     return "\n".join((str(os.getpid()), global_settings.client_name,
         platform.node(), lock_ts, "\n"))
+
 
 def generic_lock_get_str(lockstr):
     lock_dict = {}
@@ -244,6 +247,7 @@ def generic_lock_get_str(lockstr):
         return lock_dict
     except ValueError:
         return lock_dict
+
 
 def generic_lock_set_str():
     lock_ts = pkg.catalog.now_to_basic_ts()

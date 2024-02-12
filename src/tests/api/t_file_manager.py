@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -39,6 +39,7 @@ import unittest
 import pkg.misc as misc
 import pkg.file_layout.file_manager as file_manager
 import pkg.file_layout.layout as layout
+
 
 class TestFileManager(pkg5unittest.Pkg5TestCase):
 
@@ -331,6 +332,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
             self.assertEqual(f.read(), misc.force_bytes(
                 "new-{0}".format(fhash)))
             f.close()
+
 
 if __name__ == "__main__":
     unittest.main()

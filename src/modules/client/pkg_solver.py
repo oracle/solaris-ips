@@ -1637,7 +1637,6 @@ class PkgSolver(object):
                 for f in remove:
                     self.__addclauses([[-self.__getid(f)]])
 
-
             # prevent the selection of this exact combo;
             # permit [] solution
             self.__addclauses([[-i for i in solution_vector]])
@@ -2045,7 +2044,6 @@ class PkgSolver(object):
                         renamed_fmris.discard(new_fmri)
         return set(fmris) - renamed_fmris
 
-
     def __get_dependents(self, pfmri, excludes=EmptyI):
         """return set of installed fmris that have require dependencies
         on specified installed fmri"""
@@ -2119,7 +2117,6 @@ class PkgSolver(object):
                   for d in dict_list))))
             for k in all_keys
         )
-
 
     def __get_incorp_nonmatch_dict(self, fmri, excludes):
         """Given a fmri with incorporation dependencies, produce a
@@ -2582,6 +2579,7 @@ class PkgSolver(object):
                 fmri_reasons.append(res)
 
         last_run = []
+
         def collapse_fmris():
             """Collapse a range of FMRIs into format:
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -37,6 +37,7 @@ import pkg.client.publisher as publisher
 import pkg.client.transport.transport as transport
 import pkg.fmri as fmri
 import pkg.publish.transaction as trans
+
 
 class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
     """Various publication tests."""

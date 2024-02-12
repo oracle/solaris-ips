@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -52,6 +52,7 @@ groups_lastupdate = {}
 # storage to repeat first call to group routines
 __been_here = {}
 
+
 def already_called():
     callers_name = sys._getframe(1).f_code.co_name
     if callers_name in __been_here:
@@ -60,14 +61,18 @@ def already_called():
         __been_here[callers_name] = True
         return False
 
+
 def get_isainfo():
     return platform.uname()[5]
+
 
 def get_release():
     return os_util.get_os_release()
 
+
 def get_platform():
     return platform.uname()[4]
+
 
 def get_userid():
     """To be used for display purposes only!"""
@@ -85,6 +90,7 @@ def get_userid():
             pass
     return os.getuid()
 
+
 def get_username():
     """To be used for display purposes only!"""
 
@@ -92,8 +98,10 @@ def get_username():
         get_username()
     return pwd.getpwuid(get_userid()).pw_name
 
+
 def is_admin():
     return os.getuid() == 0
+
 
 def get_group_by_name(name, dirpath, use_file):
     if not already_called():
@@ -113,6 +121,7 @@ def get_group_by_name(name, dirpath, use_file):
     except KeyError:
         raise KeyError("group name not found: {0}".format(name))
 
+
 def get_user_by_name(name, dirpath, use_file):
     if not already_called():
         get_user_by_name(name, dirpath, use_file)
@@ -130,6 +139,7 @@ def get_user_by_name(name, dirpath, use_file):
         return pwd.getpwnam(name).pw_uid
     except KeyError:
         raise KeyError("user name not found: {0}".format(name))
+
 
 def get_name_by_gid(gid, dirpath, use_file):
     if not already_called():
@@ -149,6 +159,7 @@ def get_name_by_gid(gid, dirpath, use_file):
     except KeyError:
         raise KeyError("group ID not found: {0}".format(gid))
 
+
 def get_name_by_uid(uid, dirpath, use_file):
     if not already_called():
         get_name_by_uid(uid, dirpath, use_file)
@@ -166,6 +177,7 @@ def get_name_by_uid(uid, dirpath, use_file):
         return pwd.getpwuid(uid).pw_name
     except KeyError:
         raise KeyError("user ID not found: {0:d}".format(uid))
+
 
 def get_usernames_by_gid(gid, dirpath):
     if not already_called():
@@ -191,6 +203,7 @@ def get_usernames_by_gid(gid, dirpath):
             for pwdentry in allpwdentries
             if str(pwdentry.pw_gid) == gid
         ]
+
 
 def load_passwd(dirpath):
     # check if we need to reload cache
@@ -227,6 +240,7 @@ def load_passwd(dirpath):
     users_lastupdate[dirpath] = passwd_stamp
     f.close()
 
+
 def load_groups(dirpath):
     # check if we need to reload cache
     group_file = os.path.join(dirpath, "etc/group")
@@ -261,8 +275,10 @@ def load_groups(dirpath):
     groups_lastupdate[dirpath] = group_stamp
     f.close()
 
+
 def chown(path, owner, group):
     return os.chown(path, owner, group)
+
 
 def rename(src, dst):
     try:
@@ -292,17 +308,22 @@ def rename(src, dst):
         os.rename(tmpdst, dst)
         os.unlink(src)
 
+
 def remove(path):
     os.unlink(path)
+
 
 def link(src, dst):
     os.link(src, dst)
 
+
 def split_path(path):
     return path.split('/')
 
+
 def get_root(path):
     return '/'
+
 
 def assert_mode(path, mode):
     fmode = stat.S_IMODE(os.lstat(path).st_mode)
@@ -311,6 +332,7 @@ def assert_mode(path, mode):
             "want {2:o}".format(path, fmode, mode))
         ae.mode = fmode
         raise ae
+
 
 def copyfile(src, dst):
     shutil.copyfile(src, dst)

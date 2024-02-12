@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 import logging
@@ -47,10 +47,12 @@ LEVELS = {
     CRITICAL: "CRITICAL"
     }
 
+
 class LintMessage(object):
     """A base class for all lint messages."""
 
     msg = ""
+
     def __init__(self, msg, level=INFO, producer="unknown", msgid=None):
         self.msg = msg
         self.level = level

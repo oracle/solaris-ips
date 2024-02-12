@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -41,6 +41,7 @@ import zlib
 
 from urllib.parse import urlparse
 from urllib.request import url2pathname
+
 
 class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
     # Cleanup after every test.

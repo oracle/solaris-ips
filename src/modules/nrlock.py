@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import sys
@@ -29,14 +29,16 @@ import traceback
 # Rename some stuff so "from pkg.nrlock import *" is safe
 __all__ = [ 'NRLock' ]
 
+
 def NRLock(*args, **kwargs):
     return _NRLock(*args, **kwargs)
+
 
 class _NRLock(threading._RLock):
     """Interface and implementation for Non-Reentrant locks.  Derived from
     RLocks (which are reentrant locks).  The default Python base locking
     type, threading.Lock(), is non-reentrant but it doesn't support any
-    operations other than aquire() and release(), and we'd like to be
+    operations other than acquire() and release(), and we'd like to be
     able to support things like RLocks._is_owned() so that we can "assert"
     lock ownership assumptions in our code."""
 
@@ -82,6 +84,7 @@ class _NRLock(threading._RLock):
             errbuf = "Release of unacquired lock\n"
             errbuf += self._debug_lock_release()
             raise NRLockException(errbuf)
+
 
 class NRLockException(Exception):
 

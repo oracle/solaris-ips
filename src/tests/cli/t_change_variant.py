@@ -35,6 +35,7 @@ import unittest
 import pkg.misc as misc
 from pkg.client.pkgdefs import *
 
+
 class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
     persistent_setup = True
@@ -292,7 +293,6 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 "unable to determine image zone variant")
         if ic.variants["variant.opensolaris.zone"] != v_zone:
             self.assertTrue(False, "unexpected zone variant")
-
 
         # adjust the package list based on known dependancies.
         if 'pkg_cluster' in pl and 'pkg_shared' not in pl:

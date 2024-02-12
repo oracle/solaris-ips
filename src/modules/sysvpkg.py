@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 """SystemV / Solaris packages.
@@ -48,6 +48,7 @@ __all__ = [ 'SolarisPackage' ]
 
 PKG_MAGIC = "# PaCkAgE DaTaStReAm"
 PKG_HDR_END = "# end of header"
+
 
 class PkgMapLine(object):
     """A class that represents a single line of a SysV package's pkgmap.
@@ -107,6 +108,7 @@ class PkgMapLine(object):
 
 class MultiPackageDatastreamException(Exception):
     pass
+
 
 # XXX This needs to have a constructor that takes a pkg: FMRI (the new name of
 # the package). - sch
@@ -280,6 +282,7 @@ class SolarisPackage(object):
             pkgmap += [ PkgMapLine(line, self.basedir) ]
 
         return pkgmap
+
 
 if __name__ == "__main__":
     pkg = SolarisPackage(sys.argv[1])

@@ -56,6 +56,7 @@ try:
 except ImportError:
     haveelf = False
 
+
 class FileAction(generic.Action):
     """Class representing a file-type packaging object."""
 
@@ -125,7 +126,6 @@ class FileAction(generic.Action):
             return lambda: data
         finally:
             pkgplan.image.cleanup_downloads()
-
 
     def install(self, pkgplan, orig):
         """Client-side method that installs a file."""

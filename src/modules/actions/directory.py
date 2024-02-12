@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 """module describing a directory packaging object
@@ -36,6 +36,7 @@ import pkg.portable as portable
 import pkg.actions
 import pkg.client.api_errors as apx
 import stat
+
 
 class DirectoryAction(generic.Action):
     """Class representing a directory-type packaging object."""

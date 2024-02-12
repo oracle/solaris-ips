@@ -87,6 +87,7 @@ tmpdirs = []
 
 logger = global_settings.logger
 
+
 @atexit.register
 def cleanup():
     """To be called at program finish."""
@@ -334,6 +335,7 @@ def setup_transport(repo_uri, subcommand=None, prefix=None, verbose=False,
 
     return xport, src_pub, tmp_dir
 
+
 def subcmd_add_publisher(conf, args):
     """Add publisher(s) to the specified repository."""
 
@@ -394,6 +396,7 @@ def subcmd_add_publisher(conf, args):
             return EXIT_PARTIAL
         return EXIT_OOPS
     return rval
+
 
 def subcmd_remove_publisher(conf, args):
     """Remove publisher(s) from a repository"""
@@ -473,6 +476,7 @@ def subcmd_remove_publisher(conf, args):
                 " unset"))
 
     return EXIT_OK
+
 
 def subcmd_create(conf, args):
     """Create a package repository at the given location."""
@@ -889,6 +893,7 @@ def subcmd_info(conf, args):
         return EXIT_OOPS
     return EXIT_OK
 
+
 def subcmd_list(conf, args):
     """List all packages matching the specified patterns."""
 
@@ -917,7 +922,6 @@ def subcmd_list(conf, args):
             key = arg
         elif opt == "--cert":
             cert = arg
-
 
     # Setup transport so configuration can be retrieved.
     if not conf.get("repo_uri", None):
@@ -1536,6 +1540,7 @@ verify_error_header = None
 verify_warning_header = None
 verify_reason_headers = None
 
+
 def __load_verify_msgs():
     """Since our gettext isn't loaded we need to ensure our globals have
     correct content by calling this method.  These values are used by both
@@ -1597,7 +1602,6 @@ def __fmt_verify(verify_tuple):
         # A list of the details we provide.  Some error codes
         # have different details associated with them.
         reason_keys = ["pkg", "path", "fpath"]
-
 
     # the detailed error message can be long, so we'll wrap it.  If what we
     # have fits on a single line, use it, otherwise begin displaying the
@@ -1852,6 +1856,7 @@ def subcmd_fix(conf, args):
         return EXIT_OOPS
     return EXIT_OK
 
+
 def __get_pub_fmris(pub, xport, tmp_dir):
     if not pub.meta_root:
         # Create a temporary directory for catalog.
@@ -1863,6 +1868,7 @@ def __get_pub_fmris(pub, xport, tmp_dir):
     pkgs, fmris, unmatched = pub.catalog.get_matching_fmris("*")
     fmris = [f for f in fmris]
     return fmris, pkgs
+
 
 def __format_diff(diff_type, subject):
     """formatting diff output.
@@ -1886,15 +1892,18 @@ def __format_diff(diff_type, subject):
             subject)
     return text
 
+
 def __sorted(subject, stype=None):
     if stype == "pub":
         skey = operator.attrgetter("prefix")
         return sorted(subject, key=skey)
     return sorted(subject)
 
+
 def __emit_msg(diff_type, subject):
     text = __format_diff(diff_type, subject)
     msg(text)
+
 
 def __repo_diff(conf, pubs, xport, rpubs, rxport, tmp_dir, verbose, quiet,
     compare_ts, compare_cat, parsable):

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -31,6 +31,7 @@ import pkg5unittest
 import os
 
 import rapidjson as json
+
 
 class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
     # Only start/stop the depot once (instead of for every test)

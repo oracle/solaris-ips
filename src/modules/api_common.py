@@ -33,6 +33,7 @@ import pkg.client.pkgdefs as pkgdefs
 import pkg.fmri as fmri
 import pkg.misc as misc
 
+
 class LicenseInfo(object):
     """A class representing the license information a package
     provides.  Not intended for instantiation by API consumers."""

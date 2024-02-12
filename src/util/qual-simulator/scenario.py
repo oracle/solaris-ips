@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import gettext
@@ -31,6 +31,7 @@ import sys
 import depot
 import stats
 import pkg.misc as misc
+
 
 class Scenario(object):
     """A Scenario has a list of depot.RepositoryURIs."""
@@ -100,6 +101,7 @@ class Scenario(object):
                 total -= req[1]
 
         rc.dump()
+
 
 misc.setlocale(locale.LC_ALL)
 gettext.install("pkg", "/usr/share/locale")

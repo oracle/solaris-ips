@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -32,6 +32,7 @@ import pkg.elf as elf
 import os
 import re
 import pkg.portable
+
 
 class TestElf(pkg5unittest.Pkg5TestCase):
 

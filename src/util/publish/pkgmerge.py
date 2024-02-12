@@ -75,6 +75,7 @@ dest_xport     = None
 pubs           = set()
 target_pub     = None
 
+
 def cleanup():
     """To be called at program finish."""
 
@@ -94,6 +95,7 @@ def cleanup():
             # If this fails, ignore it as this was a last
             # ditch attempt anyway.
             break
+
 
 def usage(errmsg="", exitcode=EXIT_BADOPT):
     """Emit a usage message and optionally prefix it with a more specific
@@ -142,6 +144,7 @@ Environment:
 
     sys.exit(exitcode)
 
+
 def error(text, exitcode=EXIT_OOPS):
     """Emit an error message prefixed by the command name """
 
@@ -150,6 +153,7 @@ def error(text, exitcode=EXIT_OOPS):
     if exitcode is not None:
         sys.exit(exitcode)
 
+
 def get_tracker():
     try:
         progresstracker = \
@@ -157,6 +161,7 @@ def get_tracker():
     except progress.ProgressTrackerException:
         progresstracker = progress.CommandLineProgressTracker()
     return progresstracker
+
 
 def load_catalog(repouri, pub):
     """Load catalog from specified uri"""
@@ -178,8 +183,10 @@ def load_catalog(repouri, pub):
     # discard its copy of a catalog is to set repository.
     pub.repository = pub.repository
 
+
 def get_all_pkg_names(repouri):
     return list(catalog_dict[repouri.uri].keys())
+
 
 def get_manifest(repouri, fmri):
     """Fetch the manifest for package-fmri 'fmri' from the source
@@ -193,6 +200,7 @@ def get_manifest(repouri, fmri):
     m = manifest.Manifest(fmri)
     m.set_content(content=mfst_str)
     return m
+
 
 def main_func():
     global dry_run, tmpdir, xport, dest_xport, target_pub
@@ -456,6 +464,7 @@ def main_func():
 
     return EXIT_OK
 
+
 def republish_packages(pub, target_pub, processdict, source_list, variant_list,
         variants, tracker, xport, dest_repo, dest_xport, pkg_tmpdir,
         dry_run=False):
@@ -567,6 +576,7 @@ def republish_packages(pub, target_pub, processdict, source_list, variant_list,
         # recreate the directory for the next package.
         shutil.rmtree(pkg_tmpdir)
         os.mkdir(pkg_tmpdir)
+
 
 def merge_fmris(source_list, fmri_list, variant_list, variants):
     """Merge a list of manifests representing multiple variants,
@@ -817,6 +827,7 @@ def __merge_fmris(new_fmri, manifest_list, fmri_list, variant_list, variant):
     m.set_content(content=allactions)
     return m
 
+
 def build_merge_list(include, exclude, cat):
     """Given a list of patterns to include and a list of patterns
     to exclude, return a dictionary of fmris to be included,
@@ -832,6 +843,7 @@ def build_merge_list(include, exclude, cat):
     return dict((k, sorted(list(v), reverse=True)[0])
                 for k, v in include_dict.items()
                 if v), include_misses
+
 
 def match_user_fmris(patterns, cat):
     """Given a user-specified list of patterns, return a dictionary

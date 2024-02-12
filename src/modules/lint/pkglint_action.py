@@ -996,7 +996,6 @@ class PkgActionChecker(base.ActionChecker):
         """Cache all manifest FMRIs, tracking whether they're
         obsolete or not."""
 
-
         def seed_obsolete_dict(mf, dic):
             """Updates a dictionary of { pkg_name: ObsoleteFmri }
             items, tracking which were marked as obsolete."""

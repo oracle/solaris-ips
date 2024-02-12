@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 import os
@@ -30,6 +30,7 @@ import pkg.elf as elf
 import pkg.flavor.base as base
 
 from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_DEFAULT_RUNPATH
+
 
 class BadElfFile(base.DependencyAnalysisError):
     """Exception that is raised when the elf dependency checker is given
@@ -44,6 +45,7 @@ class BadElfFile(base.DependencyAnalysisError):
     def __str__(self):
         return _("{file} had this elf error:{err}").format(
             file="self.fp", err=self.ex)
+
 
 class UnsupportedDynamicToken(base.DependencyAnalysisError):
     """Exception that is used for elf dependencies which have a dynamic
@@ -113,9 +115,10 @@ class ElfDependency(base.PublishingDependency):
         return "ElfDep({0}, {1}, {2}, {3})".format(self.action,
             self.base_names, self.run_paths, self.pkg_vars)
 
+
 def expand_variables(paths, dyn_tok_conv):
     """Replace dynamic tokens, such as $PLATFORM, in the paths in the
-    paramter 'paths' with the values for that token provided in the
+    parameter 'paths' with the values for that token provided in the
     dictionary 'dyn_tok_conv.'
     """
 
@@ -146,7 +149,9 @@ def expand_variables(paths, dyn_tok_conv):
             res.append(p)
     return res, elist
 
+
 default_run_paths = ["/lib", "/usr/lib"]
+
 
 def process_elf_dependencies(action, pkg_vars, dyn_tok_conv, run_paths,
     **kwargs):

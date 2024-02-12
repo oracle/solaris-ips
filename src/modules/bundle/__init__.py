@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 # The ordering is important -- SolarisPackageDirBundle must come before
@@ -36,6 +36,7 @@ __all__ = [
 
 import os
 import sys
+
 
 class InvalidBundleException(Exception):
     pass
@@ -77,6 +78,7 @@ class Bundle(object):
                     return self.action(*data)
                 # Action was returned.
                 return data
+
 
 def make_bundle(filename, **kwargs):
     """Determines what kind of bundle is at the given filename, and returns

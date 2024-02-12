@@ -52,6 +52,7 @@ from pkg.client.debugvalues import DebugValues
 pipelined_protocols = ()
 response_protocols = ("ftp", "http", "https")
 
+
 class TransportEngine(object):
     """This is an abstract class.  It shouldn't implement any
     of the methods that it contains.  Leave that to transport-specific
@@ -199,7 +200,6 @@ class CurlTransportEngine(TransportEngine):
                 failures.append(ex)
 
         self.__failures.extend(failures)
-
 
     def __cleanup_requests(self):
         """Cleanup handles that have finished their request.

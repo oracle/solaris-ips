@@ -44,6 +44,7 @@ import zlib
 from pkg.client.api_errors import ActionExecutionError
 from urllib.parse import quote
 
+
 class LicenseAction(generic.Action):
     """Class representing a license packaging object."""
 
