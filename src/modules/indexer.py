@@ -165,6 +165,11 @@ class Indexer(object):
 
         self.old_out_token = None
 
+        # Handle for the output main dictionary file and
+        # the current position within.
+        self.out_main_dict_handle = None
+        self.out_main_dict_pos = 0
+
     @staticmethod
     def __decode_fmri(pfmri):
         """Turn fmris into strings correctly while writing out
@@ -382,11 +387,9 @@ class Indexer(object):
                 self._progtrack.JOB_REBUILD_SEARCH)
         return removed_paths
 
-    def _write_main_dict_line(self, file_handle, token,
-        fv_fmri_pos_list_list, out_dir):
+    def _write_main_dict_line(self, token, fv_fmri_pos_list_list, out_dir):
         """Writes out the new main dictionary file and also adds the
-        token offsets to _data_token_offset. file_handle is the file
-        handle for the output main dictionary file. token is the token
+        token offsets to _data_token_offset. token is the token
         to add to the file. fv_fmri_pos_list_list is a structure of
         lists inside of lists several layers deep. The top layer is a
         list of action types. The second layer contains the keys for
@@ -406,8 +409,7 @@ class Indexer(object):
                 self.old_out_token))
         self.old_out_token = token
 
-        cur_location_int = file_handle.tell()
-        cur_location = str(cur_location_int)
+        cur_location = str(self.out_main_dict_pos)
         self._data_token_offset.write_entity(token, cur_location)
 
         for at, st_list in fv_fmri_pos_list_list:
@@ -427,9 +429,15 @@ class Indexer(object):
                     for p_id, m_off_set in p_list:
                         p_id = int(p_id)
                         self._data_fmri_offsets.add_pair(
-                            p_id, cur_location_int)
-        file_handle.write(self._data_main_dict.transform_main_dict_line(
-            token, fv_fmri_pos_list_list))
+                            p_id, self.out_main_dict_pos)
+        data = self._data_main_dict.transform_main_dict_line(
+            token, fv_fmri_pos_list_list)
+        self.out_main_dict_handle.write(data)
+        # Using tell() on file objects opened in text mode
+        # is very slow compared to simple counting.
+        # https://docs.python.org/3/library/io.html#performance
+        self.out_main_dict_pos += len(
+            data.encode(self.out_main_dict_handle.encoding))
 
     @staticmethod
     def __splice(ret_list, source_list):
@@ -576,10 +584,11 @@ class Indexer(object):
             out_dir, self.file_version_number)
         # The dictionary file's opened in append mode to avoid removing
         # the version information the search storage class added.
-        out_main_dict_handle = \
+        self.out_main_dict_handle = \
             open(os.path.join(out_dir,
                 self._data_main_dict.get_file_name()), "a",
                 buffering=PKG_FILE_BUFSIZ)
+        self.out_main_dict_pos = self.out_main_dict_handle.tell()
 
         self._data_token_offset.open_out_file(out_dir,
             self.file_version_number)
@@ -626,8 +635,8 @@ class Indexer(object):
                 while new_toks_available and next_new_tok < tok:
                     assert len(next_new_tok) > 0
                     self._write_main_dict_line(
-                        out_main_dict_handle, next_new_tok,
-                        new_tok_info, out_dir)
+                        next_new_tok, new_tok_info, out_dir
+                    )
                     try:
                         next_new_tok, new_tok_info = \
                             next(new_toks_it)
@@ -653,18 +662,14 @@ class Indexer(object):
                 # associated with it, write them to the file.
                 if existing_entries:
                     assert len(tok) > 0
-                    self._write_main_dict_line(
-                        out_main_dict_handle,
-                        tok, existing_entries, out_dir)
+                    self._write_main_dict_line(tok, existing_entries, out_dir)
 
             # For any new tokens which are alphabetically after the
             # last entry in the existing file, add them to the end
             # of the file.
             while new_toks_available:
                 assert len(next_new_tok) > 0
-                self._write_main_dict_line(
-                    out_main_dict_handle, next_new_tok,
-                    new_tok_info, out_dir)
+                self._write_main_dict_line(next_new_tok, new_tok_info, out_dir)
                 try:
                     next_new_tok, new_tok_info = \
                         next(new_toks_it)
@@ -675,7 +680,7 @@ class Indexer(object):
                 file_handle.close()
                 self._data_main_dict.close_file_handle()
 
-            out_main_dict_handle.close()
+            self.out_main_dict_handle.close()
             self._data_token_offset.close_file_handle()
             for fh in self.at_fh.values():
                 fh.close()
