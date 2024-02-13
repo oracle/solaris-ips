@@ -1330,7 +1330,10 @@ class Manifest(object):
                             if return_line:
                                 arg = l
                             __handle_list(inds, arg)
-            cur_pos = file_handle.tell()
+            # Using tell() on file objects opened in text mode
+            # is very slow compared to simple counting.
+            # https://docs.python.org/3/library/io.html#performance
+            cur_pos += len(line.encode(file_handle.encoding))
             line = file_handle.readline()
         file_handle.close()
         return action_dict
