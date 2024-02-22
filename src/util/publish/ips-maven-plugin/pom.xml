@@ -123,7 +123,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven-version>3.3.3</maven-version>
+        <maven-version>3.8.1</maven-version>
         <maven-plugin-annotations-version>3.4</maven-plugin-annotations-version>
         <jdom-version>2.0.2</jdom-version>
         <lang3-version>3.4</lang3-version>
