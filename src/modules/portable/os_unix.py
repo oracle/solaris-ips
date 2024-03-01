@@ -213,13 +213,10 @@ def load_passwd(dirpath):
         return
     users[dirpath] = user = {}
     uids[dirpath] = uid = {}
-    f = open(passwd_file, 'rb')
+    f = open(passwd_file, 'r', encoding='utf-8', errors='surrogateescape')
     for line in f.readlines():
-        try:
-            arr = line.decode("utf-8").rstrip().split(":")
-        except UnicodeDecodeError:
-            # Skip any line we can't make sense of.
-            continue
+        arr = line.rstrip().split(":")
+
         if len(arr) != 7:
             # Skip any line we can't make sense of.
             continue
@@ -249,13 +246,10 @@ def load_groups(dirpath):
         return
     groups[dirpath] = group = {}
     gids[dirpath] = gid = {}
-    f = open(group_file, 'rb')
+    f = open(group_file, 'r', encoding='utf-8', errors='surrogateescape')
     for line in f:
-        try:
-            arr = line.decode("utf-8").rstrip().split(":")
-        except UnicodeDecodeError:
-            # Skip any line we can't make sense of.
-            continue
+        arr = line.rstrip().split(":")
+
         if len(arr) != 4:
             # Skip any line we can't make sense of.
             continue
