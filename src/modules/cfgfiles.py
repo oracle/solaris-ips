@@ -90,15 +90,11 @@ class CfgFile(object):
 
     def readfile(self):
         if os.path.exists(self.filename):
-            file = open(self.filename, 'rb')
+            file = open(self.filename, 'r', encoding='utf-8',
+                        errors='surrogateescape')
             lineno = 1
             for line in file:
                 linecnt = 1
-                try:
-                    line = line.decode("utf-8")
-                except UnicodeDecodeError:
-                    # ignore bad utf-8 lines
-                    continue
 
                 while self.continuation_lines and line[-2:] == "\\\n":
                     linecnt += 1
@@ -190,7 +186,8 @@ class CfgFile(object):
         st = os.stat(self.filename)
 
         tempdata = tempfile.mkstemp(dir=os.path.dirname(self.filename))
-        file = os.fdopen(tempdata[0], "w")
+        file = os.fdopen(tempdata[0], "w",
+                         encoding="utf-8", errors="surrogateescape")
         name = tempdata[1]
 
         os.chmod(name, st.st_mode)
