@@ -3643,6 +3643,24 @@ publisher\tprefix\t""
         # publisher will not result in partial failure.
         self.pkgrepo("contents -s {0} zoo".format(repo_path))
 
+    def test_41_verify_multiple_cert_files(self):
+        """Check that pkgrepo verify works with cert files containing
+        multiple certificates."""
+
+        # Create repo, drop in pkg, sign, setup trust anchor directory
+        # which has a file with multiple certificates, in particular the
+        # second certificate is the one we want to verify against
+        repo_path = self.dc.get_repodir()
+
+        plist = self.pkgsend_bulk(repo_path, (self.tree10))
+        self.pkgsign_simple(repo_path, plist[0])
+
+        ta_dir = os.path.join(self.test_root,
+            "ro_data/signing_certs/produced/ta1ta3")
+        self.pkgrepo("-s {0} set repository/trust-anchor-directory={1}".format(
+            repo_path, ta_dir))
+        self.pkgrepo("-s {0} verify".format(repo_path), exit=0)
+
 
 class TestPkgrepoMultiRepo(pkg5unittest.ManyDepotTestCase):
     # Only start/stop the depot once (instead of for every test)

@@ -34,8 +34,6 @@ import sys
 import tempfile
 import zlib
 
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
 from io import BytesIO
 from urllib.parse import unquote
 
@@ -2373,27 +2371,7 @@ class _RepoStore(object):
         if not os.path.isdir(trust_anchor_dir):
             raise RepositorySigNoTrustAnchorDirError(
                 trust_anchor_dir)
-
-        for fn in os.listdir(trust_anchor_dir):
-            pth = os.path.join(trust_anchor_dir, fn)
-            if not os.path.isfile(pth) or os.path.islink(pth):
-                continue
-            with open(pth, "rb") as f:
-                try:
-                    trusted_ca = \
-                        x509.load_pem_x509_certificate(
-                            f.read(), default_backend())
-                except ValueError as e:
-                    pass
-
-            # Note that while we store certs by their subject
-            # hashes, we use our own hashing since cryptography has
-            # no interface for the subject hash and other crypto
-            # frameworks have been inconsistent with OpenSSL.
-            s = hashlib.sha1(misc.force_bytes(
-                trusted_ca.subject)).hexdigest()
-            trust_anchors.setdefault(s, [])
-            trust_anchors[s].append(trusted_ca)
+        misc.load_trust_anchors(trust_anchor_dir, trust_anchors)
 
         self.__lock_rstore()
         try:
