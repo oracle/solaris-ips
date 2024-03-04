@@ -50,6 +50,7 @@ import traceback
 import urllib
 import zlib
 import ipaddress
+import hashlib
 
 # ungrouped-imports: pylint: disable=C0412
 from binascii import hexlify, unhexlify
@@ -59,6 +60,8 @@ from io import StringIO
 from ipaddress import ip_address
 from itertools import zip_longest
 from operator import itemgetter
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 
 from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
     S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG, S_ISSOCK, \
@@ -1290,6 +1293,38 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
             publisher=prefix, days=diff.days)
 
     return cert
+
+
+def load_trust_anchors(trust_anchor_loc, trust_anchors, bad_trust_anchors=[]):
+    """Load all trust anchors in given directory; each
+    certificate file may have multiple trust certificates."""
+    ca_list = [] 
+
+    for fn in os.listdir(trust_anchor_loc):
+        pth = os.path.join(trust_anchor_loc, fn)
+        if not os.path.isfile(pth) or os.path.islink(pth):
+            continue
+
+        try:
+            with open(pth, "rb") as f:
+                raw = f.read()
+            if len(raw) == 0:
+                bad_trust_anchors.append((pth, "Empty PEM file."))
+                continue
+            begin_cert = b'-----BEGIN CERTIFICATE-----'
+            for cert in raw.split(begin_cert)[1:]:
+                ca_list.append(x509.load_pem_x509_certificate(begin_cert+cert, \
+                    default_backend()))
+        except (ValueError, IOError) as e: 
+            bad_trust_anchors.append((pth, str(e)))
+        else:
+            # We store certificates internally by
+            # the SHA-1 hash of its subject.
+            for trusted_ca in ca_list:
+                s = hashlib.sha1(force_bytes(
+                    trusted_ca.subject)).hexdigest()
+                trust_anchors.setdefault(s, [])
+                trust_anchors[s].append(trusted_ca)
 
 
 def binary_to_hex(s):
@@ -3011,6 +3046,7 @@ def force_bytes(s, encoding="utf-8", errors="strict"):
 
     if isinstance(s, bytes):
         return s
+
     try:
         if isinstance(s, str):
             return s.encode(encoding, errors)
@@ -3026,6 +3062,7 @@ def force_text(s, encoding="utf-8", errors="strict"):
 
     if isinstance(s, str):
         return s
+
     try:
         if isinstance(s, bytes):
             s = s.decode(encoding, errors)
@@ -3091,6 +3128,7 @@ def set_fd_limits(printer=None):
     """Set the open file descriptor soft limit."""
     if printer is None:
         printer = emsg
+
     try:
         (soft, hard) = resource.getrlimit(resource.RLIMIT_NOFILE)
         soft = max(hard, FILE_DESCRIPTOR_LIMIT)

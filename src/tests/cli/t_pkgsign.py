@@ -2820,6 +2820,22 @@ dir mode=0755 owner=root group=bin path=etc2 variant.num=two
         self.pkg("verify C")
         self.pkg("revert etc2/fileC", exit=1)
 
+    def test_multiple_cert_files(self):
+        """Test that files containing multiple certificates work.
+        """
+
+        plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+        self.pkgsign_simple(self.rurl1, plist[0])
+
+        self.pkg_image_create(self.rurl1,
+            additional_args="--set-property "
+                "signature-policy=require-signatures")
+        self.seed_ta_dir("ta1ta3")
+
+        api_obj = self.get_img_api_obj()
+        self._api_install(api_obj, ["example_pkg"])
+        self._api_uninstall(api_obj, ["example_pkg"])
+
 
 class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
     # Tests in this suite use the read only data directory.

@@ -262,7 +262,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
     testclasses = []
     # "testdir" will be "api", "cli", etc., so find all the files in that
     # directory that match the pattern "t_*.py".
-    _vprint("# Loading {0} tests:\n".format(testdir))
+    print("# Loading {0} tests:".format(testdir))
     curlinepos = 0
     for f in sorted(os.listdir(testdir)):
         if curlinepos == 0:
@@ -323,7 +323,7 @@ def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS,
                 if not found:
                     delattr(classobj, attrname)
             testclasses.append(classobj)
-    _vprint("\n#\n")
+    print("\n#")
 
     testclasses = [
         loader.loadTestsFromTestCase(cobj) for cobj in testclasses

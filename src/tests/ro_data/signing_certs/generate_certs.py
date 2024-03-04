@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 # This script will generate the certificates needed for testing.
@@ -182,6 +182,18 @@ if __name__ == "__main__":
         fhw.write(fhr.read())
         fhr.close()
     fhw.close()
+
+    # Create certificate files with multiple certificates...using 
+    # certificate files we've just generated
+    os.mkdir("{0}/ta1ta3".format(output_dir))
+    multi_cert_file = "{0}/ta1ta3/ta1ta3_cert.pem".format(output_dir)
+    cert_files = ["ta1/ta1_cert.pem", "ta3/ta3_cert.pem"]
+    with open(multi_cert_file, 'w') as outfile:
+        for fname in cert_files:
+            with open("{0}/{1}".format(output_dir, fname)) as infile:
+                outfile.write(infile.read())
+
+    shutil.copy(multi_cert_file, "{0}/trust_anchors".format(output_dir))
 
     # Create a certificate with an extension that Cryptography can't
     # understand. We can't do it by the OpenSSL CLI, but we can use a C
