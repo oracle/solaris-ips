@@ -79,9 +79,6 @@ elif osname == 'aix':
 
 pwd = os.path.normpath(sys.path[0])
 
-# the version of pylint that we must have in order to run the pylint checks.
-req_pylint_version = "1.4.3"
-
 dist_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "dist_" + arch))
 build_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "build_" + arch))
 if "ROOT" in os.environ and os.environ["ROOT"] != "":
@@ -352,21 +349,6 @@ packages = [
         'pkg.server'
         ]
 
-pylint_targets = [
-        'pkg.altroot',
-        'pkg.client.__init__',
-        'pkg.client.api',
-        'pkg.client.linkedimage',
-        'pkg.client.pkg_solver',
-        'pkg.client.pkgdefs',
-        'pkg.client.pkgremote',
-        'pkg.client.plandesc',
-        'pkg.client.printengine',
-        'pkg.client.progress',
-        'pkg.misc',
-        'pkg.pipeutils',
-        ]
-
 web_files = []
 for entry in os.walk("web"):
     web_dir, dirs, files = entry
@@ -496,122 +478,6 @@ solver_suppress_args = ["-Wno-return-type",
                         "-Wno-unused-function",
                         "-Wno-unused-variable"
                         ]
-
-
-# Runs lint on the extension module source code
-class pylint_func(Command):
-    description = "Runs pylint tools over IPS python source code"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    # Make string shell-friendly
-    @staticmethod
-    def escape(astring):
-        return astring.replace(' ', '\\ ')
-
-    def run(self, quiet=False, py3k=False):
-
-        def supported_pylint_ver(version):
-            """Compare the installed version against the version
-            we require to build with, returning False if the version
-            is too old. It's tempting to use pkg.version.Version
-            here, but since that's a build artifact, we'll do it
-            the long way."""
-            inst_pylint_ver = version.split(".")
-            req_pylint_ver = req_pylint_version.split(".")
-
-            # if the lists are of different lengths, we just
-            # compare with the precision we have.
-            vers_comp = zip(inst_pylint_ver, req_pylint_ver)
-            for inst, req in vers_comp:
-                try:
-                    if int(inst) < int(req):
-                        return False
-                    elif int(inst) > int(req):
-                        return True
-                except ValueError:
-                    # if we somehow get non-numeric version
-                    # components, we ignore them.
-                    continue
-            return True
-
-        # it's fine to default to the required version - the build will
-        # break if the installed version is incompatible and $PYLINT_VER
-        # didn't get set, somehow.
-        pylint_ver_str = os.environ.get("PYLINT_VER",
-            req_pylint_version)
-        if pylint_ver_str == "":
-            pylint_ver_str = req_pylint_version
-
-        if os.environ.get("PKG_SKIP_PYLINT"):
-            log.warn("WARNING: skipping pylint checks: "
-                "$PKG_SKIP_PYLINT was set")
-            return
-        elif not pylint_ver_str or \
-            not supported_pylint_ver(pylint_ver_str):
-            log.warn("WARNING: skipping pylint checks: the "
-                "installed version {0} is older than version {1}".format(
-                pylint_ver_str, req_pylint_version))
-            return
-
-        proto = os.path.join(root_dir, py_install_dir)
-        sys.path.insert(0, proto)
-
-        # Insert tests directory onto sys.path so any custom checkers
-        # can be found.
-        sys.path.insert(0, os.path.join(pwd, 'tests'))
-        # assumes pylint is accessible on the sys.path
-        from pylint import lint
-
-        #
-        # Unfortunately, pylint seems pretty fragile and will crash if
-        # we try to run it over all the current pkg source.  Hence for
-        # now we only run it over a subset of the source.  As source
-        # files are made pylint clean they should be added to the
-        # pylint_targets list.
-        #
-        if not py3k:
-            args = []
-            if quiet:
-                args += ['--reports=no']
-            args += ['--rcfile={0}'.format(os.path.join(
-                pwd, 'tests', 'pylintrc'))]
-            args += pylint_targets
-            lint.Run(args)
-        else:
-            #
-            # In Python 3 porting mode, all checkers will be
-            # disabled and only messages emitted by the porting
-            # checker will be displayed. Therefore we need to run
-            # this checker separately.
-            #
-            args = []
-            if quiet:
-                args += ['--reports=no']
-            args += ['--rcfile={0}'.format(os.path.join(
-                pwd, 'tests', 'pylintrc_py3k'))]
-            # We check all Python files in the gate.
-            for root, dirs, files in os.walk(pwd):
-                for f in files:
-                    if f.endswith(".py"):
-                        args += [os.path.join(root, f)]
-            lint.Run(args)
-
-
-class pylint_func_quiet(pylint_func):
-
-    def run(self, quiet=False):
-        pylint_func.run(self, quiet=True)
-
-
-class pylint_func_py3k(pylint_func):
-    def run(self, quiet=False, py3k=False):
-        pylint_func.run(self, py3k=True)
 
 
 include_dirs = [ 'modules' ]
@@ -785,7 +651,6 @@ class lint_func(Command):
     def run(self):
         smflint_func(Distribution()).run()
         clint_func(Distribution()).run()
-        pylint_func(Distribution()).run()
 
 
 class install_func(_install):
@@ -1750,9 +1615,6 @@ cmdclasses = {
         'bdist': dist_func,
         'lint': lint_func,
         'clint': clint_func,
-        'pylint': pylint_func,
-        'pylint_quiet': pylint_func_quiet,
-        'pylint_py3k': pylint_func_py3k,
         'clean': clean_func,
         'clobber': clobber_func,
         'test': test_func,

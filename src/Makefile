@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
 PYTHON39 = /usr/bin/python3.9
@@ -39,18 +39,28 @@ test := TARGET = test
 test-verbose := TARGET = test-verbose
 test-generate := TARGET = test-generate
 
-#
-# clear PYTHONPATH when invoking /usr/bin/pkg (we don't want to load any
-# pkg python modules from this workspace since they may be out of sync
-# with the pkg modules in the root filesystem).
-#
-PYLINT_VER_CMD = PYTHONPATH= /usr/bin/pkg info pkg:/developer/python/pylint | \
-	/usr/bin/awk -F: '/Version/ {gsub(/ /, "", $2) ; print $2}'
-
 PYCODESTYLE = /usr/bin/pycodestyle
 JOBS = 4
 
 SUBDIRS=zoneproxy util/mkcert man
+
+PROTO_AREA:sh = echo $(dirname $(pwd))/proto/root_$(uname -p)
+PROTO_VENDOR_PACKAGES = $(PROTO_AREA)/usr/lib/python3.9/vendor-packages
+
+PYLINT_TARGETS = \
+	pkg.altroot \
+	pkg.client.__init__ \
+	pkg.client.api \
+	pkg.client.linkedimage \
+	pkg.client.pkg_solver \
+	pkg.client.pkgdefs \
+	pkg.client.pkgremote \
+	pkg.client.plandesc \
+	pkg.client.printengine \
+	pkg.client.progress \
+	pkg.misc \
+	pkg.pipeutils
+
 
 all: $(SUBDIRS)
 	$(PYTHON39) setup.py build
@@ -66,15 +76,11 @@ clobber: $(SUBDIRS)
 	$(PYTHON311) setup.py clobber
 	@cd pkg; pwd; make clobber
 
-#
-# run pylint as part of the install target.
-# it's the best way to ensure things stay pylint clean.
-#
 install: $(SUBDIRS)
 	$(PYTHON39) setup.py install
 	$(PYTHON311) setup.py install
 
-lint:
+lint: pylint
 	$(PYTHON39) setup.py lint
 	$(PYTHON311) setup.py lint
 	@cd zoneproxy; pwd; make lint
@@ -83,8 +89,19 @@ clint:
 	$(PYTHON39) setup.py clint
 	@cd zoneproxy; pwd; make lint
 
-pylint: install
-        PYLINT_VER=$(PYLINT_VER_CMD:sh) $(PYTHON39) setup.py pylint_py3k
+#
+# Unfortunately, pylint seems pretty fragile and will crash if
+# we try to run it over all the current pkg source.  Hence for
+# now we only run it over a subset of the source.  As source
+# files are made pylint clean they should be added to the
+# pylint_targets list.
+#
+# Insert the tests directory into sys.path with PYTHONPATH
+# so any custom checkers can be found.
+#
+pylint:
+	PYTHONPATH=$(PROTO_VENDOR_PACKAGES):tests \
+		$(PYTHON39) -m pylint --rcfile tests/pylintrc $(PYLINT_TARGETS)
 
 bandit:
 	$(PYTHON39) setup.py bandit
@@ -100,14 +117,15 @@ $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
 # Use the bits we just built to create the packages.
-packages: install pylint check bandit
+# Note: pylint should be added back once the gate gets cleaned.
+packages: install check bandit
 	@cd pkg; pwd; $(MAKE) $(TARGET) check \
-                PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
+		PATH=$(PROTO_AREA)/usr/bin:$$PATH
 
 # Just packages with no checking
 justpackages: install
 	@cd pkg; pwd; $(MAKE) $(TARGET) repository-metadata \
-                PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH
+		PATH=$(PROTO_AREA)/usr/bin:$$PATH
 
 dist:
 	hg archive -r default -p pkg7-%h ../pkg7-%h.tar.bz2
