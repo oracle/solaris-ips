@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2024, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -114,10 +114,12 @@ def start():
               flush=True)
         time.sleep(wait_secs)
 
-    if pkg_status == pkgdefs.EXIT_NOP or \
-       pkg_status == pkgdefs.EXIT_CONSTRAINED:
-        # A constrained image or no updates available
+    if pkg_status == pkgdefs.EXIT_NOP:
         return smf_include.SMF_EXIT_OK
+    elif pkg_status == pkgdefs.EXIT_CONSTRAINED:
+        message = 'Updates available but no solution found'
+        smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
+                                    'constrained', message)
     elif pkg_status == pkgdefs.EXIT_LICENSE:
         message = 'License acceptance required'
         smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
@@ -130,7 +132,9 @@ def start():
         smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
                                     'image-locked', message)
     elif pkg_status != pkgdefs.EXIT_OK:
-        return smf_include.SMF_EXIT_ERR_FATAL
+        message = 'Update failed, see service log for details'
+        smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
+                                    'update-failed', message)
 
     with open(parsable_output) as pkg_out:
         pkgplan = json.loads(pkg_out.read())
