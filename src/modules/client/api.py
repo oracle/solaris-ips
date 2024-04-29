@@ -743,6 +743,11 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 self.__backup_be = \
                     self._img.imageplan.reboot_advised()
 
+            if self.__new_be and self.__backup_be:
+                # No policy or CLI arg combiation should result in
+                # a new BE and an extra backup be.
+                self.__backup_be = False
+
     def abort(self, result=RESULT_FAILED_UNKNOWN):
         """Indicate that execution was unexpectedly aborted and log
         operation failure if possible."""

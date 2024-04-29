@@ -72,15 +72,22 @@ def start():
     else:
         cmd.extend(['update'])
 
-    if smf.get_prop(myfmri, 'config/require-new-be') == 'true':
-        cmd.append('--require-new-be')
+    try:
+        if smf.get_prop(myfmri, 'config/require-new-be') == 'true':
+            cmd.append('--require-new-be')
+    except smf.NonzeroExitException:
+        pass
 
-    if pkg.smf.get_prop(myfmri, 'config/backup-be') == 'true':
-        cmd.append('--require-backup-be')
-    else:
-        cmd.append('--no-backup-be')
+    try:
+        backup_be = smf.get_prop(myfmri, 'config/backup-be')
+        if backup_be == 'true':
+            cmd.append('--require-backup-be')
+        else:
+            cmd.append('--no-backup-be')
+    except smf.NonzeroExitException:
+        pass
 
-    if pkg.smf.get_prop(myfmri, 'config/activate-new-be') == 'false':
+    if smf.get_prop(myfmri, 'config/activate-new-be') == 'false':
         if auto_reboot:
             message = 'Invalid configuration: config/auto-reboot = true ' + \
                 'with config/activate-new-be = false'
