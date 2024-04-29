@@ -19,7 +19,7 @@
 
   CDDL HEADER END
 
-  Copyright (c) 2019, 2021, Oracle and/or its affiliates.
+  Copyright (c) 2019, 2024, Oracle and/or its affiliates.
 
   NOTE:  This service manifest is not editable; its contents will
   be overwritten by package or patch operations, including
@@ -53,7 +53,6 @@
                 <service_fmri value='svc:/milestone/network:default' />
 	</dependency>
 
-
 	<instance name='default' enabled='false'>
 		<scheduled_method
 			interval='day'
@@ -68,17 +67,18 @@
 			    </method_context>
 		</scheduled_method>
 		<property_group type='application' name='config'>
-			<propval type='boolean' name='auto-reboot' value='false' />
-			<propval type='boolean' name='require-new-be' value='false' />
 			<propval type='boolean' name='activate-new-be' value='true' />
-			<propval type='boolean' name='backup-be' value='true' />
+			<propval type='boolean' name='auto-reboot' value='true' />
+			<property type='boolean' name='backup-be' />
 			<property name='packages' type='astring'>
 				<!-- Set an empty value so it is visible with editprop -->
 				<astring_list>
 					<value_node value='' />
 				</astring_list>
 			</property>
-			<propval type='astring' name='reboot-check-hook' value='' />
+			<property type='astring' name='pkg_extra_args' />
+			<property type='astring' name='reboot-check-hook' />
+			<property type='boolean' name='require-new-be' />
 			<propval type='count' name='shutdown-grace-period' value='60' />
 		</property_group>
 
@@ -88,6 +88,48 @@
 					Automatic Package Update Service
 				</loctext>
 			</common_name>
+			<pg_pattern name='config'>
+				<prop_pattern name='activate-new-be' type='boolean' required='true'>
+					<description><loctext xml:lang='C'>
+					Automatically activate the new boot environment, defaults to true.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='auto-reboot' type='boolean' required='true'>
+					<description><loctext xml:lang='C'>
+					Automatically reboot if updates are performed, defaults to true.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='backup-be' type='boolean' required='false'>
+					<description><loctext xml:lang='C'>
+					Override the be-policy for backup boot environments.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='packages' type='astring' required='false'>
+					<description><loctext xml:lang='C'>
+					List of packages to explicitly update or install.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='pkg_extra_args' type='astring' required='false'>
+					<description><loctext xml:lang='C'>
+					List of extra CLI arguments to pass to the pkg command.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='reboot-check-hook' type='astring' required='false'>
+					<description><loctext xml:lang='C'>
+					Path to optional program that returns 0 when it is safe to perform the reboot.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='require-new-be' type='boolean' required='false'>
+					<description><loctext xml:lang='C'>
+					Override the be-policy and require a new boot environment is created.
+					</loctext></description>
+				</prop_pattern>
+				<prop_pattern name='shutdown-grace-period' type='count' required='false'>
+					<description><loctext xml:lang='C'>
+					Time in seconds before shutdown(8) is used to automatically reboot the system.
+					</loctext></description>
+				</prop_pattern>
+			</pg_pattern>
 		</template>
 	</instance>
 
