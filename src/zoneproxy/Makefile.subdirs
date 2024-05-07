@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 all := TARGET = all
@@ -32,6 +32,8 @@ lint := TARGET = lint
 _msg := TARGET = _msg
 
 all clean clobber install install_h lint: $(SUBDIRS)
+
+check:
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; VERSION='$(VERSION)' $(MAKE) $(TARGET)

@@ -129,7 +129,6 @@ depot_dir = 'etc/pkg/depot'
 depot_conf_dir = 'etc/pkg/depot/conf.d'
 depot_logs_dir = 'var/log/pkg/depot'
 depot_cache_dir = 'var/cache/pkg/depot'
-locale_dir = 'usr/share/locale'
 mirror_logs_dir = 'var/log/pkg/mirror'
 mirror_cache_dir = 'var/cache/pkg/mirror'
 
@@ -428,8 +427,6 @@ execattrd_files = [
 ]
 authattrd_files = ['util/misc/auth_attr.d/package:pkg']
 userattrd_files = ['util/misc/user_attr.d/package:pkg']
-pkg_locales = \
-    'ar ca cs de es fr he hu id it ja ko nl pl pt_BR ru sk sv zh_CN zh_HK zh_TW'.split()
 
 sha512_t_srcs = [
         'cffi_src/_sha512_t.c'
@@ -871,139 +868,6 @@ def _copy_file_contents(src, dst, buffer_size=16*1024):
 file_util._copy_file_contents = _copy_file_contents
 
 
-def intltool_update_maintain():
-    """Check if scope of localization looks up-to-date or possibly not,
-    by comparing file set described in po/POTFILES.{in,skip} and
-    actual source files (e.g. .py) detected.
-    """
-    rm_f("po/missing")
-    rm_f("po/notexist")
-
-    args = [
-        "/usr/bin/intltool-update", "--maintain"
-    ]
-    print(" ".join(args))
-    podir = os.path.join(os.getcwd(), "po")
-    run_cmd(args, podir, updenv={"LC_ALL": "C"}, ignerr=True)
-
-    if os.path.exists("po/missing"):
-        print("New file(s) with translatable strings detected:",
-            file=sys.stderr)
-        missing = open("po/missing", "r")
-        print("--------", file=sys.stderr)
-        for fn in missing:
-            print("{0}".format(fn.strip()), file=sys.stderr)
-        print("--------", file=sys.stderr)
-        missing.close()
-        print("""\
-Please evaluate whether any of the above file(s) needs localization.
-If so, please add its name to po/POTFILES.in.  If not (e.g., it's not
-delivered), please add its name to po/POTFILES.skip.
-Please be sure to maintain alphabetical ordering in both files.""", file=sys.stderr)
-        sys.exit(1)
-
-    if os.path.exists("po/notexist"):
-        print("""\
-The following files are listed in po/POTFILES.in, but no longer exist
-in the workspace:""", file=sys.stderr)
-        notexist = open("po/notexist", "r")
-        print("--------", file=sys.stderr)
-        for fn in notexist:
-            print("{0}".format(fn.strip()), file=sys.stderr)
-        print("--------", file=sys.stderr)
-
-        notexist.close()
-        print("Please remove the file names from po/POTFILES.in",
-            file=sys.stderr)
-        sys.exit(1)
-
-
-def intltool_update_pot():
-    """Generate pkg.pot by extracting localizable strings from source
-    files (e.g. .py)
-    """
-    rm_f("po/pkg.pot")
-
-    args = [
-        "/usr/bin/intltool-update", "--pot"
-    ]
-    print(" ".join(args))
-    podir = os.path.join(os.getcwd(), "po")
-    run_cmd(args, podir,
-        updenv={"LC_ALL": "C", "XGETTEXT": "/usr/gnu/bin/xgettext"})
-
-    if not os.path.exists("po/pkg.pot"):
-        print("Failed in generating pkg.pot.", file=sys.stderr)
-        sys.exit(1)
-
-
-def intltool_merge(src, dst):
-    if not dep_util.newer(src, dst):
-        return
-
-    args = [
-        "/usr/bin/intltool-merge", "-d", "-u",
-        "-c", "po/.intltool-merge-cache", "po", src, dst
-    ]
-    print(" ".join(args))
-    run_cmd(args, os.getcwd(), updenv={"LC_ALL": "C"})
-
-
-def i18n_check():
-    """Checks for common i18n messaging bugs in the source."""
-
-    src_files = []
-    # A list of the i18n errors we check for in the code
-    common_i18n_errors = [
-        # This checks that messages with multiple parameters are always
-        # written using "{name}" format, rather than just "{0}"
-        "format string with unnamed arguments cannot be properly localized"
-    ]
-
-    for line in open("po/POTFILES.in", "r").readlines():
-        if line.startswith("["):
-            continue
-        if line.startswith("#"):
-            continue
-        src_files.append(line.rstrip())
-
-    args = [
-        "/usr/gnu/bin/xgettext", "--from-code=UTF-8", "-o", "/dev/null"]
-    args += src_files
-
-    xgettext_output_path = tempfile.mkstemp()[1]
-    xgettext_output = open(xgettext_output_path, "w")
-    run_cmd(args, os.getcwd(), updenv={"LC_ALL": "C"},
-        savestderr=xgettext_output)
-
-    found_errs = False
-    i18n_errs = open("po/i18n_errs.txt", "w")
-    for line in open(xgettext_output_path, "r").readlines():
-        for err in common_i18n_errors:
-            if err in line:
-                i18n_errs.write(line)
-                found_errs = True
-    i18n_errs.close()
-    if found_errs:
-        print("""\
-The following i18n errors were detected and should be corrected:
-(this list is saved in po/i18n_errs.txt)
-""", file=sys.stderr)
-        for line in open("po/i18n_errs.txt", "r"):
-            print(line.rstrip(), file=sys.stderr)
-        sys.exit(1)
-    os.remove(xgettext_output_path)
-
-
-def msgfmt(src, dst):
-    if not dep_util.newer(src, dst):
-        return
-
-    args = ["/usr/bin/msgfmt", "-o", dst, src]
-    print(" ".join(args))
-    run_cmd(args, os.getcwd())
-
-
 def localizablexml(src, dst):
     """create XML help for localization, where French part of legalnotice
     is stripped off
@@ -1394,15 +1258,6 @@ class build_data_func(Command):
     def run(self):
         # Anything that gets created here should get deleted in
         # clean_func.run() below.
-        i18n_check()
-
-        for l in pkg_locales:
-            msgfmt("po/{0}.po".format(l), "po/{0}.mo".format(l))
-
-        # generate pkg.pot for next translation
-        intltool_update_maintain()
-        intltool_update_pot()
-
         xml2roff(man1_files + man7_files + man8_files)
         xml2roff(man1_ja_files + man7_ja_files + man8_ja_files)
         xml2roff(man1_zh_CN_files + man7_zh_CN_files + man8_zh_CN_files)
@@ -1425,15 +1280,6 @@ class clean_func(_clean):
 
     def run(self):
         _clean.run(self)
-
-        rm_f("po/.intltool-merge-cache")
-
-        for l in pkg_locales:
-            rm_f("po/{0}.mo".format(l))
-
-        rm_f("po/pkg.pot")
-
-        rm_f("po/i18n_errs.txt")
 
         shutil.rmtree(MANPAGE_OUTPUT_ROOT, True)
 
@@ -1666,17 +1512,6 @@ if osname == 'sunos':
             (mirror_cache_dir, {}),
             (mirror_logs_dir, {}),
             ]
-    # install localizable .xml and its .pot file to put into localizable file package
-    data_files += [
-        (os.path.join(locale_dir, locale, 'LC_MESSAGES'),
-            [('po/{0}.mo'.format(locale), 'pkg.mo')])
-        for locale in pkg_locales
-    ]
-    # install English .pot file to put into localizable file package
-    data_files += [
-        (os.path.join(locale_dir, '__LOCALE__', 'LC_MESSAGES'),
-            [('po/pkg.pot', 'pkg.pot')])
-    ]
     # install English manpage sources to put into localizable file package
     data_files += [
         (dir.replace('usr/share/man/', 'usr/share/man/__LOCALE__/'),

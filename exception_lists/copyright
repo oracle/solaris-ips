@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
 syntax: glob
@@ -35,3 +35,5 @@ src/tests/ro_data/*
 src/util/apache2/sysrepo/*.mako
 doc/*
 src/tests/*.txt
+src/po/LINGUAS
+src/po/POTFILES.*
