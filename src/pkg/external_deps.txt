@@ -5,7 +5,7 @@
     pkg:/developer/build/onbld
     pkg:/developer/documentation-tool/xml2roff
     pkg:/developer/python/pylint
-    pkg:/developer/versioning/mercurial58
+    pkg:/developer/versioning/mercurial
     pkg:/library/python/bandit
     pkg:/library/python/asn1crypto
     pkg:/library/python/asn1crypto-39
