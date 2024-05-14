@@ -368,11 +368,6 @@ for entry in os.walk("web"):
                 if f != "Makefile"
             ]))
 
-# The bandit configuration file does not support an
-# exclude or exclude_dir operation (bandit bug 499).
-bandit_exclude_files = [
-        '*/tests/*'
-        ]
 smf_app_files = [
         'svc/pkg-auto-update.xml',
         'svc/pkg-depot.xml',
@@ -589,44 +584,6 @@ class smflint_func(Command):
             args = [ "/usr/sbin/svccfg", "validate", manifest ]
             print(f"SMF manifest validate: {manifest}")
             run_cmd(args, os.getcwd())
-
-
-class bandit_func(Command):
-    """ Run bandit over the source code. setup.py bandit -g
-        will generate a new baseline.
-    """
-    description = "Run Bandit over the source code"
-    user_options = [
-            ("genbaseline", 'g', "generate a bandit baseline")
-                   ]
-
-    def initialize_options(self):
-        self.genbaseline = False
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        rcfile = os.path.join(pwd, "tests", "banditrc")
-        # The bandit exclude directive does not work in the
-        # rcfile (bandit bug: 499).
-        excludes = ",".join(bandit_exclude_files)
-        # Use the local directory so that the location of
-        # the workspace does not matter.
-        args = [sys.executable, "-m", "bandit", "-r", "-q",
-                "-c", rcfile, "-x", excludes, "." ]
-        # A note about bandit baselines: bandit will report
-        # new errors but it will not fail on a new duplicate
-        # issues (bandit bugs: 466 and 558)
-        if self.genbaseline:
-            args.extend(["-o", "tests/bandit-baseline.json",
-                         "-f", "json"])
-        else:
-            args.extend(["-b", "tests/bandit-baseline.json"])
-        # When generating a baseline, if there are warnings/errors
-        # bandit will exit with a value of 1.
-        run_cmd(args, os.getcwd())
 
 
 # Runs both C and Python lint
@@ -1453,7 +1410,6 @@ cmdclasses = {
         'install': install_func,
         'install_data': install_data_func,
         'install_lib': install_lib_func,
-        'bandit' : bandit_func,
         'build': build_func,
         'build_data': build_data_func,
         'build_ext': build_ext_func,

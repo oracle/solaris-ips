@@ -103,8 +103,16 @@ pylint:
 	PYTHONPATH=$(PROTO_VENDOR_PACKAGES):tests \
 		$(PYTHON39) -m pylint --rcfile tests/pylintrc $(PYLINT_TARGETS)
 
+# A note about bandit baselines: bandit will report new errors but it
+# will not fail on a new duplicate issues (bandit bugs: 466 and 558)
+
 bandit:
-	$(PYTHON39) setup.py bandit
+	$(PYTHON39) -m bandit -r -q -c tests/banditrc . -b tests/bandit-baseline.json
+
+# When generating a baseline, if there are warnings/errors
+# bandit will exit with a value of 1.
+regen-bandit:
+	$(PYTHON39) -m bandit -r -q -c tests/banditrc . -o tests/bandit-baseline.json -f json || true
 
 check: $(SUBDIRS)
 	$(PYCODESTYLE) --statistics --count `cat tests/pycodestyle-whitelist.txt`
