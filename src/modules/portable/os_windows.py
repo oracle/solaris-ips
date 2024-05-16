@@ -39,7 +39,7 @@ import errno
 import stat
 import tempfile
 import threading
-from . import util as os_util
+from pkg.portable import util as os_util
 
 
 def get_isainfo():

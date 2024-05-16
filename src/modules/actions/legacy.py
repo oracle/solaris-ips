@@ -36,7 +36,7 @@ import errno
 import itertools
 import time
 
-from . import generic
+from pkg.actions import generic
 from pkg import misc
 
 

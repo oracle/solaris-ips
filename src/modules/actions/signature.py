@@ -36,7 +36,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from . import generic
+from pkg.actions import generic
 import pkg.actions
 import pkg.client.api_errors as apx
 import pkg.digest as digest

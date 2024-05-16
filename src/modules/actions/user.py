@@ -30,7 +30,7 @@ This module contains the UserAction class, which represents a user
 packaging object.  This contains the attributes necessary to create
 a new user."""
 
-from . import generic
+from pkg.actions import generic
 try:
     from pkg.cfgfiles import *
     have_cfgfiles = True

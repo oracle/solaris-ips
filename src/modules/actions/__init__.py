@@ -233,7 +233,7 @@ class InvalidActionAttributesError(ActionError):
 
 # This must be imported *after* all of the exception classes are defined as
 # _actions module init needs the exception objects.
-from ._actions import fromstr
+from pkg.actions._actions import fromstr
 
 
 def attrsfromstr(string):

@@ -47,7 +47,7 @@ import pkg.digest as digest
 import pkg.portable as portable
 import pkg.variant as variant
 
-from . import _common
+from pkg.actions import _common
 from pkg.misc import EmptyDict, CMP_ALL, CMP_UNSIGNED
 
 # Directories must precede all filesystem object actions; hardlinks must follow

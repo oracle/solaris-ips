@@ -30,7 +30,7 @@ This module contains the DirectoryAction class, which represents a
 directory-type packaging object."""
 
 import errno
-from . import generic
+from pkg.actions import generic
 import os
 import pkg.portable as portable
 import pkg.actions

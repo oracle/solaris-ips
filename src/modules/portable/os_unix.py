@@ -40,7 +40,7 @@ import shutil
 import stat
 import sys
 import tempfile
-from . import util as os_util
+from pkg.portable import util as os_util
 # used to cache contents of passwd and group files
 users = {}
 uids = {}

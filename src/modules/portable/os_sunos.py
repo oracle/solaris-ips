@@ -32,7 +32,7 @@ import os
 import subprocess
 import tempfile
 
-from .os_unix import \
+from pkg.portable.os_unix import \
     get_group_by_name, get_user_by_name, get_name_by_gid, get_name_by_uid, \
     get_usernames_by_gid, is_admin, get_userid, get_username, chown, rename, \
     remove, link, copyfile, split_path, get_root, assert_mode

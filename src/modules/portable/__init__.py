@@ -278,7 +278,7 @@ PD_DEFAULT_RUNPATH = "$PKGDEPEND_RUNPATH"
 PD_BYPASS_GENERATE = "pkg.depend.bypass-generate"
 
 import platform
-from . import util as os_util
+from pkg.portable import util as os_util
 
 osname = os_util.get_canonical_os_name()
 ostype = os_util.get_canonical_os_type()
@@ -289,7 +289,7 @@ for fragment in [osname, ostype]:
     # try the more generic OS Name module (e.g. os_linux),
     # then the OS type module (e.g. os_unix)
     try:
-        exec('from .{0} import *'.format(modname))
+        exec('from pkg.portable.{0} import *'.format(modname))
         break
     except ImportError:
         pass

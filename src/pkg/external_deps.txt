@@ -7,21 +7,18 @@
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
     pkg:/library/python/bandit
-    pkg:/library/python/asn1crypto
-    pkg:/library/python/asn1crypto-39
-    pkg:/library/python/asn1crypto-311
     pkg:/library/python/cffi
     pkg:/library/python/cffi-39
     pkg:/library/python/cffi-311
-    pkg:/library/python/cryptography
-    pkg:/library/python/cryptography-39
-    pkg:/library/python/cryptography-311
     pkg:/library/python/cherrypy
     pkg:/library/python/cherrypy-39
     pkg:/library/python/cherrypy-311
     pkg:/library/python/coverage
     pkg:/library/python/coverage-39
     pkg:/library/python/coverage-311
+    pkg:/library/python/cryptography
+    pkg:/library/python/cryptography-39
+    pkg:/library/python/cryptography-311
     pkg:/library/python/jsonrpclib
     pkg:/library/python/jsonrpclib-39
     pkg:/library/python/jsonrpclib-311
@@ -31,17 +28,19 @@
     pkg:/library/python/mako
     pkg:/library/python/mako-39
     pkg:/library/python/mako-311
-    pkg:/library/python/pycodestyle
     pkg:/library/python/ply
     pkg:/library/python/ply-39
     pkg:/library/python/ply-311
-    pkg:/library/python/protend
+    pkg:/library/python/portend
     pkg:/library/python/portend-39
     pkg:/library/python/portend-311
-    pkg:/library/python/portend
     pkg:/library/python/prettytable
     pkg:/library/python/prettytable-39
     pkg:/library/python/prettytable-311
+    pkg:/library/python/pybonjour
+    pkg:/library/python/pybonjour-39
+    pkg:/library/python/pybonjour-311
+    pkg:/library/python/pycodestyle
     pkg:/library/python/pycurl
     pkg:/library/python/pycurl-39
     pkg:/library/python/pycurl-311
@@ -53,7 +52,6 @@
     pkg:/library/python/rapidjson-311
     pkg:/library/python/rpdb
     pkg:/package/svr4
-    pkg:/runtime/python
     pkg:/runtime/python-39
     pkg:/runtime/python-311
     pkg:/service/network/dns/mdns
@@ -65,6 +63,8 @@
     pkg:/system/library
     pkg:/system/library/libc
     pkg:/system/library/math
+    # Only the variant used by pkg(7) utilities is listed here;
+    # this is to avoid unnecessary circular dependencies with ON.
     pkg:/system/library/python/solaris-core-39
     pkg:/system/library/security/crypto
     pkg:/system/library/smf
@@ -73,7 +73,6 @@
     pkg:/system/network
     pkg:/text/gnu-diffutils
     pkg:/text/gnu-gettext
-    pkg:/text/gnu-grep
     pkg:/text/locale
     pkg:/text/tidy
     pkg:/web/server/apache-24

@@ -30,7 +30,7 @@ This module contains the HardLinkAction class, which represents a hardlink-type
 packaging object."""
 
 import errno
-from . import generic, link
+from pkg.actions import generic, link
 import os
 import stat
 

@@ -48,23 +48,23 @@ file path=$(PY39DIRVP)/pkg/_varcet.cpython-39.so
 dir  path=$(PY39DIRVP)/pkg/actions
 # pkgdepend doesn't understand the relative import syntax "from .x import y",
 # so we have to bypass generating dependencies on those files.
-file path=$(PY39DIRVP)/pkg/actions/__init__.py pkg.depend.bypass-generate=.*
+file path=$(PY39DIRVP)/pkg/actions/__init__.py
 file path=$(PY39DIRVP)/pkg/actions/_actions.cpython-39.so
 file path=$(PY39DIRVP)/pkg/actions/_common.cpython-39.so
-file path=$(PY39DIRVP)/pkg/actions/attribute.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/depend.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/directory.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/driver.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/file.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/generic.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/group.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/hardlink.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/legacy.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/license.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/link.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/signature.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/unknown.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/actions/user.py pkg.depend.bypass-generate=.*
+file path=$(PY39DIRVP)/pkg/actions/attribute.py
+file path=$(PY39DIRVP)/pkg/actions/depend.py
+file path=$(PY39DIRVP)/pkg/actions/directory.py
+file path=$(PY39DIRVP)/pkg/actions/driver.py
+file path=$(PY39DIRVP)/pkg/actions/file.py
+file path=$(PY39DIRVP)/pkg/actions/generic.py
+file path=$(PY39DIRVP)/pkg/actions/group.py
+file path=$(PY39DIRVP)/pkg/actions/hardlink.py
+file path=$(PY39DIRVP)/pkg/actions/legacy.py
+file path=$(PY39DIRVP)/pkg/actions/license.py
+file path=$(PY39DIRVP)/pkg/actions/link.py
+file path=$(PY39DIRVP)/pkg/actions/signature.py
+file path=$(PY39DIRVP)/pkg/actions/unknown.py
+file path=$(PY39DIRVP)/pkg/actions/user.py
 file path=$(PY39DIRVP)/pkg/altroot.py
 file path=$(PY39DIRVP)/pkg/api_common.py
 file path=$(PY39DIRVP)/pkg/arch.py
@@ -84,10 +84,11 @@ file path=$(PY39DIRVP)/pkg/client/api.py
 file path=$(PY39DIRVP)/pkg/client/api_errors.py
 #
 # Don't worry about the libbe or bemgmt import; the python code is graceful
-# in the face of their absence.
+# in the face of their absence. This allows us to deliver this package before
+# bemgmt is availabile, breaking the circular dependency.
 #
 file path=$(PY39DIRVP)/pkg/client/bootenv.py \
-    pkg.depend.bypass-generate=.*bemgmt*.* pkg.depend.bypass-generate=.*libbe.*
+    pkg.depend.bypass-generate=.*bemgmt.* pkg.depend.bypass-generate=.*libbe.*
 file path=$(PY39DIRVP)/pkg/client/client_api.py
 file path=$(PY39DIRVP)/pkg/client/debugvalues.py
 file path=$(PY39DIRVP)/pkg/client/firmware.py
@@ -100,10 +101,8 @@ file path=$(PY39DIRVP)/pkg/client/indexer.py
 dir  path=$(PY39DIRVP)/pkg/client/linkedimage
 file path=$(PY39DIRVP)/pkg/client/linkedimage/__init__.py
 file path=$(PY39DIRVP)/pkg/client/linkedimage/common.py
-file path=$(PY39DIRVP)/pkg/client/linkedimage/system.py \
-    pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/client/linkedimage/zone.py \
-    pkg.depend.bypass-generate=.*
+file path=$(PY39DIRVP)/pkg/client/linkedimage/system.py
+file path=$(PY39DIRVP)/pkg/client/linkedimage/zone.py
 file path=$(PY39DIRVP)/pkg/client/options.py
 file path=$(PY39DIRVP)/pkg/client/pkg_solver.py
 file path=$(PY39DIRVP)/pkg/client/pkgdefs.py
@@ -121,8 +120,7 @@ file path=$(PY39DIRVP)/pkg/client/transport/__init__.py
 file path=$(PY39DIRVP)/pkg/client/transport/engine.py
 file path=$(PY39DIRVP)/pkg/client/transport/exception.py
 file path=$(PY39DIRVP)/pkg/client/transport/fileobj.py
-file path=$(PY39DIRVP)/pkg/client/transport/mdetect.py \
-    pkg.depend.bypass-generate=.*pybonjour.*
+file path=$(PY39DIRVP)/pkg/client/transport/mdetect.py
 file path=$(PY39DIRVP)/pkg/client/transport/repo.py
 file path=$(PY39DIRVP)/pkg/client/transport/stats.py
 file path=$(PY39DIRVP)/pkg/client/transport/transport.py
@@ -135,21 +133,23 @@ file path=$(PY39DIRVP)/pkg/elf.cpython-39.so
 file path=$(PY39DIRVP)/pkg/facet.py
 dir  path=$(PY39DIRVP)/pkg/file_layout
 file path=$(PY39DIRVP)/pkg/file_layout/__init__.py
-file path=$(PY39DIRVP)/pkg/file_layout/file_manager.py \
-    pkg.depend.bypass-generate=.*
+file path=$(PY39DIRVP)/pkg/file_layout/file_manager.py
 file path=$(PY39DIRVP)/pkg/file_layout/layout.py
 dir  path=$(PY39DIRVP)/pkg/flavor
 file path=$(PY39DIRVP)/pkg/flavor/__init__.py
 file path=$(PY39DIRVP)/pkg/flavor/base.py
-# importlib is specific to Python 3 and part of its standard library.
-file path=$(PY39DIRVP)/pkg/flavor/depthlimitedmf.py \
-    pkg.depend.bypass-generate=.*importlib.*
+file path=$(PY39DIRVP)/pkg/flavor/depthlimitedmf.py
 file path=$(PY39DIRVP)/pkg/flavor/elf.py
 file path=$(PY39DIRVP)/pkg/flavor/hardlink.py
 file path=$(PY39DIRVP)/pkg/flavor/python.py
 file path=$(PY39DIRVP)/pkg/flavor/script.py
-# Don't have support for smf in 3.9 yet so bypassing
-file path=$(PY39DIRVP)/pkg/flavor/smf_manifest.py pkg.depend.bypass-generate=.*
+#
+# Don't worry about the solaris.smf.manifests import; the python code is
+# graceful in the face of their absence. This allows us to deliver this package
+# before solaris-core is availabile, breaking the circular dependency.
+#
+file path=$(PY39DIRVP)/pkg/flavor/smf_manifest.py \
+    pkg.depend.bypass-generate=.*solaris.*
 file path=$(PY39DIRVP)/pkg/fmri.py
 file path=$(PY39DIRVP)/pkg/indexer.py
 dir  path=$(PY39DIRVP)/pkg/lint
@@ -177,14 +177,16 @@ file path=$(PY39DIRVP)/pkg/pkggzip.py
 file path=$(PY39DIRVP)/pkg/pkgsubprocess.py
 file path=$(PY39DIRVP)/pkg/pkgtarfile.py
 dir  path=$(PY39DIRVP)/pkg/portable
-file path=$(PY39DIRVP)/pkg/portable/__init__.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/portable/os_aix.py pkg.depend.bypass-generate=.*
+file path=$(PY39DIRVP)/pkg/portable/__init__.py
+file path=$(PY39DIRVP)/pkg/portable/os_aix.py
 # Python on Solaris doesn't deliver the macostools module.
-file path=$(PY39DIRVP)/pkg/portable/os_darwin.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/portable/os_sunos.py pkg.depend.bypass-generate=.*
-file path=$(PY39DIRVP)/pkg/portable/os_unix.py pkg.depend.bypass-generate=.*
+file path=$(PY39DIRVP)/pkg/portable/os_darwin.py \
+    pkg.depend.bypass-generate=.*macostools.*
+file path=$(PY39DIRVP)/pkg/portable/os_sunos.py
+file path=$(PY39DIRVP)/pkg/portable/os_unix.py
 # Python on Solaris doesn't deliver the win32api module.
-file path=$(PY39DIRVP)/pkg/portable/os_windows.py pkg.depend.bypass-generate=.*
+file path=$(PY39DIRVP)/pkg/portable/os_windows.py \
+    pkg.depend.bypass-generate=.*win32api.*
 file path=$(PY39DIRVP)/pkg/portable/util.py
 file path=$(PY39DIRVP)/pkg/pspawn.py
 dir  path=$(PY39DIRVP)/pkg/publish
@@ -198,8 +200,7 @@ dir  path=$(PY39DIRVP)/pkg/server
 file path=$(PY39DIRVP)/pkg/server/__init__.py
 file path=$(PY39DIRVP)/pkg/server/api.py
 file path=$(PY39DIRVP)/pkg/server/api_errors.py
-file path=$(PY39DIRVP)/pkg/server/depot.py \
-    pkg.depend.bypass-generate=.*pybonjour.*
+file path=$(PY39DIRVP)/pkg/server/depot.py
 file path=$(PY39DIRVP)/pkg/server/face.py
 file path=$(PY39DIRVP)/pkg/server/feed.py
 file path=$(PY39DIRVP)/pkg/server/query_parser.py
@@ -222,4 +223,4 @@ license lic_minisat license="MIT (MiniSAT)" com.oracle.info.baid=17890 \
     com.oracle.info.version=1.14.1
 license cr_Oracle license=cr_Oracle
 # CFFI import is done in C code, so it isn't picked up by pkgdepend
-depend type=require fmri=library/python/cffi-39@1.11.4
+depend type=require fmri=library/python/cffi-39@1.15.1
