@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 """
@@ -34,7 +34,7 @@ stored within a parent images pkg5.image configuration file.
 import pkg.client.pkgdefs as pkgdefs
 
 # import linked image common code
-from . import common as li # Relative import; pylint: disable=W0403
+from pkg.client.linkedimage import common as li
 
 
 class LinkedImageSystemPlugin(li.LinkedImagePlugin):

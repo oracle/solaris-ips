@@ -31,7 +31,7 @@ of packaging object.  This is used when the client side of the package
 publishing transaction is not given enough information to determine what type of
 object it is.  No datastreams or attributes aside from a path are stored."""
 
-from . import generic
+from pkg.actions import generic
 
 
 class UnknownAction(generic.Action):

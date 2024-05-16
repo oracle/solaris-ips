@@ -35,7 +35,7 @@ import errno
 import os
 from stat import S_IWRITE, S_IREAD
 
-from . import generic
+from pkg.actions import generic
 import pkg.digest as digest
 import pkg.misc as misc
 import pkg.portable as portable

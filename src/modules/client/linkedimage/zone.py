@@ -43,7 +43,7 @@ import pkg.pkgsubprocess
 from pkg.client.debugvalues import DebugValues
 
 # import linked image common code
-from . import common as li # Relative import; pylint: disable=W0403
+from pkg.client.linkedimage import common as li
 
 # W0511 XXX / FIXME Comments; pylint: disable=W0511
 # XXX: should be defined by libzonecfg python wrapper

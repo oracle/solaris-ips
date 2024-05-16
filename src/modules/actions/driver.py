@@ -31,7 +31,7 @@ packaging object.
 """
 
 import os
-from . import generic
+from pkg.actions import generic
 
 from tempfile import mkstemp
 

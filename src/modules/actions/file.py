@@ -30,7 +30,7 @@ This module contains the FileAction class, which represents a file-type
 packaging object."""
 
 import errno
-from . import generic
+from pkg.actions import generic
 import os
 import stat
 import tempfile
@@ -38,7 +38,7 @@ import types
 import zlib
 import time
 
-from . import _common
+from pkg.actions import _common
 import pkg.actions
 import pkg.client.api_errors as api_errors
 import pkg.digest as digest

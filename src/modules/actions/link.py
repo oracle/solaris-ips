@@ -33,7 +33,7 @@ import errno
 import os
 import stat
 
-from . import generic
+from pkg.actions import generic
 import pkg.actions
 import pkg.mediator as med
 
