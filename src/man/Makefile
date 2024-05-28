@@ -20,12 +20,85 @@
 #
 
 #
-# Copyright (c) 2020, Oracle and/or its affiliates.
+# Copyright (c) 2020, 2024, Oracle and/or its affiliates.
 #
 
-# Nothing to do here when just building the gate, as nroff man pages
-# are handled by xml2roff() in src/setup.py
-all install lint clint pylint check test test-verbose test-generate:
+INSTALL =	cp
+MKDIR = 	mkdir -p
+XML2ROFF =	/usr/share/xml/xsolbook/python/xml2roff.py --logfile nroff/xml2roff.log
+
+PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
+MAN_DIR =	$(PROTO_AREA)/usr/share/man
+
+MAN1 = \
+	pkg.1 \
+	pkgdepend.1 \
+	pkgdiff.1 \
+	pkgfmt.1 \
+	pkglint.1 \
+	pkgmerge.1 \
+	pkgmogrify.1 \
+	pkgrecv.1 \
+	pkgrepo.1 \
+	pkgsend.1 \
+	pkgsign.1 \
+	pkgsurf.1
+
+MAN7 = \
+	pkg.7
+
+MAN8 = \
+	pkg.depot-config.8 \
+	pkg.depotd.8 \
+	pkg.sysrepo.8
+
+
+all: \
+	$(MAN1:%=nroff/man1/%) \
+	$(MAN7:%=nroff/man7/%) \
+	$(MAN8:%=nroff/man8/%) \
+	$(MAN1:%=nroff/ja_JP.UTF-8/man1/%) \
+	$(MAN7:%=nroff/ja_JP.UTF-8/man7/%) \
+	$(MAN8:%=nroff/ja_JP.UTF-8/man8/%) \
+	$(MAN1:%=nroff/zh_CN.UTF-8/man1/%) \
+	$(MAN7:%=nroff/zh_CN.UTF-8/man7/%) \
+	$(MAN8:%=nroff/zh_CN.UTF-8/man8/%)
+
+nroff/man1/% nroff/man7/% nroff/man8/%: %
+	$(XML2ROFF) -o nroff $^
+
+nroff/ja_JP.UTF-8/man1/% nroff/ja_JP.UTF-8/man7/% nroff/ja_JP.UTF-8/man8/%: ja_JP/%
+	$(XML2ROFF) -o nroff/ja_JP.UTF-8 $^
+
+nroff/zh_CN.UTF-8/man1/% nroff/zh_CN.UTF-8/man7/% nroff/zh_CN.UTF-8/man8/%: zh_CN/%
+	$(XML2ROFF) -o nroff/zh_CN.UTF-8 $^
+
+install: all
+	@for lang in "" /ja_JP.UTF-8 /zh_CN.UTF-8; do \
+		dir=$(MAN_DIR)$$lang; \
+		$(MKDIR) $$dir/man1 $$dir/man7 $$dir/man8; \
+		for man in $(MAN1:%=man1/%) $(MAN7:%=man7/%) $(MAN8:%=man8/%); do \
+			echo "copying nroff$$lang/$$man -> $$dir/$$man"; \
+			$(INSTALL) nroff$$lang/$$man $$dir/$$man; \
+		done; \
+	done; \
+	# install English manpage sources to put into localizable file package \
+	dir=$(MAN_DIR)/__LOCALE__; \
+	$(MKDIR) $$dir/man1 $$dir/man7 $$dir/man8; \
+	for man in $(MAN1); do \
+		echo "copying $$man -> $$dir/man1/$$man"; \
+		$(INSTALL) $$man $$dir/man1/$$man; \
+	done; \
+	for man in $(MAN7); do \
+		echo "copying $$man -> $$dir/man7/$$man"; \
+		$(INSTALL) $$man $$dir/man7/$$man; \
+	done; \
+	for man in $(MAN8); do \
+		echo "copying $$man -> $$dir/man8/$$man"; \
+		$(INSTALL) $$man $$dir/man8/$$man; \
+	done
+
+check lint:
 
 # Generate a zipfile of manpages for translation when necessary
 # After generating, submit to translation engine using the instructions
@@ -42,7 +115,7 @@ manpages-ua.zip: FRC
 	zip -r manpages-ua.zip manpages/
 
 clean:
-	rm -rf manpages-ua.zip manpages
+	rm -rf manpages-ua.zip manpages nroff
 
 clobber: clean
 
