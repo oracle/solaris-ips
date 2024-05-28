@@ -103,16 +103,6 @@ lib_dir = 'usr/lib'
 svc_method_dir = 'lib/svc/method'
 svc_share_dir = 'lib/svc/share'
 
-man1_dir = 'usr/share/man/man1'
-man7_dir = 'usr/share/man/man7'
-man8_dir = 'usr/share/man/man8'
-man1_ja_JP_dir = 'usr/share/man/ja_JP.UTF-8/man1'
-man8_ja_JP_dir = 'usr/share/man/ja_JP.UTF-8/man8'
-man7_ja_JP_dir = 'usr/share/man/ja_JP.UTF-8/man7'
-man1_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man1'
-man8_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man8'
-man7_zh_CN_dir = 'usr/share/man/zh_CN.UTF-8/man7'
-
 resource_dir = 'usr/share/lib/pkg'
 rad_dir = 'usr/share/lib/pkg'
 transform_dir = 'usr/share/pkg/transforms'
@@ -232,105 +222,6 @@ scripts = {
         "aix" : scripts_other_unix,
         "unknown": scripts_sunos,
         }
-
-MANPAGE_SRC_ROOT = "man"
-MANPAGE_OUTPUT_ROOT = MANPAGE_SRC_ROOT + "/nroff"
-
-man1_files = [
-    MANPAGE_OUTPUT_ROOT + '/man1/' + f
-    for f in [
-        'pkg.1',
-        'pkgdepend.1',
-        'pkgdiff.1',
-        'pkgfmt.1',
-        'pkglint.1',
-        'pkgmerge.1',
-        'pkgmogrify.1',
-        'pkgrecv.1',
-        'pkgrepo.1',
-        'pkgsend.1',
-        'pkgsign.1',
-        'pkgsurf.1',
-    ]
-]
-man7_files = [
-    MANPAGE_OUTPUT_ROOT + '/man7/' + f
-    for f in [
-        'pkg.7'
-    ]
-]
-man8_files = [
-    MANPAGE_OUTPUT_ROOT + '/man8/' + f
-    for f in [
-        'pkg.depotd.8',
-        'pkg.depot-config.8',
-        'pkg.sysrepo.8',
-    ]
-]
-
-man1_ja_files = [
-    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man1/' + f
-    for f in [
-        'pkg.1',
-        'pkgdepend.1',
-        'pkgdiff.1',
-        'pkgfmt.1',
-        'pkglint.1',
-        'pkgmerge.1',
-        'pkgmogrify.1',
-        'pkgrecv.1',
-        'pkgrepo.1',
-        'pkgsend.1',
-        'pkgsign.1',
-        'pkgsurf.1',
-    ]
-]
-man7_ja_files = [
-    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man7/' + f
-    for f in [
-        'pkg.7'
-    ]
-]
-man8_ja_files = [
-    MANPAGE_OUTPUT_ROOT + '/ja_JP.UTF-8/man8/' + f
-    for f in [
-        'pkg.depotd.8',
-        'pkg.depot-config.8',
-        'pkg.sysrepo.8',
-    ]
-]
-
-man1_zh_CN_files = [
-    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man1/' + f
-    for f in [
-        'pkg.1',
-        'pkgdepend.1',
-        'pkgdiff.1',
-        'pkgfmt.1',
-        'pkglint.1',
-        'pkgmerge.1',
-        'pkgmogrify.1',
-        'pkgrecv.1',
-        'pkgrepo.1',
-        'pkgsend.1',
-        'pkgsign.1',
-        'pkgsurf.1',
-    ]
-]
-man7_zh_CN_files = [
-    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man7/' + f
-    for f in [
-        'pkg.7'
-    ]
-]
-man8_zh_CN_files = [
-    MANPAGE_OUTPUT_ROOT + '/zh_CN.UTF-8/man8/' + f
-    for f in [
-        'pkg.depotd.8',
-        'pkg.depot-config.8',
-        'pkg.sysrepo.8',
-    ]
-]
 
 packages = [
         'pkg',
@@ -1159,47 +1050,6 @@ class build_py_func(_build_py):
         return dst, copied
 
 
-def manpage_input_dir(path):
-    """Convert a manpage output path to the directory where its source lives."""
-
-    patharr = path.split("/")
-    if len(patharr) == 4:
-        loc = ""
-    elif len(patharr) == 5:
-        loc = patharr[-3].split(".")[0]
-    else:
-        raise RuntimeError("bad manpage path")
-    return os.path.join(patharr[0], loc).rstrip("/")
-
-
-def xml2roff(files):
-    """Convert XML manpages to ROFF for delivery.
-
-    The input should be a list of the output file paths.  The corresponding
-    inputs will be generated from this.  We do it in this way so that we can
-    share the paths with the install code.
-
-    All paths should have a common manpath root.  In particular, pages
-    belonging to different localizations should be run through this function
-    separately.
-    """
-
-    input_dir = manpage_input_dir(files[0])
-    do_files = [
-        os.path.join(input_dir, os.path.basename(f))
-        for f in files
-        if dep_util.newer(os.path.join(input_dir, os.path.basename(f)), f)
-    ]
-    if do_files:
-        # Get the output dir by removing the filename and the manX
-        # directory
-        output_dir = os.path.join(*files[0].split("/")[:-2])
-        args = ["/usr/share/xml/xsolbook/python/xml2roff.py", "-o", output_dir]
-        args += do_files
-        print(" ".join(args))
-        run_cmd(args, os.getcwd())
-
-
 class build_data_func(Command):
     description = "build data files whose source isn't in deliverable form"
     user_options = []
@@ -1215,9 +1065,7 @@ class build_data_func(Command):
     def run(self):
         # Anything that gets created here should get deleted in
         # clean_func.run() below.
-        xml2roff(man1_files + man7_files + man8_files)
-        xml2roff(man1_ja_files + man7_ja_files + man8_ja_files)
-        xml2roff(man1_zh_CN_files + man7_zh_CN_files + man8_zh_CN_files)
+        pass
 
 
 def rm_f(filepath):
@@ -1237,8 +1085,6 @@ class clean_func(_clean):
 
     def run(self):
         _clean.run(self)
-
-        shutil.rmtree(MANPAGE_OUTPUT_ROOT, True)
 
 
 class clobber_func(Command):
@@ -1423,21 +1269,6 @@ cmdclasses = {
         'installfile': installfile,
         }
 
-# all builds of IPS should have manpages
-english_manpage_files = [
-        (man1_dir, man1_files),
-        (man7_dir, man7_files),
-        (man8_dir, man8_files),
-        ]
-data_files += english_manpage_files
-data_files += [
-        (man1_ja_JP_dir, man1_ja_files),
-        (man7_ja_JP_dir, man7_ja_files),
-        (man8_ja_JP_dir, man8_ja_files),
-        (man1_zh_CN_dir, man1_zh_CN_files),
-        (man7_zh_CN_dir, man7_zh_CN_files),
-        (man8_zh_CN_dir, man8_zh_CN_files),
-        ]
 # add resource files
 data_files += [
         (resource_dir, resource_files)
@@ -1468,13 +1299,6 @@ if osname == 'sunos':
             (mirror_cache_dir, {}),
             (mirror_logs_dir, {}),
             ]
-    # install English manpage sources to put into localizable file package
-    data_files += [
-        (dir.replace('usr/share/man/', 'usr/share/man/__LOCALE__/'),
-            (os.path.join(MANPAGE_SRC_ROOT, os.path.basename(f))
-             for f in files))
-         for dir, files in english_manpage_files
-    ]
 
 if osname == 'sunos' or osname == "linux":
     # Unix platforms which the elf extension has been ported to
