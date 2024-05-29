@@ -3955,27 +3955,23 @@ class TestPkgrepoMultiRepo(pkg5unittest.ManyDepotTestCase):
             self.rurl4, self.rurl5))
         self.assertTrue(not self.output)
 
-        # Test that clone removes all the packages if the source catalog
-        # does not exist.
+        # Test that clone won't continue if the source catalog does not
+        # exist or is empty (bug 36247279).
         # Source and destination have the same publishers.
         self.pkgrepo("remove -s {0} -p test1 '*'".format(self.rdir4))
         # Delete the catlog
         repo = self.get_repo(self.rdir4)
         repo.get_catalog('test1').destroy()
-        self.pkgrecv(self.rdir4, "--clone -d {0} -p test1".
-                format(self.rdir3))
-        expected = "The source catalog 'test1' is empty"
-        self.assertTrue(expected in self.output, self.output)
+        self.assertRaises(pkg5unittest.UnexpectedExitCodeException,
+            self.pkgrecv, self.rdir4, f"--clone -d {self.rdir3} -p test1")
 
         # Mention all the publishers while cloning
         self.pkgrepo("remove -s {0} '*'".format(self.rdir2))
-        repo = self.get_repo(self.rdir2)
         # Delete the catalog
+        repo = self.get_repo(self.rdir2)
         repo.get_catalog('test2').destroy()
-        self.pkgrecv(self.rdir2, "--clone -d {0} -p '*'".
-                format(self.rdir1))
-        expected = "The source catalog 'test2' is empty"
-        self.assertTrue(expected in self.output, self.output)
+        self.assertRaises(pkg5unittest.UnexpectedExitCodeException,
+            self.pkgrecv, self.rdir2, f"--clone -d {self.rdir1} -p '*")
 
 
 class TestPkgrepoHTTPS(pkg5unittest.HTTPSTestClass):
