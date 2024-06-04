@@ -56,18 +56,18 @@ def start():
     cmd = ['/usr/bin/pkg']
 
     try:
-        packages = smf.get_prop(myfmri, 'config/packages').split(' ')
-        # The property may have been set to the empty string.
-        if len(packages) == 1 and \
-                (len(packages[0]) == 0 or packages[0] == '""'):
-            packages = []
+        packages = smf.get_prop(myfmri, 'config/packages')
     except smf.NonzeroExitException:
         packages = []
+    else:
+        # Split on any whitespace, ignoring any leading/trailing/repeated
+        # sequences of whitespace
+        packages = packages.split()
 
     # If we have a list of packages use 'pkg install' so that this can be
     # used to change the installed set.  If packages is empty then perform
     # an unconstrained update.
-    if len(packages) > 0:
+    if packages:
         cmd.extend(['install'])
     else:
         cmd.extend(['update'])
@@ -98,17 +98,21 @@ def start():
     # Add any extra args that should be passed to pkg, eg for verbose output
     # for zones related arguments.
     try:
-        extra_args = smf.get_prop(myfmri, 'config/pkg_extra_args').split(' ')
+        extra_args = smf.get_prop(myfmri, 'config/pkg_extra_args')
     except smf.NonzeroExitException:
-        pass
+        extra_args = []
     else:
+        # Split on any whitespace, ignoring any leading/trailing/repeated
+        # sequences of whitespace
+        extra_args = extra_args.split()
+
+    if extra_args:
         # Make sure we don't add any duplicate arguments
         repeatable = ["-Z", "-z", "--reject"]
         cmd.extend(a for a in extra_args if a not in cmd or a in repeatable)
 
-    # Finally add the list of packages if it is non empty.
-    if len(packages) > 0:
-        cmd.extend(packages)
+    # Finally add the list of packages. This is a no-op if the list is empty.
+    cmd.extend(packages)
 
     # Attempt the update 3 times, incase the image is locked,
     # backing off longer each time.
