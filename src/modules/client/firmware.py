@@ -25,10 +25,10 @@
 #
 
 import os.path
+import subprocess
 import sys
 
 import pkg.misc as misc
-import pkg.pkgsubprocess as subprocess
 import pkg.portable as portable
 
 from pkg.client.debugvalues import DebugValues

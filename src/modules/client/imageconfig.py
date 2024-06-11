@@ -38,7 +38,6 @@ import pkg.client.linkedimage as li
 import pkg.config as cfg
 import pkg.facet as facet
 import pkg.misc as misc
-import pkg.pkgsubprocess as subprocess
 import pkg.portable as portable
 import pkg.smf as smf
 import pkg.variant as variant

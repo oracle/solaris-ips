@@ -66,7 +66,6 @@ import pkg.client.progress as progress
 import pkg.facet
 import pkg.fmri
 import pkg.misc as misc
-import pkg.pkgsubprocess
 import pkg.version
 
 from pkg.client import global_settings

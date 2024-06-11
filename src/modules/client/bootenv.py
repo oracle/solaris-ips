@@ -33,7 +33,6 @@ logger = global_settings.logger
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.portable as portable
-import pkg.pkgsubprocess as subprocess
 
 
 # pkg(1) can be installed and used without any BE management module.

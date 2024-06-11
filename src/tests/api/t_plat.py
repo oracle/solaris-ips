@@ -31,8 +31,8 @@ import unittest
 import os
 import shutil
 import sys
+import subprocess
 import tempfile
-import pkg.pkgsubprocess as subprocess
 import pkg.fmri as fmri
 import pkg.client.image as image
 import pkg.portable.util as util

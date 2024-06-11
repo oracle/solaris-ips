@@ -29,9 +29,9 @@
 import locale
 import os
 import shlex
+import subprocess
 
 import pkg.misc as misc
-import pkg.pkgsubprocess as subprocess
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues

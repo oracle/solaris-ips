@@ -37,8 +37,8 @@
 # or removed from the mercurial commit.
 
 import os
-import pkg.pkgsubprocess as subprocess
 import shutil
+import subprocess
 import sys
 
 sys.path.append("../../")

@@ -174,7 +174,6 @@ file path=$(PY311DIRVP)/pkg/p5p.py
 file path=$(PY311DIRVP)/pkg/p5s.py
 file path=$(PY311DIRVP)/pkg/pipeutils.py
 file path=$(PY311DIRVP)/pkg/pkggzip.py
-file path=$(PY311DIRVP)/pkg/pkgsubprocess.py
 file path=$(PY311DIRVP)/pkg/pkgtarfile.py
 dir  path=$(PY311DIRVP)/pkg/portable
 file path=$(PY311DIRVP)/pkg/portable/__init__.py
