@@ -136,15 +136,6 @@ class PkgRemote(object):
         fstderr = tempfile.TemporaryFile()
 
         try:
-            # Under Python 3.4, os.pipe() returns non-inheritable
-            # file descriptors. On UNIX, subprocess makes file
-            # descriptors of the pass_fds parameter inheritable.
-            # Since our pkgsubprocess use posix_pspawn* and doesn't
-            # have an interface for pass_fds, we reuse the Python
-            # module subprocess here.
-            # unexpected-keyword-arg 'pass_fds';
-            # pylint: disable=E1123
-            # Redefinition of p type
             p = subprocess.Popen(pkg_cmd,
                 stdout=fstdout, stderr=fstderr,
                 pass_fds=(server_cmd_pipe,

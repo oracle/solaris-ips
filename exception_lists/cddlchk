@@ -28,3 +28,4 @@ glob:src/tests/*.py$
 glob:src/*\.py$
 glob:exception_lists/*
 glob:tools/*
+src/tests/ro_data/signing_certs/generate_certs.py

@@ -36,6 +36,7 @@ import platform
 import shutil
 import rapidjson as json
 import stat
+import subprocess
 import sys
 import tempfile
 import time
@@ -65,7 +66,6 @@ import pkg.manifest                     as manifest
 import pkg.mediator                     as med
 import pkg.misc                         as misc
 import pkg.nrlock
-import pkg.pkgsubprocess                as subprocess
 import pkg.portable                     as portable
 import pkg.smf                          as smf
 import pkg.version

@@ -31,11 +31,11 @@ packaging object.
 """
 
 import os
+import subprocess
 from pkg.actions import generic
 
 from tempfile import mkstemp
 
-import pkg.pkgsubprocess as subprocess
 from pkg.client.debugvalues import DebugValues
 
 
