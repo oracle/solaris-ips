@@ -25,6 +25,7 @@
 import errno
 import os
 import shutil
+import subprocess
 import tempfile
 
 from pkg.client import global_settings

@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2024-05-28T09:04:31Z",
+  "generated_at": "2024-06-14T13:34:53Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0,
@@ -510,15 +510,15 @@
       "skipped_tests": 0
     },
     "./modules/client/bootenv.py": {
-      "CONFIDENCE.HIGH": 4,
+      "CONFIDENCE.HIGH": 5,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 4,
+      "SEVERITY.LOW": 5,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 988,
+      "loc": 989,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1935,7 +1935,7 @@
       "SEVERITY.LOW": 8,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1237,
+      "loc": 1079,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2291,15 +2291,15 @@
       "skipped_tests": 0
     },
     "_totals": {
-      "CONFIDENCE.HIGH": 146,
+      "CONFIDENCE.HIGH": 147,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 14,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 28,
-      "SEVERITY.LOW": 105,
+      "SEVERITY.LOW": 106,
       "SEVERITY.MEDIUM": 27,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 95778,
+      "loc": 95621,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -2724,7 +2724,27 @@
       "test_name": "try_except_continue"
     },
     {
-      "code": "141         try:\n142             ret = subprocess.call(cmd,\n143                 stdout = open(os.devnull), stderr=subprocess.STDOUT)\n144         except OSError as e:\n",
+      "code": "27 import shutil\n28 import subprocess\n29 import tempfile\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./modules/client/bootenv.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 28,
+      "line_range": [
+        28
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "142         try:\n143             ret = subprocess.call(cmd,\n144                 stdout = open(os.devnull), stderr=subprocess.STDOUT)\n145         except OSError as e:\n",
       "col_offset": 18,
       "end_col_offset": 68,
       "filename": "./modules/client/bootenv.py",
@@ -2735,17 +2755,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 142,
+      "line_number": 143,
       "line_range": [
-        142,
-        143
+        143,
+        144
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "289                     ignore_errors=True)\n290         except Exception as e:\n291             pass\n292 \n",
+      "code": "290                     ignore_errors=True)\n291         except Exception as e:\n292             pass\n293 \n",
       "col_offset": 8,
       "end_col_offset": 16,
       "filename": "./modules/client/bootenv.py",
@@ -2756,17 +2776,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 290,
+      "line_number": 291,
       "line_range": [
-        290,
-        291
+        291,
+        292
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "888                         be_name)\n889                 except Exception as e:\n890                     pass\n891                 break\n",
+      "code": "889                         be_name)\n890                 except Exception as e:\n891                     pass\n892                 break\n",
       "col_offset": 16,
       "end_col_offset": 24,
       "filename": "./modules/client/bootenv.py",
@@ -2777,17 +2797,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 889,
+      "line_number": 890,
       "line_range": [
-        889,
-        890
+        890,
+        891
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1096         try:\n1097             ret = subprocess.call(cmd,\n1098                 stdout = open(os.devnull), stderr=subprocess.STDOUT)\n1099         except OSError as e:\n",
+      "code": "1097         try:\n1098             ret = subprocess.call(cmd,\n1099                 stdout = open(os.devnull), stderr=subprocess.STDOUT)\n1100         except OSError as e:\n",
       "col_offset": 18,
       "end_col_offset": 68,
       "filename": "./modules/client/bootenv.py",
@@ -2798,10 +2818,10 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1097,
+      "line_number": 1098,
       "line_range": [
-        1097,
-        1098
+        1098,
+        1099
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -4953,7 +4973,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "550             print(\" \".join(archcmd))\n551             os.system(\" \".join(archcmd))\n552             print(\" \".join(elfcmd))\n",
+      "code": "441             print(\" \".join(archcmd))\n442             os.system(\" \".join(archcmd))\n443             print(\" \".join(elfcmd))\n",
       "col_offset": 12,
       "end_col_offset": 40,
       "filename": "./setup.py",
@@ -4964,16 +4984,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 551,
+      "line_number": 442,
       "line_range": [
-        551
+        442
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "552             print(\" \".join(elfcmd))\n553             os.system(\" \".join(elfcmd))\n554             print(\" \".join(_actionscmd))\n",
+      "code": "443             print(\" \".join(elfcmd))\n444             os.system(\" \".join(elfcmd))\n445             print(\" \".join(_actionscmd))\n",
       "col_offset": 12,
       "end_col_offset": 39,
       "filename": "./setup.py",
@@ -4984,16 +5004,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 553,
+      "line_number": 444,
       "line_range": [
-        553
+        444
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "554             print(\" \".join(_actionscmd))\n555             os.system(\" \".join(_actionscmd))\n556             print(\" \".join(_actcommcmd))\n",
+      "code": "445             print(\" \".join(_actionscmd))\n446             os.system(\" \".join(_actionscmd))\n447             print(\" \".join(_actcommcmd))\n",
       "col_offset": 12,
       "end_col_offset": 44,
       "filename": "./setup.py",
@@ -5004,16 +5024,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 555,
+      "line_number": 446,
       "line_range": [
-        555
+        446
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "556             print(\" \".join(_actcommcmd))\n557             os.system(\" \".join(_actcommcmd))\n558             print(\" \".join(_varcetcmd))\n",
+      "code": "447             print(\" \".join(_actcommcmd))\n448             os.system(\" \".join(_actcommcmd))\n449             print(\" \".join(_varcetcmd))\n",
       "col_offset": 12,
       "end_col_offset": 44,
       "filename": "./setup.py",
@@ -5024,16 +5044,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 557,
+      "line_number": 448,
       "line_range": [
-        557
+        448
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "558             print(\" \".join(_varcetcmd))\n559             os.system(\" \".join(_varcetcmd))\n560             print(\" \".join(_misccmd))\n",
+      "code": "449             print(\" \".join(_varcetcmd))\n450             os.system(\" \".join(_varcetcmd))\n451             print(\" \".join(_misccmd))\n",
       "col_offset": 12,
       "end_col_offset": 43,
       "filename": "./setup.py",
@@ -5044,16 +5064,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 559,
+      "line_number": 450,
       "line_range": [
-        559
+        450
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "560             print(\" \".join(_misccmd))\n561             os.system(\" \".join(_misccmd))\n562             print(\" \".join(pspawncmd))\n",
+      "code": "451             print(\" \".join(_misccmd))\n452             os.system(\" \".join(_misccmd))\n453             print(\" \".join(pspawncmd))\n",
       "col_offset": 12,
       "end_col_offset": 41,
       "filename": "./setup.py",
@@ -5064,16 +5084,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 561,
+      "line_number": 452,
       "line_range": [
-        561
+        452
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "562             print(\" \".join(pspawncmd))\n563             os.system(\" \".join(pspawncmd))\n564             print(\" \".join(syscallatcmd))\n",
+      "code": "453             print(\" \".join(pspawncmd))\n454             os.system(\" \".join(pspawncmd))\n455             print(\" \".join(syscallatcmd))\n",
       "col_offset": 12,
       "end_col_offset": 42,
       "filename": "./setup.py",
@@ -5084,16 +5104,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 563,
+      "line_number": 454,
       "line_range": [
-        563
+        454
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "564             print(\" \".join(syscallatcmd))\n565             os.system(\" \".join(syscallatcmd))\n566             print(\" \".join(sysattrcmd))\n",
+      "code": "455             print(\" \".join(syscallatcmd))\n456             os.system(\" \".join(syscallatcmd))\n457             print(\" \".join(sysattrcmd))\n",
       "col_offset": 12,
       "end_col_offset": 45,
       "filename": "./setup.py",
@@ -5104,16 +5124,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 565,
+      "line_number": 456,
       "line_range": [
-        565
+        456
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "566             print(\" \".join(sysattrcmd))\n567             os.system(\" \".join(sysattrcmd))\n568             print(\" \".join(sha512_tcmd))\n",
+      "code": "457             print(\" \".join(sysattrcmd))\n458             os.system(\" \".join(sysattrcmd))\n459             print(\" \".join(sha512_tcmd))\n",
       "col_offset": 12,
       "end_col_offset": 43,
       "filename": "./setup.py",
@@ -5124,16 +5144,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 567,
+      "line_number": 458,
       "line_range": [
-        567
+        458
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "568             print(\" \".join(sha512_tcmd))\n569             os.system(\" \".join(sha512_tcmd))\n570 \n",
+      "code": "459             print(\" \".join(sha512_tcmd))\n460             os.system(\" \".join(sha512_tcmd))\n461 \n",
       "col_offset": 12,
       "end_col_offset": 44,
       "filename": "./setup.py",
@@ -5144,16 +5164,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 569,
+      "line_number": 460,
       "line_range": [
-        569
+        460
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "671                 os.unlink(dest)\n672             except Exception:\n673                 pass\n674             os.symlink(target, dest)\n",
+      "code": "562                 os.unlink(dest)\n563             except Exception:\n564                 pass\n565             os.symlink(target, dest)\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./setup.py",
@@ -5164,17 +5184,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 672,
+      "line_number": 563,
       "line_range": [
-        672,
-        673
+        563,
+        564
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "749         stderr = None\n750     ret = subprocess.Popen(args, cwd=swdir, env=env,\n751         stderr=stderr).wait()\n752     if ret != 0:\n",
+      "code": "640         stderr = None\n641     ret = subprocess.Popen(args, cwd=swdir, env=env,\n642         stderr=stderr).wait()\n643     if ret != 0:\n",
       "col_offset": 10,
       "end_col_offset": 22,
       "filename": "./setup.py",
@@ -5185,17 +5205,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 750,
+      "line_number": 641,
       "line_range": [
-        750,
-        751
+        641,
+        642
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "900     try:\n901         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n902         return p.communicate()[0].strip()\n",
+      "code": "791     try:\n792         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n793         return p.communicate()[0].strip()\n",
       "col_offset": 12,
       "end_col_offset": 85,
       "filename": "./setup.py",
@@ -5206,16 +5226,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Starting a process with a partial executable path",
-      "line_number": 901,
+      "line_number": 792,
       "line_range": [
-        901
+        792
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b607_start_process_with_partial_path.html",
       "test_id": "B607",
       "test_name": "start_process_with_partial_path"
     },
     {
-      "code": "900     try:\n901         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n902         return p.communicate()[0].strip()\n",
+      "code": "791     try:\n792         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n793         return p.communicate()[0].strip()\n",
       "col_offset": 12,
       "end_col_offset": 85,
       "filename": "./setup.py",
@@ -5226,16 +5246,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 901,
+      "line_number": 792,
       "line_range": [
-        901
+        792
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1045 \n1046         p = subprocess.Popen(\n1047             [\"/usr/bin/python3.9\", os.path.join(pwd, \"pydates\")],\n1048             stdout=subprocess.PIPE, text=True)\n1049 \n",
+      "code": "936 \n937         p = subprocess.Popen(\n938             [\"/usr/bin/python3.9\", os.path.join(pwd, \"pydates\")],\n939             stdout=subprocess.PIPE, text=True)\n940 \n",
       "col_offset": 12,
       "end_col_offset": 46,
       "filename": "./setup.py",
@@ -5246,18 +5266,18 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1046,
+      "line_number": 937,
       "line_range": [
-        1046,
-        1047,
-        1048
+        937,
+        938,
+        939
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1072             # run the scripts\n1073             p = subprocess.Popen(\n1074                 [sys.executable, path])\n1075 \n",
+      "code": "963             # run the scripts\n964             p = subprocess.Popen(\n965                 [sys.executable, path])\n966 \n",
       "col_offset": 16,
       "end_col_offset": 39,
       "filename": "./setup.py",
@@ -5268,17 +5288,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1073,
+      "line_number": 964,
       "line_range": [
-        1073,
-        1074
+        964,
+        965
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1332             cmd.extend(args)\n1333         subprocess.call(cmd)\n1334 \n",
+      "code": "1178             cmd.extend(args)\n1179         subprocess.call(cmd)\n1180 \n",
       "col_offset": 8,
       "end_col_offset": 28,
       "filename": "./setup.py",
@@ -5289,9 +5309,9 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1333,
+      "line_number": 1179,
       "line_range": [
-        1333
+        1179
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
