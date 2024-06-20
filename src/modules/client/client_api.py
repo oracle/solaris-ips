@@ -3191,7 +3191,7 @@ def __handle_errors_json(func, non_wrap_print=True, subcommand=None,
     except api_errors.WrapIndexingException as __e:
         def _wrapper():
             raise __e.wrapped
-        ret_json = __handle_errors_json(_wrapper, non_wrap_print=False)
+        __, ret_json = __handle_errors_json(_wrapper, non_wrap_print=False)
 
         s = ""
         if ret_json["status"] == 99:

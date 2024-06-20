@@ -163,7 +163,7 @@ class LogFormatter(object):
         """Start a new log file"""
         pass
 
-    def format(self, message):
+    def format(self, message, ignore_linted=False):
         """Given a LintMessage message, format that object
         appropriately."""
         pass
