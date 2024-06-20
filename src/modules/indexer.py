@@ -790,8 +790,7 @@ class Indexer(object):
 
                 self.empty_index = False
             else:
-                raise RuntimeError(
-                    "Got unknown input_type: {0}", input_type)
+                raise RuntimeError(f"Got unknown input_type: {input_type}")
 
             # Write out the helper dictionaries
             self._write_assistant_dicts(tmp_index_dir)

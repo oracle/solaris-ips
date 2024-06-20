@@ -1939,7 +1939,7 @@ class FactoredManifest(Manifest):
 
     def __setitem__(self, key, value):
         """No assignments to factored manifests allowed."""
-        assert "FactoredManifests are not dicts"
+        assert False, "FactoredManifests are not dicts"
 
     def __contains__(self, key):
         if not self.loaded and not self.__load_attributes():

@@ -2234,14 +2234,14 @@ class _RepoStore(object):
             # Stem must be decoded before use.
             try:
                 pname = unquote(name)
-            except Exception:
+            except Exception as err:
                 # Assume error is result of an
                 # unexpected file in the directory. We
                 # don't know the FMRI here, so use None.
                 progtrack.repo_verify_start_pkg(None)
                 progtrack.repo_verify_add_progress(None)
                 yield self.__build_verify_error(
-                    REPO_VERIFY_UNKNOWN, pdir, {"err": str(e)})
+                    REPO_VERIFY_UNKNOWN, pdir, {"err": str(err)})
                 progtrack.repo_verify_end_pkg(None)
                 continue
 
