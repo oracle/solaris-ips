@@ -322,7 +322,7 @@ class _Stream:
 #------------------------
 # Extraction file object
 #------------------------
-class ExFileObject(object):
+class ExFileObject:
     """File-like object for reading an archive member.
        Is returned by CpioFile.extractfile().
     """
@@ -419,7 +419,7 @@ class ExFileObject(object):
 #------------------
 # Exported Classes
 #------------------
-class CpioInfo(object):
+class CpioInfo:
     """Informational class which holds the details about an
     archive member given by a cpio header block.
     CpioInfo objects are returned by CpioFile.getmember(),
@@ -534,7 +534,7 @@ class CpioInfo(object):
             return None
 
 
-class CpioFile(object):
+class CpioFile:
     """The CpioFile Class provides an interface to cpio archives.
     """
 

@@ -87,7 +87,7 @@ class MissingArchiveException(Exception):
         return "Missing p5p archive: {0}".format(self.path)
 
 
-class SysrepoP5p(object):
+class SysrepoP5p:
     """An object to handle a request for p5p file contents from the
     system repository."""
 
@@ -387,7 +387,7 @@ def _application(environ, start_response):
     return result, sysrepo
 
 
-class CloseGenerator(object):
+class CloseGenerator:
     """A wrapper class to ensure we have a close() method on the iterable
     returned from the mod_wsgi application, see PEP333."""
 
@@ -411,7 +411,7 @@ class CloseGenerator(object):
             self.__closeable.close()
 
 
-class AppWrapper(object):
+class AppWrapper:
     """Wrap a callable application with this class in order for its results
     to be handled by CloseGenerator when that callable is called."""
 

@@ -53,7 +53,7 @@ pipelined_protocols = ()
 response_protocols = ("ftp", "http", "https")
 
 
-class TransportEngine(object):
+class TransportEngine:
     """This is an abstract class.  It shouldn't implement any
     of the methods that it contains.  Leave that to transport-specific
     implementations."""
@@ -1052,7 +1052,7 @@ class CurlTransportEngine(TransportEngine):
         hdl.starttime = -1
 
 
-class TransportRequest(object):
+class TransportRequest:
     """A class that contains per-request information for the underlying
     transport engines.  This is used to set per-request options that
     are used either by the framework, the transport, or both."""

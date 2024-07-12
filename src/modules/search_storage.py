@@ -130,7 +130,7 @@ def consistent_open(data_list, directory, timeout = 1):
         return cur_version
 
 
-class IndexStoreBase(object):
+class IndexStoreBase:
     """Base class for all data storage used by the indexer and
     queryEngine. All members must have a file name and maintain
     an internal file handle to that file as instructed by external

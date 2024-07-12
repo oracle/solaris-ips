@@ -3275,7 +3275,7 @@ def _pkg_invoke(subcommand=None, pargs_json=None, opts_json=None, pkg_image=None
         return ret_json
 
 
-class ClientInterface(object):
+class ClientInterface:
     """Class to provide a general interface to various clients."""
 
     def __init__(self, pkg_image=None, prog_delay=PROG_DELAY,

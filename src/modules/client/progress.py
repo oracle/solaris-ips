@@ -104,7 +104,7 @@ def format_pair(format1, v1, v2, scale=None, targetwidth=None,
         return (v1format.format(v1)) + "/" + v2format
 
 
-class SpeedEstimator(object):
+class SpeedEstimator:
     """This class implements a rudimentary download speed estimator.
     newdata() is used to indicate download progress; curl calls
     us back pretty frequently so that's not a terrible way to
@@ -275,7 +275,7 @@ class SpeedEstimator(object):
         return s
 
 
-class PrintTimer(object):
+class PrintTimer:
     """This helper class is used to implement damping of excessive
     printing by progress trackers.
 
@@ -312,7 +312,7 @@ class PrintTimer(object):
         return True
 
 
-class OutSpec(object):
+class OutSpec:
     """OutSpec is used by the progress tracker frontend to convey
     contextual information to backend routines about the output
     being requested.  'first' means "this is the first output
@@ -346,7 +346,7 @@ class OutSpec(object):
     __nonzero__ = __bool__
 
 
-class TrackerItem(object):
+class TrackerItem:
     """This class describes an item of interest in tracking progress
     against some "bucket" of work (for example, searching a filesystem for
     some item).
@@ -543,7 +543,7 @@ def pt_abstract(func):
 # subclasses about which interfaces actually comprise the backend APIs
 # versus front-end APIs.
 #
-class ProgressTrackerBackend(object):
+class ProgressTrackerBackend:
 
     def __init__(self):
         pass
@@ -667,7 +667,7 @@ class ProgressTrackerBackend(object):
         pass
 
 
-class ProgressTrackerFrontend(object):
+class ProgressTrackerFrontend:
     """This essentially abstract class forms the interface that other
     modules in the system use to record progress against various goals."""
 

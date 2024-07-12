@@ -34,7 +34,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 
 
-class LicenseInfo(object):
+class LicenseInfo:
     """A class representing the license information a package
     provides.  Not intended for instantiation by API consumers."""
 
@@ -87,7 +87,7 @@ class LicenseInfo(object):
         return self.__action.must_display
 
 
-class PackageCategory(object):
+class PackageCategory:
     """Represents the scheme and category of an info.classification entry
     for a package."""
 
@@ -105,7 +105,7 @@ class PackageCategory(object):
             return "{0}".format(self.category)
 
 
-class PackageInfo(object):
+class PackageInfo:
     """A class capturing the information about packages that a client
     could need. The fmri is guaranteed to be set. All other values may
     be None, depending on how the PackageInfo instance was created."""

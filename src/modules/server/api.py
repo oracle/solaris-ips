@@ -48,7 +48,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 CURRENT_API_VERSION = 12
 
 
-class BaseInterface(object):
+class BaseInterface:
     """This class represents a base API object that is provided by the
     server to clients.  A base API object is required when creating
     objects for any other interface provided by the API.  This allows
@@ -67,7 +67,7 @@ class BaseInterface(object):
         self._pub = pub
 
 
-class _Interface(object):
+class _Interface:
     """Private base class used for api interface objects.
     """
 

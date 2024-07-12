@@ -46,7 +46,7 @@ except ImportError:
     sha512_supported = False
 
 
-class PC(object):
+class PC:
     """This class contains publisher configuration used for setting up the
     depots and https apache instances needed by the tests."""
 

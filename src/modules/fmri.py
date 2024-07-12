@@ -92,7 +92,7 @@ class MissingVersionError(FmriError):
             self.fmri)
 
 
-class PkgFmri(object):
+class PkgFmri:
     """The publisher is the anchor of a package namespace.  Clients can
     choose to take packages from multiple publishers, and specify a default
     search path.  In general, package names may also be prefixed by a domain

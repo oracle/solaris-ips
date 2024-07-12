@@ -84,12 +84,12 @@ import pkg.version
 from pkg.server.query_parser import Query, ParseError, BooleanQueryException
 
 
-class Dummy(object):
+class Dummy:
     """Dummy object used for dispatch method mapping."""
     pass
 
 
-class _Depot(object):
+class _Depot:
     """Private, abstract, base class for all Depot classes."""
     pass
 
@@ -2135,7 +2135,7 @@ class BackgroundTaskPlugin(SimplePlugin):
             self.__thread = None
 
 
-class DepotConfig(object):
+class DepotConfig:
     """Returns an object representing a configuration interface for a
     a pkg(7) depot server.
 

@@ -35,7 +35,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.actions.generic import quote_attr_value
 
 
-class Firmware(object):
+class Firmware:
     def __init__(self):
         self._cache = {}  # cache of things we've checked already
 

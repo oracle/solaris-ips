@@ -48,7 +48,7 @@ LEVELS = {
     }
 
 
-class LintMessage(object):
+class LintMessage:
     """A base class for all lint messages."""
 
     msg = ""
@@ -83,7 +83,7 @@ class TrackerHandler(logging.StreamHandler):
         logging.StreamHandler.emit(self, record)
 
 
-class LogFormatter(object):
+class LogFormatter:
     """A class that formats log messages."""
 
     def __init__(self, tracker=None, level=INFO):

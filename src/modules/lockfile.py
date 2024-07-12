@@ -38,7 +38,7 @@ from pkg.client import global_settings
 from pkg.misc import DummyLock
 
 
-class LockFile(object):
+class LockFile:
     """A class that provides generic lockfile support.  This
     allows Python processes to perform inter-process locking
     using the filesystem."""

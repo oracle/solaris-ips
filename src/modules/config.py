@@ -210,7 +210,7 @@ class UnknownSectionError(PropertyConfigError):
             self.section)
 
 
-class Property(object):
+class Property:
     """Base class for properties."""
 
     # Whitespace (except single space), '/', and '\' are never allowed.
@@ -325,7 +325,7 @@ class Property(object):
         self._value = value
 
 
-class PropertyTemplate(object):
+class PropertyTemplate:
     """A class representing a template for a property.  These templates are
     used when loading existing configuration data or when adding new
     properties to an existing configuration object if the property name
@@ -870,7 +870,7 @@ class PropVersion(Property):
         self._value = nvalue
 
 
-class PropertySection(object):
+class PropertySection:
     """A class representing a section of the configuration that also
     provides an interface for adding and managing properties and sections
     for the section."""
@@ -969,7 +969,7 @@ class PropertySection(object):
         return self.__name
 
 
-class PropertySectionTemplate(object):
+class PropertySectionTemplate:
     """A class representing a template for a section of the configuration.
     These templates are used when loading existing configuration data
     or when adding new sections to an existing configuration object if
@@ -1020,7 +1020,7 @@ class PropertySectionTemplate(object):
         return self.__name
 
 
-class Config(object):
+class Config:
     """The Config class provides basic in-memory management of configuration
     data."""
 

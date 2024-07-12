@@ -30,7 +30,7 @@ import pkg.client.transport.exception as tx
 from pkg.misc import DummyLock, force_str
 
 
-class StreamingFileObj(object):
+class StreamingFileObj:
 
     def __init__(self, url, engine, ccancel=None):
         """Create a streaming file object that wraps around a

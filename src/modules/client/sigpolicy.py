@@ -29,7 +29,7 @@ from functools import total_ordering
 
 
 @total_ordering
-class Policy(object):
+class Policy:
     """Abstract base Policy class.  It defines the interface all subclasses
     must provide.
 

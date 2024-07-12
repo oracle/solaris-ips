@@ -42,7 +42,7 @@ def walk_func(data, fd):
     return 0
 
 
-class SpawnFileAction(object):
+class SpawnFileAction:
 
     """SpawnFileAction() -> spawn file action object
 

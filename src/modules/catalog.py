@@ -51,7 +51,7 @@ import pkg.version
 from pkg.misc import EmptyDict, EmptyI
 
 
-class _JSONWriter(object):
+class _JSONWriter:
     """Private helper class used to serialize catalog data and generate
     signatures."""
 
@@ -196,7 +196,7 @@ class _JSONWriter(object):
             self.__sha_1.update(l)
 
 
-class CatalogPartBase(object):
+class CatalogPartBase:
     """A CatalogPartBase object is an abstract class containing core
     functionality shared between CatalogPart and CatalogAttrs."""
 
@@ -1347,7 +1347,7 @@ class CatalogAttrs(CatalogPartBase):
     version = property(__get_version, __set_version)
 
 
-class Catalog(object):
+class Catalog:
     """A Catalog is the representation of the package FMRIs available from
     a package repository."""
 

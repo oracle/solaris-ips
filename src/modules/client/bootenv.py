@@ -61,7 +61,7 @@ except ImportError:
             pass
 
 
-class GenericBootEnv(object):
+class GenericBootEnv:
     """This class contains common functions used by both bemgmt module
     and the older pylibbe module.
     """
@@ -1319,7 +1319,7 @@ beadm activate {be_name_clone}
                 bename=self.be_name))
 
 
-class BootEnvNull(object):
+class BootEnvNull:
 
     """BootEnvNull is a class that gets used when libbe doesn't exist."""
 

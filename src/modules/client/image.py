@@ -84,7 +84,7 @@ img_root_prefix = "var/pkg"
 IMG_PUB_DIR = "publisher"
 
 
-class Image(object):
+class Image:
     """An Image object is a directory tree containing the laid-down contents
     of a self-consistent graph of Packages.
 

@@ -250,7 +250,7 @@ class IllegalVersion(VersionError):
     """Used to indicate that the specified version string is not valid."""
 
 
-class Version(object):
+class Version:
     """Version format is release[,build_release]-branch:datetime, which we
     decompose into three DotSequences and a date string.  Time
     representation is in the ISO8601-compliant form "YYYYMMDDTHHMMSSZ",

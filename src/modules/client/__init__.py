@@ -50,7 +50,7 @@ class _StreamHandler(logging.StreamHandler):
         return
 
 
-class GlobalSettings(object):
+class GlobalSettings:
     """ This class defines settings which are global
         to the client instance """
 

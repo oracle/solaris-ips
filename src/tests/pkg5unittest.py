@@ -1104,7 +1104,7 @@ if __name__ == "__main__":
             return new_rcfile.name
 
 
-class _OverTheWireResults(object):
+class _OverTheWireResults:
     """Class for passing test results between processes."""
 
     separator1 = '=' * 70
@@ -4448,7 +4448,7 @@ class ApacheStateException(Exception):
     pass
 
 
-class ApacheController(object):
+class ApacheController:
 
     def __init__(self, conf, port, work_dir, testcase=None, https=False):
         """

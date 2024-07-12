@@ -65,7 +65,7 @@ except ImportError:
     sha512_supported = False
 
 
-class _TestHelper(object):
+class _TestHelper:
     """Private helper class for shared functionality between test
     classes."""
 

@@ -99,7 +99,7 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
     print("minimalist comparison equality")
 
     setup3 = """
-class superc(object):
+class superc:
         def __lt__(a, b):
                 return a.ordinality == b.ordinality
 

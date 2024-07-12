@@ -39,7 +39,7 @@ import time
 import pkg.lockfile as lockfile
 
 
-class CfgFile(object):
+class CfgFile:
     """ Solaris configuration file editor... make it easier to
         modify Solaris line-oriented configuration files from actions """
 

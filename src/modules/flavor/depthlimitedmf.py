@@ -38,7 +38,7 @@ PD_DEFAULT_RUNPATH = "$PKGDEPEND_RUNPATH"
 python_path = "PYTHONPATH"
 
 
-class ModuleInfo(object):
+class ModuleInfo:
     """This class contains information about from where a python module
     might be loaded."""
 

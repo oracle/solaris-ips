@@ -44,7 +44,7 @@ class DuplicateLintedAttrException(Exception):
     pass
 
 
-class Checker(object):
+class Checker:
     """A base class for all lint checks.  pkg.lint.engine discovers classes
     to create these objects according to a configuration file.  Methods that
     implement lint checks within each Checker object must be given a

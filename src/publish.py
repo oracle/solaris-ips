@@ -118,7 +118,7 @@ Environment:
     sys.exit(retcode)
 
 
-class SolarisBundleVisitor(object):
+class SolarisBundleVisitor:
     """Used to gather information about the SVR4 packages we visit"""
 
     def __init__(self):

@@ -80,7 +80,7 @@ CSPEED_VERY_SLOW = 100
 CSPEED_FARAWAY = 3500
 
 
-class RepositoryURI(object):
+class RepositoryURI:
     def __init__(self, label, speed, cspeed, error_rate=ERROR_FREE,
         error_type=ERROR_T_NET, modality=MODAL_SINGLE):
         """Create a RepositoryURI object.  The 'speed' argument

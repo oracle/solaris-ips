@@ -46,7 +46,7 @@ from pkg.misc import expanddirs, get_pkg_otw_size, EmptyI
 logger = global_settings.logger
 
 
-class PkgPlan(object):
+class PkgPlan:
     """A package plan takes two package FMRIs and an Image, and produces the
     set of actions required to take the Image from the origin FMRI to the
     destination FMRI.

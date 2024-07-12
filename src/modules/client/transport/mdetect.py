@@ -38,7 +38,7 @@ else:
     import select
 
 
-class MirrorDetector(object):
+class MirrorDetector:
     """This class uses mDNS and DNS-SD to find link-local content
     mirrors that may be present on the client's subnet."""
 

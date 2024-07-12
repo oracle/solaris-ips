@@ -1001,7 +1001,7 @@ class ImageConfig(cfg.FileConfig):
         fgetdefault=__publisher_getdefault, )
 
 
-class NullSystemPublisher(object):
+class NullSystemPublisher:
     """Dummy system publisher object for use when an image doesn't use a
     system publisher."""
 
@@ -1065,7 +1065,7 @@ class NullSystemPublisher(object):
         self.__validate_properties()
 
 
-class BlendedConfig(object):
+class BlendedConfig:
     """Class which handles combining the system repository configuration
     with the image configuration."""
 

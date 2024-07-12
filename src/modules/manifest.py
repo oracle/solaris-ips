@@ -121,7 +121,7 @@ class ManifestDifference(
         return ManifestDifference(*state)
 
 
-class Manifest(object):
+class Manifest:
     """A Manifest is the representation of the actions composing a specific
     package version on both the client and the repository.  Both purposes
     utilize the same storage format.

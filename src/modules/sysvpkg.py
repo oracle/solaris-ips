@@ -50,7 +50,7 @@ PKG_MAGIC = "# PaCkAgE DaTaStReAm"
 PKG_HDR_END = "# end of header"
 
 
-class PkgMapLine(object):
+class PkgMapLine:
     """A class that represents a single line of a SysV package's pkgmap.
 
     XXX This class should probably disappear once pkg.manifest? is a bit
@@ -116,7 +116,7 @@ class MultiPackageDatastreamException(Exception):
 # XXX want to be able to pull datastream packages from the web.  Should the
 # constructor be able to interpret path as a URI, or should we have an optional
 # "fileobj" argument which can point to an http stream?
-class SolarisPackage(object):
+class SolarisPackage:
     """A SolarisPackage represents a System V package for Solaris.
     """
 
