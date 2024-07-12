@@ -70,7 +70,7 @@ class AndQuery(qp.AndQuery):
         return lcv or rcv
 
 
-class EmptyQuery(object):
+class EmptyQuery:
     def __init__(self, return_type):
         self.return_type = return_type
 

@@ -33,7 +33,7 @@ import stats
 import pkg.misc as misc
 
 
-class Scenario(object):
+class Scenario:
     """A Scenario has a list of depot.RepositoryURIs."""
 
     def __init__(self, title):

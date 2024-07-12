@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -47,7 +47,7 @@ import pkg.fmri
 HTTPDEPOT_USER = "pkg5srv"
 
 
-class _Apache(object):
+class _Apache:
     # An array that can be used to build our svcs(1) wrapper.
     default_svcs_conf = [
         # FMRI                                   STATE

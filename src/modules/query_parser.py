@@ -46,7 +46,7 @@ FILE_OPEN_TIMEOUT_SECS = 1
 MAX_TOKEN_COUNT = 100
 
 
-class QueryLexer(object):
+class QueryLexer:
     """This class defines the lexer used to separate parse queries into
     its constituents.  It's written for Ply, a python implementation for
     lex and yacc."""
@@ -188,7 +188,7 @@ class QueryLexer(object):
             print(tok, file=sys.stderr)
 
 
-class QueryParser(object):
+class QueryParser:
     """This class defines the parser which converts a stream of tokens into
     an abstract syntax tree representation of the query.  The AST is able
     to perform the search."""
@@ -430,7 +430,7 @@ class ParseError(QueryException):
             "\t{0}".format(" " * max(self.pos - 1, 0) + "^")])
 
 
-class Query(object):
+class Query:
     """General Query object.  It defines various constants and provides for
     marshalling a Query into and out of a string format."""
 
@@ -551,7 +551,7 @@ class BooleanQueryException(QueryException):
             "the same type of results.")])
 
 
-class BooleanQuery(object):
+class BooleanQuery:
     """Superclass for all boolean operations in the AST."""
 
     def __init__(self, left_query, right_query):
@@ -712,7 +712,7 @@ class OrQuery(BooleanQuery):
         return "({0!r} OR {1!r})".format(self.lc, self.rc)
 
 
-class PkgConversion(object):
+class PkgConversion:
     """Class representing a change from returning actions to returning
     packages in the AST."""
 
@@ -773,7 +773,7 @@ class PkgConversion(object):
         return None
 
 
-class PhraseQuery(object):
+class PhraseQuery:
     """Class representing a phrase search in the AST"""
 
     def __init__(self, str_list, term_query_class):
@@ -874,7 +874,7 @@ class PhraseQuery(object):
         return PkgConversion(self)
 
 
-class FieldQuery(object):
+class FieldQuery:
     """Class representing a structured query in the AST."""
 
     def __init__(self, params, query):
@@ -931,7 +931,7 @@ class FieldQuery(object):
         return PkgConversion(self)
 
 
-class TopQuery(object):
+class TopQuery:
     """Class which must be at the top of all valid ASTs, and may only be
     at the top of an AST.  It handles starting N results in, or only
     showing M items.  It also transforms the internal representations of
@@ -1016,7 +1016,7 @@ class TopQuery(object):
         return None
 
 
-class TermQuery(object):
+class TermQuery:
     """Class representing the a single query term in the AST.  This is an
     abstract class and should not be used instead of the related client and
     server classes."""

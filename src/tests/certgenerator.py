@@ -28,7 +28,7 @@ import os
 import subprocess
 
 
-class CertGenerator(object):
+class CertGenerator:
     """A class which creates certificates."""
 
     def __init__(self, base_dir="."):

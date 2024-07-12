@@ -214,7 +214,7 @@ from pkg_test.misc_test import EmptyI
     python_module_text = """\
 #! /usr/bin/python
 
-class Foo(object):
+class Foo:
         def run(self):
                 import __main__
 """

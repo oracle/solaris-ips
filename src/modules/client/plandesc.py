@@ -107,7 +107,7 @@ class _ActionPlan(collections.namedtuple("_ActionPlan", "p src dst")):
         return _ActionPlan(*state)
 
 
-class PlanDescription(object):
+class PlanDescription:
     """A class which describes the changes the plan will make."""
 
     __state__desc = {

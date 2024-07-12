@@ -105,7 +105,7 @@ error_results = {
 }
 
 
-class _HistoryOperation(object):
+class _HistoryOperation:
     """A _HistoryOperation object is a representation of data about an
     operation that a pkg(7) client has performed.  This class is private
     and not intended for use by classes other than History.
@@ -244,7 +244,7 @@ self.new_be_uuid, self.snapshot, self.release_notes, self.errors)
             _HistoryOperation.result_l10n[self.result[1]])
 
 
-class History(object):
+class History:
     """A History object is a representation of data about a pkg(7) client
     and about operations that the client is executing or has executed.  It
     uses the _HistoryOperation class to represent the data about an

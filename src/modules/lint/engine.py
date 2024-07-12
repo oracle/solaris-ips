@@ -219,7 +219,7 @@ class LintEngineCache():
             return self.misc_cache[api_inst][pkg_name]
 
 
-class LintEngine(object):
+class LintEngine:
     """LintEngine is the main object used by pkglint to discover lint
     plugins, and execute lint checks on package manifests, retrieved
     from a repository or from local objects.

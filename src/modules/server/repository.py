@@ -370,7 +370,7 @@ class RepositorySigNoTrustAnchorDirError(RepositoryError):
             self.data)
 
 
-class _RepoStore(object):
+class _RepoStore:
     """The _RepoStore object provides an interface for performing operations
     on a set of package data contained within a repository.  This class is
     intended only for use by the Repository class.
@@ -2554,7 +2554,7 @@ class _RepoStore(object):
     writable_root = property(lambda self: self.__writable_root)
 
 
-class Repository(object):
+class Repository:
     """A Repository object is a representation of data contained within a
     pkg(7) repository and an interface to manipulate it."""
 
@@ -4137,7 +4137,7 @@ class Repository(object):
     temp_root = property(lambda self: self.__tmp_root)
 
 
-class RepositoryConfig(object):
+class RepositoryConfig:
     """Returns an object representing a configuration interface for a
     a pkg(7) repository.
 

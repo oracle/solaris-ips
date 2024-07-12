@@ -31,7 +31,7 @@ from urllib.parse import urlsplit
 import pkg.misc as misc
 
 
-class RepoChooser(object):
+class RepoChooser:
     """An object that contains repo statistics.  It applies algorithms
     to choose an optimal set of repos for a given publisher, based
     upon the observed repo statistics.
@@ -201,7 +201,7 @@ class RepoChooser(object):
             v.reset()
 
 
-class RepoStats(object):
+class RepoStats:
     """An object for keeping track of observed statistics for a particular
     TransportRepoURI.  This includes things like observed performance,
     availability, successful and unsuccessful transaction rates, etc.

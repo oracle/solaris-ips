@@ -139,7 +139,7 @@ RESULT_FAILED_UNKNOWN = history.RESULT_FAILED_UNKNOWN
 logger = global_settings.logger
 
 
-class _LockedGenerator(object):
+class _LockedGenerator:
     """This is a private class and should not be used by API consumers.
 
     This decorator class wraps API generator functions, managing the
@@ -187,7 +187,7 @@ class _LockedGenerator(object):
         return wrapper
 
 
-class _LockedCancelable(object):
+class _LockedCancelable:
     """This is a private class and should not be used by API consumers.
 
     This decorator class wraps non-generator cancelable API functions,
@@ -249,7 +249,7 @@ class _LockedCancelable(object):
         return wrapper
 
 
-class ImageInterface(object):
+class ImageInterface:
     """This class presents an interface to images that clients may use.
     There is a specific order of methods which must be used to install
     or uninstall packages, or update an image.  First, a gen_plan_* method

@@ -683,7 +683,7 @@ def get_data_digest(data, length=None, return_content=False,
     return hash_results, content.read()
 
 
-class _GZWriteWrapper(object):
+class _GZWriteWrapper:
     """Used by compute_compressed_attrs to calculate data size and compute
     hashes as the data is written instead of having to read the written data
     again later."""
@@ -841,7 +841,7 @@ def compute_compressed_attrs(fname, file_path=None, data=None, size=None,
     return csize, chashes
 
 
-class ProcFS(object):
+class ProcFS:
     """This class is used as an interface to procfs."""
 
     # Detect whether python is running in 32-bit or 64-bit
@@ -1124,10 +1124,10 @@ class ImmutableDict(dict):
 # A way to have a dictionary be a property
 
 
-class DictProperty(object):
+class DictProperty:
     # Missing docstring; pylint: disable=C0111
 
-    class __InternalProxy(object):
+    class __InternalProxy:
         def __init__(self, obj, fget, fset, fdel, items, keys,
             values, iterator, fgetdefault, fsetdefault, update, pop):
             self.__obj = obj
@@ -1428,7 +1428,7 @@ def makedirs(pathname):
             raise
 
 
-class DummyLock(object):
+class DummyLock:
     """This has the same external interface as threading.Lock,
     but performs no locking.  This is a placeholder object for situations
     where we want to be able to do locking, but don't always need a
@@ -2546,7 +2546,7 @@ def json_hook(dct):
     return rvdct
 
 
-class Timer(object):
+class Timer:
     """A class which can be used for measuring process times (user,
     system, and wait)."""
 
@@ -2649,7 +2649,7 @@ class AsyncCallException(Exception):
         return str(self.e)
 
 
-class AsyncCall(object):
+class AsyncCall:
     """Class which can be used to call a function asynchronously.
     The call is performed via a dedicated thread."""
 

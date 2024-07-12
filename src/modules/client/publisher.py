@@ -135,7 +135,7 @@ POSSIBLE_USES = [CODE_SIGNING_USE, CERT_SIGNING_USE, CRL_SIGNING_USE]
 SYSREPO_PROXY = "<sysrepo>"
 
 
-class RepositoryURI(object):
+class RepositoryURI:
     """Class representing a repository URI and any transport-related
     information."""
 
@@ -699,7 +699,7 @@ class TransportRepoURI(RepositoryURI):
         "OS environment variables, and expands any $user:$password values.")
 
 
-class Repository(object):
+class Repository:
     """Class representing a repository object.
 
     A repository object represents a location where clients can publish
@@ -1171,7 +1171,7 @@ class Repository(object):
                         attribute.""")
 
 
-class Publisher(object):
+class Publisher:
     """Class representing a publisher object and a set of interfaces to set
     and retrieve its information.
 

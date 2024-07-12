@@ -44,7 +44,7 @@ class DepotStateException(Exception):
         Exception.__init__(self, reason)
 
 
-class DepotController(object):
+class DepotController:
 
     HALTED = 0
     STARTING = 1

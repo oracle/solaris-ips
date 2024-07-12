@@ -131,7 +131,7 @@ class UnsupportedRepoTypeOperationError(TransactionError):
             type=self._args.get("type", ""))
 
 
-class NullTransaction(object):
+class NullTransaction:
     """Provides a simulated publishing interface suitable for testing
     purposes."""
 
@@ -198,7 +198,7 @@ class NullTransaction(object):
         pass
 
 
-class TransportTransaction(object):
+class TransportTransaction:
     """Provides a publishing interface that uses client transport."""
 
     def __init__(self, origin_url, create_repo=False, pkg_name=None,
@@ -690,7 +690,7 @@ class TransportTransaction(object):
                 trans_id=self.trans_id, msg=msg)
 
 
-class Transaction(object):
+class Transaction:
     """Returns an object representing a publishing "transaction" interface
     to a pkg(7) repository.
 

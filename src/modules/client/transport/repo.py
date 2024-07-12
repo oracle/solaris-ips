@@ -52,7 +52,7 @@ import pkg.server.query_parser as sqp
 from pkg.misc import N_, compute_compressed_attrs, EmptyDict
 
 
-class TransportRepo(object):
+class TransportRepo:
     """The TransportRepo class handles transport requests.
     It represents a repo, and provides the same interfaces as
     the operations that are performed against a repo.  Subclasses
@@ -2276,7 +2276,7 @@ class _ArchiveRepo(TransportRepo):
         return header
 
 
-class FileRepo(object):
+class FileRepo:
     """Factory class for creating transport repository objects for
     filesystem-based repository sources.
     """
@@ -2322,7 +2322,7 @@ class FileRepo(object):
 # ProgressCallback objects that bridge the interfaces between ProgressTracker,
 # and the necessary callbacks for the TransportEngine.
 
-class ProgressCallback(object):
+class ProgressCallback:
     """This class bridges the interfaces between a ProgressTracker
     object and the progress callback that's provided by Pycurl.
     Since progress callbacks are per curl handle, and handles aren't
@@ -2496,7 +2496,7 @@ class FileProgress(ProgressCallback):
 
 # cache transport repo objects, so one isn't created on every operation
 
-class RepoCache(object):
+class RepoCache:
     """An Object that caches repository objects.  Used to make
     sure that repos are re-used instead of re-created for each
     operation. The objects are keyed by TransportRepoURI.key()

@@ -121,7 +121,7 @@ class Pkg5Dispatcher(Dispatcher):
         Dispatcher.__init__(self, translate=translate)
 
 
-class LogSink(object):
+class LogSink:
     """This is a dummy object that we can use to discard log entries
     without relying on non-portable interfaces such as /dev/null."""
 

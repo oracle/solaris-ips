@@ -67,7 +67,7 @@ from pkg.misc import PKG_RO_FILE_MODE
 logger = global_settings.logger
 
 
-class TransportCfg(object):
+class TransportCfg:
     """Contains configuration needed by the transport for proper
     operations.  Clients must create one of these objects, and then pass
     it to a transport instance when it is initialized.  This is the base
@@ -514,7 +514,7 @@ class GenericTransportCfg(TransportCfg):
         doc="A string that identifies the user agent for the transport.")
 
 
-class LockedTransport(object):
+class LockedTransport:
     """A decorator class that wraps transport functions, calling
     their lock and unlock methods.  Due to implementation differences
     in the decorator protocol, the decorator must be used with
@@ -549,7 +549,7 @@ def _convert_repouris(repolist):
     return trans_repouris
 
 
-class Transport(object):
+class Transport:
     """The generic transport wrapper object.  Its public methods should
     be used by all client code that wishes to perform file/network
     packaging operations."""
@@ -3306,7 +3306,7 @@ class Transport(object):
         return sendb
 
 
-class MultiXfr(object):
+class MultiXfr:
     """A transport object for performing multiple simultaneous
     requests.  This object matches publisher to list of requests, and
     allows the caller to associate a piece of data with the request key."""

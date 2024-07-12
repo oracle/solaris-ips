@@ -167,7 +167,7 @@ VCTDifference = namedtuple("VCTDifference", ["type_diffs", "value_diffs"])
 # argument to difference.
 
 
-class VariantCombinations(object):
+class VariantCombinations:
     """Class for keeping track of which combinations of variant values have
     and have not been satisfied for a particular action."""
 

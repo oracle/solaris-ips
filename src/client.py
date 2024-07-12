@@ -1959,7 +1959,7 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     return ret_code
 
 
-class RemoteDispatch(object):
+class RemoteDispatch:
     """RPC Server Class which invoked by the PipedRPCServer when a RPC
     request is recieved."""
 

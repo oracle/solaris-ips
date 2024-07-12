@@ -55,7 +55,7 @@ For example:
 """
 
 
-class SHA512_t(object):
+class SHA512_t:
 
     def __init__(self, message=None, t=256):
         if t != 256 and t != 224:

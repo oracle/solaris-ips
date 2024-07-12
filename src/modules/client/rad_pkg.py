@@ -193,7 +193,7 @@ def eliminateNoneOpts(**opts):
     return new_dict
 
 
-class PkgPublisher(object):
+class PkgPublisher:
 
     def __init__(self):
         self._prefix = None
@@ -227,7 +227,7 @@ class PkgPublisher(object):
         set_any("_revoked_CAs"))
 
 
-class PkgSource(object):
+class PkgSource:
 
     def __init__(self):
         self._URI = None
@@ -251,7 +251,7 @@ class PkgSource(object):
     SSL_cert = property(get_any("_SSL_cert"), set_any("_SSL_cert"))
 
 
-class PkgFmri(object):
+class PkgFmri:
 
     def __init__(self):
         self.__fmri = None
@@ -295,7 +295,7 @@ class PkgFmri(object):
             return self.__fmri.get_timestamp().isoformat()
 
 
-class PkgInfo(object):
+class PkgInfo:
 
     def __init__(self):
         self._pkg_name = None
@@ -328,7 +328,7 @@ class PkgInfo(object):
     licenses = property(get_any("_licenses"), set_any("_licenses"))
 
 
-class PkgImage(object):
+class PkgImage:
 
     def __init__(self):
         self.__image_path = None

@@ -110,7 +110,7 @@ def _reorder_hardlinks(hardlinks):
     return reordered
 
 
-class ImagePlan(object):
+class ImagePlan:
     """ImagePlan object contains the plan for changing the image...
     there are separate routines for planning the various types of
     image modifying operations; evaluation (comparing manifests

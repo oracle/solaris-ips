@@ -133,7 +133,7 @@ class IndexOpDisabledException(DepotException):
             "Request was: {0}".format(self.request)
 
 
-class BackgroundTask(object):
+class BackgroundTask:
     """Allow us to process a limited set of threads in the background."""
 
     def __init__(self, size=10, busy_url=None):
@@ -218,7 +218,7 @@ class BackgroundTask(object):
             self.__keep_busy_thread.start()
 
 
-class DepotBUI(object):
+class DepotBUI:
     """A data object that pkg.server.face can use for configuration.
     This object should look like a pkg.server.depot.DepotHTTP to
     pkg.server.face, but it doesn't need to perform any operations.
@@ -250,7 +250,7 @@ class DepotBUI(object):
         face.init(self)
 
 
-class WsgiDepot(object):
+class WsgiDepot:
     """A WSGI application object that allows us to process search/1 and
     certain admin/0 requests from pkg(7) clients of the depot.  Other
     requests for BUI content are dealt with by instances of DepotHTTP, which
@@ -681,7 +681,7 @@ class WsgiDepot(object):
         return b""
 
 
-class Pkg5Dispatch(object):
+class Pkg5Dispatch:
     """A custom CherryPy dispatcher used by our application.
     We use this, because the default dispatcher in CherryPy seems to dislike
     trying to have an exposed "default" method (the special method name used

@@ -34,7 +34,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
 
 
-class Actuator(object):
+class Actuator:
     """Actuators are action attributes that cause side effects
     on live images when those actions are updated, installed
     or removed.  Since no side effects are caused when the

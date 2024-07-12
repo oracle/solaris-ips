@@ -62,7 +62,7 @@ class InvalidOwnershipException(InvalidBundleException):
         return self.msg
 
 
-class Bundle(object):
+class Bundle:
     """Base bundle class."""
 
     def get_action(self, path):

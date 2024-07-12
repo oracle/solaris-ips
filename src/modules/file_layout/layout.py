@@ -61,7 +61,7 @@ to asses the scalability of the different layouts."""
 import os
 
 
-class Layout(object):
+class Layout:
     """This class is the parent class to all layouts. It defines the
     interface which those subclasses must satisfy."""
 

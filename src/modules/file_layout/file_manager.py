@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 """centralized object for insert, lookup, and removal of files.
 
@@ -110,7 +110,7 @@ class UnrecognizedFilePaths(apx.ApiException):
             "\n".join(self.fps))
 
 
-class FileManager(object):
+class FileManager:
     """The FileManager class handles the insertion and removal of files
     within its directory according to a strategy for organizing the
     files."""

@@ -75,7 +75,7 @@ def makedirs(pathname):
             raise
 
 
-class Indexer(object):
+class Indexer:
     """Indexer is a class designed to index a set of manifests or pkg plans
     and provide a compact representation on disk, which is quickly
     searchable."""

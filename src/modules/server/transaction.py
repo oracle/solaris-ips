@@ -127,7 +127,7 @@ class TransactionAlreadyOpenError(TransactionError):
             self.data)
 
 
-class Transaction(object):
+class Transaction:
     """A Transaction is a server-side object used to represent the set of
     incoming changes to a package.  Manipulation of Transaction objects in
     the repository server is generally initiated by a package publisher,

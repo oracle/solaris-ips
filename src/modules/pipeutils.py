@@ -112,7 +112,7 @@ logging.getLogger("jsonrpclib.SimpleJSONRPCServer").addHandler(
 pipeutils_debug = (os.environ.get("PKG_PIPEUTILS_DEBUG", None) is not None)
 
 
-class PipeFile(object):
+class PipeFile:
     """Object which makes a pipe look like a "file" object.
 
     Note that all data transmitted via this pipe is transmitted

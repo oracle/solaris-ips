@@ -114,7 +114,7 @@ class DependencyException(Exception):
         return self.__reason
 
 
-class PkgSolver(object):
+class PkgSolver:
     """Provides a SAT-based solution solver to determine which packages
     should be installed, updated, or removed to perform a requested
     operation."""

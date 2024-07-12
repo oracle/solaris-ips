@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
 import atexit
@@ -66,7 +66,7 @@ class InvalidArchiveIndex(ArchiveErrors):
             "index format.").format(self.__name)
 
 
-class ArchiveIndex(object):
+class ArchiveIndex:
     """Class representing a pkg(7) archive table of contents and a set of
     interfaces to populate and retrieve entries.
 
@@ -273,7 +273,7 @@ class UnknownPackageManifest(ArchiveErrors):
             "in archive {arc_name}.").format(**self.__dict__)
 
 
-class Archive(object):
+class Archive:
     """Class representing a pkg(7) archive and a set of interfaces to
     populate it and retrieve data from it.
 

@@ -32,7 +32,7 @@ BASELINE_MATCH = 0
 BASELINE_MISMATCH = 1
 
 
-class BaseLine(object):
+class BaseLine:
     """Test result baseline recording and checking. """
     sep1 = '=' * 70
     sep2 = '-' * 70

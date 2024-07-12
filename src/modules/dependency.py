@@ -29,7 +29,7 @@ OPTIONAL = 1
 INCORPORATE = 10
 
 
-class Dependency(object):
+class Dependency:
     """A Dependency object is a relationship between one Package and
     another.  It is a bidirectional expression.
 

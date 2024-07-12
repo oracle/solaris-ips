@@ -207,7 +207,7 @@ def _li_rvdict_raise_exceptions(rvdict):
         raise apx.LinkedImageException(bundle=exceptions)
 
 
-class LinkedImagePlugin(object):
+class LinkedImagePlugin:
     """This class is a template that all linked image plugins should
     inherit from.  Linked image plugins derived from this class are
     designed to manage linked aspects of the current image (vs managing
@@ -292,7 +292,7 @@ class LinkedImagePlugin(object):
         raise NotImplementedError
 
 
-class LinkedImageChildPlugin(object):
+class LinkedImageChildPlugin:
     """This class is a template that all linked image child plugins should
     inherit from.  Linked image child plugins derived from this class are
     designed to manage linked aspects of children of the current image.
@@ -320,7 +320,7 @@ class LinkedImageChildPlugin(object):
         raise NotImplementedError
 
 
-class LinkedImageName(object):
+class LinkedImageName:
     """A class for naming child linked images.  Linked image names are
     used for all child images (and only child images), and they encode two
     pieces of information.  The name of the plugin used to manage the
@@ -408,7 +408,7 @@ class LinkedImageName(object):
         return not self.__eq__(other)
 
 
-class LinkedImage(object):
+class LinkedImage:
     """A LinkedImage object is used to manage the linked image aspects of
     an image.  This image could be a child image, a parent image, or both
     a parent and child.  This object allows for access to linked image
@@ -2722,7 +2722,7 @@ class LinkedImage(object):
         return True
 
 
-class LinkedImageChild(object):
+class LinkedImageChild:
     """A LinkedImageChild object is used when a parent image wants to
     access a child image.  These accesses may include things like:
     saving/pushing linked image metadata into a child image, syncing or

@@ -56,7 +56,7 @@ class PkglintConfigException(Exception):
     pass
 
 
-class PkglintConfig(object):
+class PkglintConfig:
     def __init__(self, config_file=None):
 
         if config_file:
