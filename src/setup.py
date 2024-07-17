@@ -923,7 +923,7 @@ class build_ext_func(_build_ext):
 class build_py_func(_build_py):
 
     def __init__(self, dist):
-        ret = _build_py.__init__(self, dist)
+        _build_py.__init__(self, dist)
 
         self.copied = []
 
@@ -963,8 +963,6 @@ class build_py_func(_build_py):
             # run the scripts
             p = subprocess.Popen(
                 [sys.executable, path])
-
-        return ret
 
     # override the build_module method to do VERSION substitution on
     # pkg/__init__.py

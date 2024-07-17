@@ -100,7 +100,9 @@ except KeyboardInterrupt:
 
 PKG_CLIENT_NAME = "pkgsurf"
 
+dry_run = False
 temp_root = None
+tracker = None
 repo_modified = False
 repo_finished = False
 repo_uri = None
