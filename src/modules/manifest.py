@@ -864,6 +864,7 @@ class Manifest:
                     found = True
                     # Ensure variant entries exist (debug
                     # variants may not) via defaultdict.
+                    # pylint: disable-next=expression-not-assigned
                     variants["variant.{0}".format(v)]
             elif aname[:8] == "variant.":
                 for v in a.attrlist("value"):

@@ -603,7 +603,7 @@ class Version:
         raise ValueError("constraint has unknown value")
 
     @classmethod
-    def split(self, ver):
+    def split(cls, ver):
         """Takes an assumed valid version string and splits it into
         its components as a tuple of the form ((release, build_release,
         branch, timestr), short_ver)."""

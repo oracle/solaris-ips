@@ -460,7 +460,7 @@ def main_func():
     for message in errors:
         error(message, exitcode=None)
     if errors:
-        exit(EXIT_OOPS)
+        sys.exit(EXIT_OOPS)
 
     return EXIT_OK
 
