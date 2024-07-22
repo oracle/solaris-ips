@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2009, 2013 Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -89,7 +89,7 @@
 		type='method'
 		name='stop'
 		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-server %m %{restarter/contract}'
-		timeout_seconds='30' />
+		timeout_seconds='60' />
 
 	<property_group name='pkg' type='application'>
 		<propval name='pkg_root' type='astring' value='/' />
