@@ -652,7 +652,7 @@ class MatchingVersion(Version):
     __slots__ = ["match_latest", "__original"]
 
     def __init__(self, version_string, build_string=None):
-        if version_string is None or not len(version_string):
+        if not version_string:
             raise IllegalVersion("Version cannot be empty")
 
         if version_string == "latest":

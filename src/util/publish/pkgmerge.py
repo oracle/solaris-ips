@@ -410,7 +410,7 @@ def main_func():
         # timestamp
         for entry in processdict:
             if len(set([
-                    str(a).rsplit(":")[0]
+                    str(a).rsplit(":", maxsplit=1)[0]
                     for a in processdict[entry]
                     if a is not None
                 ])) > 1:

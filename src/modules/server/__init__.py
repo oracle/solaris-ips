@@ -24,5 +24,13 @@
 # Copyright (c) 2007, 2024, Oracle and/or its affiliates.
 #
 
-__all__ = ["catalog", "config", "depot", "face", "feed", "repository",
-    "transaction"]
+__all__ = [
+    "api",
+    "api_errors",
+    "depot",
+    "face",
+    "feed",
+    "query_parser",
+    "repository",
+    "transaction",
+]

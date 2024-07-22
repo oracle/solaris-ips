@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 #
 
 import GeoIP
@@ -68,7 +68,7 @@ while True:
 
     # Goofy date -> UTS
     d = time.mktime(time.strptime(d[1:], "%d/%b/%Y:%H:%M:%S"))
-    d = str(d).split(".")[0]
+    d = str(d).split(".", maxsplit=1)[0]
 
     # Figure out op and opargs
     opflds = fullop.split("/")

@@ -364,7 +364,7 @@ class WsgiDepot:
 
         rlangs = []
         for entry in request.headers.elements("Accept-Language"):
-            rlangs.append(str(entry).split(";")[0])
+            rlangs.append(str(entry).split(";", maxsplit=1)[0])
         for rl in rlangs:
             if os.path.exists(os.path.join(depot_bui.web_root, rl)):
                 return rl

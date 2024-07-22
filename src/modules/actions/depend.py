@@ -459,8 +459,7 @@ class DependencyAction(generic.Action):
             for k, v in sorted(act.attrs.items(), key=key_func):
                 # Newline breaks are only forced when there is
                 # more than one value for an attribute.
-                if not (isinstance(v, list) or
-                        isinstance(v, set)):
+                if not isinstance(v, (list, set)):
                     nv = [v]
                     use_force_nl = False
                 else:

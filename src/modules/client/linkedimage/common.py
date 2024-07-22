@@ -2274,7 +2274,7 @@ class LinkedImage:
 
         # keep going as long as there are children to process
         progtrack_update = False
-        while len(lic_setup) or len(lic_running):
+        while lic_setup or lic_running:
 
             while lic_setup and (
                 concurrency > len(lic_running) or

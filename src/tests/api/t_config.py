@@ -46,7 +46,7 @@ import pkg.config as cfg
 import pkg.portable as portable
 
 # The Thai word for package.
-TH_PACKAGE = u'บรรจุภัณฑ์'
+TH_PACKAGE = 'บรรจุภัณฑ์'
 
 
 class TestProperty(pkg5unittest.Pkg5TestCase):
@@ -200,7 +200,7 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
             # match.
             (("def", "bob cat"), ("str2", "bob cat")),
             (("def", "lynx"), ("str2", "bob cat")),
-            (("def", u'ซ'), ("str2", TH_PACKAGE)),
+            (("def", 'ซ'), ("str2", TH_PACKAGE)),
         ]
         self.__verify_equality(propcls, eqlist, nelist)
 
@@ -600,7 +600,7 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
         # value in the list).
         self.__verify_stringify(propcls, "slist", [
             (["box", "cat"], "box,cat"),
-            ([TH_PACKAGE, "profit"], u'บรรจุภัณฑ์,profit'),
+            ([TH_PACKAGE, "profit"], 'บรรจุภัณฑ์,profit'),
         ], debug=True)
 
     def test_puburi(self):
@@ -1148,7 +1148,7 @@ class TestConfig(_TestConfigBase):
     """
 
     _initial_files = {
-        0: u"""\
+        0: """\
 [CONFIGURATION]
 version = 0
 
@@ -1164,7 +1164,7 @@ str_default = {uni_txt}
 str_allowed = builtin
 str_noneallowed =
 list_basic = []
-list_default = [u'{uni_escape}', 'bob cat', 'profit']
+list_default = ['{uni_escape}', 'bob cat', 'profit']
 list_allowed = ['builtin']
 list_noneallowed = []
 
@@ -1281,7 +1281,7 @@ str_basic = {0}
         # Test unicode case with and without unicode data.
         #
         conf = cfg.Config(definitions=self._defs, version=1)
-        self.assertEqualDiff(u"""\
+        self.assertEqualDiff("""\
 [first_section]
 bool_basic = False
 str_basic = 
@@ -1289,7 +1289,7 @@ str_basic =
 """, str(conf))
 
         conf.set_property("first_section", "str_basic", TH_PACKAGE)
-        self.assertEqualDiff(u"""\
+        self.assertEqualDiff("""\
 [first_section]
 bool_basic = False
 str_basic = {0}
@@ -1390,7 +1390,7 @@ str_basic = bob cat
 
         # Verify configuration files with unknown sections or properties
         # can still be loaded.
-        content = u"""\
+        content = """\
 [CONFIGURATION]
 version = 0
 
@@ -1406,7 +1406,7 @@ unknown_property = {0}
 
         # Verify configuration files with unknown versions can still be
         # loaded.
-        content = u"""\
+        content = """\
 [CONFIGURATION]
 version = 2
 
@@ -1692,7 +1692,7 @@ class TestSMFConfig(_TestConfigBase):
     """
 
     _initial_files = {
-        0: u"""\
+        0: """\
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 <service_bundle type='manifest' name=':pkg-config'>
