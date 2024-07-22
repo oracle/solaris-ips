@@ -779,7 +779,7 @@ class RequestInterface(_Interface):
         """
         alist = []
         for entry in self._request.headers.elements("Accept-Language"):
-            alist.append(str(entry).split(";")[0])
+            alist.append(str(entry).split(";", maxsplit=0)[0])
 
         return alist
 

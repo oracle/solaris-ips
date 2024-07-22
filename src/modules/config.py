@@ -587,7 +587,7 @@ class PropList(PropDefined):
             self._is_allowed(v)
             nvalue.append(v)
 
-        if self.allowed and "" not in self.allowed and not len(nvalue):
+        if self.allowed and "" not in self.allowed and not nvalue:
             raise InvalidPropertyValueError(prop=self.name,
                 value=nvalue)
 
@@ -637,7 +637,7 @@ class PropDictionaryList(PropList):
             nvalue.append(v)
 
         # if we don't allow an empty list, raise an error
-        if self.allowed and "" not in self.allowed and not len(nvalue):
+        if self.allowed and "" not in self.allowed and not nvalue:
             raise InvalidPropertyValueError(prop=self.name,
                 value=nvalue)
         self._value = nvalue
@@ -726,11 +726,9 @@ class PropSimpleList(PropList):
         return result
 
     def __str__(self):
-        if self.value and len(self.value):
-            # Performing the join using a unicode string results in
-            # a single unicode string object.
-            return u",".join(self.value)
-        return u""
+        if self.value:
+            return ",".join(self.value)
+        return ""
 
 
 class PropPubURI(Property):
@@ -1061,12 +1059,12 @@ class Config:
         """Returns a unicode object representation of the configuration
         object.
         """
-        out = u""
+        out = ""
         for sec, props in self.get_properties():
-            out += u"[{0}]\n".format(sec.name)
+            out += "[{0}]\n".format(sec.name)
             for p in props:
-                out += u"{0} = {1}\n".format(p.name, str(p))
-            out += u"\n"
+                out += "{0} = {1}\n".format(p.name, str(p))
+            out += "\n"
         return out
 
     def _get_matching_property(self, section, name, default_type=Property):

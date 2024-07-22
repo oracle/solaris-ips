@@ -628,7 +628,7 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
             add file tmp/release-note-7 mode=0644 owner=root group=bin path=/usr/share/doc/release-notes/release-note-7 release-note=feature/pkg/self@0
             close """
 
-    multi_unicode = u"Eels are best smoked\nМоё судно на воздушной подушке полно угрей\nHovercraft can be smoked, too.\n"
+    multi_unicode = "Eels are best smoked\nМоё судно на воздушной подушке полно угрей\nHovercraft can be smoked, too.\n"
     multi_ascii = "multi-line release notes\nshould work too,\nwe'll see if they do.\n"
     misc_files = {
             "tmp/release-note-1": "bobcats are fun!",
@@ -715,19 +715,19 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
     def test_release_note_5(self):
         # test unicode character in release notes
         self.pkg("install -n hovercraft@1.0")
-        force_text(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-        force_text(self.output, "utf-8").index(u"Eels are best smoked")
+        force_text(self.output, "utf-8").index("Моё судно на воздушной подушке полно угрей")
+        force_text(self.output, "utf-8").index("Eels are best smoked")
         self.pkg("install -v hovercraft@1.0")
-        force_text(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-        force_text(self.output, "utf-8").index(u"Eels are best smoked")
+        force_text(self.output, "utf-8").index("Моё судно на воздушной подушке полно угрей")
+        force_text(self.output, "utf-8").index("Eels are best smoked")
         self.pkg("uninstall '*'")
 
     def test_release_note_6(self):
         # test parsable unicode
         self.pkg("install --parsable 0 hovercraft@1.0")
         self.pkg("history -n 1 -N")
-        force_text(self.output, "utf-8").index(u"Моё судно на воздушной подушке полно угрей")
-        force_text(self.output, "utf-8").index(u"Eels are best smoked")
+        force_text(self.output, "utf-8").index("Моё судно на воздушной подушке полно угрей")
+        force_text(self.output, "utf-8").index("Eels are best smoked")
         self.pkg("uninstall '*'")
 
     def test_release_note_7(self):
@@ -768,9 +768,9 @@ class TestPkgReleaseNotes(pkg5unittest.SingleDepotTestCase):
         # verify that temporary file is correctly written with /n characters
         self.pkg("-D GenerateNotesFile=1 install hovercraft@1.0")
         # find name of file containing release notes in output.
-        for field in force_text(self.output, "utf-8").split(u" "):
+        for field in force_text(self.output, "utf-8").split(" "):
             try:
-                if field.index(u"release-note"):
+                if field.index("release-note"):
                     break
             except:
                 pass
