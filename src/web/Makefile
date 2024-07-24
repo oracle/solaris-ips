@@ -23,44 +23,48 @@
 # Copyright (c) 2024, Oracle and/or its affiliates.
 #
 
-XGETTEXT =	/usr/gnu/bin/xgettext
-MSGFMT =	/usr/bin/msgfmt
-MKDIR = 	mkdir -p
 INSTALL:sh =	echo /opt/onbld/bin/$(uname -p)/stash file -v
 
 PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
-LOCALE_DIR =	$(PROTO_AREA)/usr/share/locale
+WEB_DIR = $(PROTO_AREA)/usr/share/lib/pkg/web
 
-LOCALES:sh =	grep -v "^\#" LINGUAS
-CATALOGS =	$(LOCALES:=.mo)
+WEB_FILES = \
+	*.shtml \
+	_themes/*.png \
+	_themes/default/en/* \
+	_themes/default/feed-icon-14x14.png \
+	_themes/opensolaris.com/en/* \
+	_themes/opensolaris.org/en/* \
+	_themes/opensolaris.org/feed-icon-14x14.png \
+	_themes/oracle.com/*.png \
+	_themes/oracle.com/en/* \
+	_themes/pkg-block-logo.svg \
+	_themes/sun.com/en/* \
+	_themes/yui-reset-font-grids_base-min.css \
+	en/* \
+	robots.txt
 
+# install same set of files in "en/" in "__LOCALE__/" as well
+# for localizable file package (regarding themes, install
+# theme "oracle.com" only)
+LOCALIZABLE_WEB_FILES = \
+	en/* \
+	_themes/oracle.com/en/*
 
-all: $(CATALOGS) pkg.pot
+all:
 
-%.mo: %.po
-	$(MSGFMT) -o $@ $^
-
-pkg.pot: POTFILES.in
-	$(XGETTEXT) --add-comments --keyword=N_ --from-code=UTF-8 -f POTFILES.in -D .. -o pkg.pot
-
-install: all
-	@for locale in $(LOCALES); do \
-		dir=$(LOCALE_DIR)/$$locale/LC_MESSAGES; \
-		$(INSTALL) $$locale.mo $$dir/pkg.mo; \
+install:
+	@for file in $(WEB_FILES); do \
+		$(INSTALL) -C $$file $(WEB_DIR)/$$file; \
 	done; \
-	dir=$(LOCALE_DIR)/__LOCALE__/LC_MESSAGES; \
-	$(INSTALL) pkg.pot $$dir/pkg.pot;
+	for file in $(LOCALIZABLE_WEB_FILES); do \
+		$(INSTALL) -C $$file $(WEB_DIR)/$${file/en/__LOCALE__}; \
+	done; \
+	# The apache-based depot includes an shtml file we add to the web dir \
+	$(INSTALL) -C ../util/apache2/depot/repos.shtml $(WEB_DIR)/repos.shtml
 
-check:
-	$(XGETTEXT) --keyword=N_ --from-code=UTF-8 -f POTFILES.in -D .. -o /dev/null 2>i18n_errs.txt
-	@if [ -s i18n_errs.txt ]; then \
-		echo "The following i18n errors were detected and should be corrected:"; \
-		echo "(this list is saved in i18n_errs.txt)"; \
-		cat i18n_errs.txt; \
-		exit 1; \
-	fi
+check lint:
 
 clean:
-	rm -f pkg.pot *.mo i18n_errs.txt
 
 clobber: clean

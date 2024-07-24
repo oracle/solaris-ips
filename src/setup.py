@@ -239,26 +239,6 @@ packages = [
         'pkg.server'
         ]
 
-web_files = []
-for entry in os.walk("web"):
-    web_dir, dirs, files = entry
-    if not files:
-        continue
-    web_files.append((os.path.join(resource_dir, web_dir), [
-        os.path.join(web_dir, f) for f in files
-        if f != "Makefile"
-        ]))
-    # install same set of files in "en/" in "__LOCALE__/ as well"
-    # for localizable file package (regarding themes, install
-    # theme "oracle.com" only)
-    if os.path.basename(web_dir) == "en" and \
-        os.path.dirname(web_dir) in ("web", "web/_themes/oracle.com"):
-        web_files.append((os.path.join(resource_dir,
-            os.path.dirname(web_dir), "__LOCALE__"), [
-                os.path.join(web_dir, f) for f in files
-                if f != "Makefile"
-            ]))
-
 smf_app_files = [
         'svc/pkg-auto-update.xml',
         'svc/pkg-depot.xml',
@@ -305,9 +285,6 @@ depot_log_stubs = [
         ]
 ignored_deps_files = []
 
-# The apache-based depot includes an shtml file we add to the resource dir
-web_files.append((os.path.join(resource_dir, "web"),
-    ["util/apache2/depot/repos.shtml"]))
 execattrd_files = [
         'util/misc/exec_attr.d/package:pkg',
 ]
@@ -1249,7 +1226,7 @@ ext_modules = [
 elf_libraries = None
 sysattr_libraries = None
 sha512_t_libraries = None
-data_files = web_files
+data_files = []
 cmdclasses = {
         'install': install_func,
         'install_data': install_data_func,

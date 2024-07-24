@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 PROG =	zoneproxyd
@@ -41,7 +41,7 @@ LINTFLAGS +=	-erroff=E_SEC_CREAT_WITHOUT_EXCL -U__PRAGMA_REDEFINE_EXTNAME
 .KEEP_STATE:
 
 $(ROOTHDR): $(ROOTHDIR) $(HDR)
-	$(INSTALL) -m 0644 -d $(ROOTHDIR) -f $(HDR)
+	$(INSTALL) -C -m 0644 $(HDR) $(ROOTHDIR)/$(HDR)
 
 $(ROOTHDIR):
 	$(MKDIR) -m 0755 $@

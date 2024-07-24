@@ -23,7 +23,7 @@
 # Copyright (c) 2020, 2024, Oracle and/or its affiliates.
 #
 
-INSTALL =	cp
+INSTALL:sh =	echo /opt/onbld/bin/$(uname -p)/stash file -v
 MKDIR = 	mkdir -p
 XML2ROFF =	/usr/share/xml/xsolbook/python/xml2roff.py --logfile nroff/xml2roff.log
 
@@ -76,25 +76,19 @@ nroff/zh_CN.UTF-8/man1/% nroff/zh_CN.UTF-8/man7/% nroff/zh_CN.UTF-8/man8/%: zh_C
 install: all
 	@for lang in "" /ja_JP.UTF-8 /zh_CN.UTF-8; do \
 		dir=$(MAN_DIR)$$lang; \
-		$(MKDIR) $$dir/man1 $$dir/man7 $$dir/man8; \
 		for man in $(MAN1:%=man1/%) $(MAN7:%=man7/%) $(MAN8:%=man8/%); do \
-			echo "copying nroff$$lang/$$man -> $$dir/$$man"; \
 			$(INSTALL) nroff$$lang/$$man $$dir/$$man; \
 		done; \
 	done; \
 	# install English manpage sources to put into localizable file package \
 	dir=$(MAN_DIR)/__LOCALE__; \
-	$(MKDIR) $$dir/man1 $$dir/man7 $$dir/man8; \
 	for man in $(MAN1); do \
-		echo "copying $$man -> $$dir/man1/$$man"; \
 		$(INSTALL) $$man $$dir/man1/$$man; \
 	done; \
 	for man in $(MAN7); do \
-		echo "copying $$man -> $$dir/man7/$$man"; \
 		$(INSTALL) $$man $$dir/man7/$$man; \
 	done; \
 	for man in $(MAN8); do \
-		echo "copying $$man -> $$dir/man8/$$man"; \
 		$(INSTALL) $$man $$dir/man8/$$man; \
 	done
 

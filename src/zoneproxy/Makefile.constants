@@ -19,10 +19,10 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
 #
 
-INSTALL =	/usr/bin/python3.9 ../../setup.py installfile
+INSTALL:sh =	echo /opt/onbld/bin/$(uname -p)/stash file -v
 LINT =		lint
 MKDIR =		mkdir -p
 PROTO_AREA:sh =	echo $(hg root)/proto/root_$(uname -p)
@@ -47,9 +47,7 @@ lint_PROG:	$$(PROG).c
 	$(LINK.c) -o $@ $< $(LDLIBS)
 
 $(ZONES_PROG):	$(PROG)
-	$(RM) $(ZONES_LIBDIR)/$(PROG); \
-		$(MKDIR) -m 0755 $(ZONES_LIBDIR); \
-		$(INSTALL) -m 0555 -d $(ZONES_LIBDIR) -f $(PROG)
+	$(INSTALL) -m 0555 $(PROG) $(ZONES_LIBDIR)/$(PROG)
 
 clean:
 	-$(RM) $(CLEANFILES)

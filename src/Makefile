@@ -42,7 +42,7 @@ test-generate := TARGET = test-generate
 PYCODESTYLE = /usr/bin/pycodestyle
 JOBS = 4
 
-SUBDIRS=zoneproxy util/mkcert man po
+SUBDIRS=zoneproxy util/mkcert man po web
 
 PROTO_AREA:sh = echo $(dirname $(pwd))/proto/root_$(uname -p)
 PROTO_VENDOR_PACKAGES = $(PROTO_AREA)/usr/lib/python3.9/vendor-packages
