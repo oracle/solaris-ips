@@ -42,7 +42,7 @@ test-generate := TARGET = test-generate
 PYCODESTYLE = /usr/bin/pycodestyle
 JOBS = 4
 
-SUBDIRS=zoneproxy util/mkcert man po web
+SUBDIRS=zoneproxy util/mkcert man po svc web
 
 PROTO_AREA:sh = echo $(dirname $(pwd))/proto/root_$(uname -p)
 PROTO_VENDOR_PACKAGES = $(PROTO_AREA)/usr/lib/python3.9/vendor-packages
@@ -80,7 +80,7 @@ install: $(SUBDIRS)
 	$(PYTHON39) setup.py install
 	$(PYTHON311) setup.py install
 
-lint: pylint
+lint: pylint svc
 	$(PYTHON39) setup.py lint
 	$(PYTHON311) setup.py lint
 	@cd zoneproxy; pwd; make lint

@@ -107,8 +107,6 @@ resource_dir = 'usr/share/lib/pkg'
 rad_dir = 'usr/share/lib/pkg'
 transform_dir = 'usr/share/pkg/transforms'
 ignored_deps_dir = 'usr/share/pkg/ignored_deps'
-smf_app_dir = 'lib/svc/manifest/application/pkg'
-smf_profile_dir = 'etc/svc/profile/system'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
 userattrd_dir = 'etc/user_attr.d'
@@ -239,21 +237,6 @@ packages = [
         'pkg.server'
         ]
 
-smf_app_files = [
-        'svc/pkg-auto-update.xml',
-        'svc/pkg-depot.xml',
-        'svc/pkg-mdns.xml',
-        'svc/pkg-mirror.xml',
-        'svc/pkg-repositories-setup.xml',
-        'svc/pkg-server.xml',
-        'svc/pkg-system-repository.xml',
-        'svc/pkg-sysrepo-cache.xml',
-        'svc/zoneproxy-client.xml',
-        'svc/zoneproxyd.xml'
-        ]
-smf_profile_files = [
-        'svc/pkg-auto-update-cleanup-enable.xml'
-        ]
 resource_files = [
         'util/opensolaris.org.sections',
         'util/pkglintrc',
@@ -437,23 +420,6 @@ class clint_func(Command):
             os.system(" ".join(sha512_tcmd))
 
 
-class smflint_func(Command):
-    description = "Validate SMF manifests"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        for manifest in smf_app_files:
-            args = [ "/usr/sbin/svccfg", "validate", manifest ]
-            print(f"SMF manifest validate: {manifest}")
-            run_cmd(args, os.getcwd())
-
-
 # Runs both C and Python lint
 class lint_func(Command):
     description = "Runs C and Python lint checkers"
@@ -471,7 +437,6 @@ class lint_func(Command):
         return astring.replace(' ', '\\ ')
 
     def run(self):
-        smflint_func(Distribution()).run()
         clint_func(Distribution()).run()
 
 
@@ -1259,8 +1224,6 @@ data_files += [
 if osname == 'sunos':
     # Solaris-specific extensions are added here
     data_files += [
-            (smf_app_dir, smf_app_files),
-            (smf_profile_dir, smf_profile_files),
             (execattrd_dir, execattrd_files),
             (authattrd_dir, authattrd_files),
             (userattrd_dir, userattrd_files),
