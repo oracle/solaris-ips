@@ -1456,15 +1456,21 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
             # consumer from creating a noop plan and then
             # preparing and executing it.)
             __api_plan_save(_api_inst, logger=logger)
-        # for pkg verify or fix.
+        # The branch for fix and verify has to be handled first, to
+        # return the exit code from the run instead of the generic
+        # EXIT_NOP. When there is nothing to do we consider this a
+        # success for verification.
         if _op in [PKG_OP_FIX, PKG_OP_VERIFY] and _noexecute and \
             _quiet_plan:
             exit_code = __verify_exit_status(_api_inst)
             return __prepare_json(exit_code, data=data)
         if _api_inst.planned_nothingtodo():
             return __prepare_json(EXIT_NOP, data=data)
-        if _noexecute or _stage == API_STAGE_PLAN:
+        if _stage == API_STAGE_PLAN:
             return __prepare_json(EXIT_OK, data=data)
+        if _noexecute:
+            exit_code = __verify_exit_status(_api_inst)
+            return __prepare_json(exit_code, data=data)
     else:
         assert _stage in [API_STAGE_PREPARE, API_STAGE_EXECUTE]
         __api_plan_load(_api_inst, _stage, _origins, logger=logger)
