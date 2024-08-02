@@ -3849,8 +3849,8 @@ class ImagePlan:
                           self.pd._bytes_avail,
                           _("Root filesystem"))
                 timestamp = misc.time_to_timestamp(time.time())
-                self.pd.add_item_message("warning",
-                    timestamp, MSG_WARNING, _(msg))
+                self.pd.add_item_message("errors",
+                    timestamp, MSG_ERROR, _(msg))
             else:
                 raise api_errors.ImageInsufficentSpace(
                     self.pd._bytes_added,
@@ -3894,7 +3894,7 @@ class ImagePlan:
             if self.__noexecute or self.image.is_zone():
                 medmsg = self.__make_med_msg()
                 timestamp = misc.time_to_timestamp(time.time())
-                self.pd.add_item_message("warning", timestamp,
+                self.pd.add_item_message("warnings", timestamp,
                                          MSG_WARNING, medmsg)
 
     def __update_avail_space(self):

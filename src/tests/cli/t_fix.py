@@ -309,7 +309,7 @@ adm:NP:6445::::::
         # Verify that unprivileged users are handled by fix.
         self.pkg("fix amber", exit=1, su_wrap=True)
 
-        self.pkg("fix --unpackaged -nv amber")
+        self.pkg("fix --unpackaged -nv amber", exit=1)
         self.assertTrue("----" in self.output and "UNPACKAGED" in
             self.output)
 
