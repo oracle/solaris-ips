@@ -1557,12 +1557,12 @@ class ProgressTracker(ProgressTrackerFrontend, ProgressTrackerBackend):
     def job_start(self, jobid, goal=None):
         jobitem = self._jobitems[jobid]
         jobitem.reset()
-        outspec = OutSpec()
         if goal:
             if not isinstance(jobitem, GoalTrackerItem):
                 raise RuntimeError(
                     "can't set goal on non-goal tracker")
             jobitem.goalitems = goal
+        outspec = OutSpec(first=True)
         jobitem.printed = True
         self._job_output(outspec, jobitem)
 
@@ -2152,7 +2152,7 @@ class CommandLineProgressTracker(ProgressTracker):
     def _republish_output(self, outspec):
         if "startpkg" in outspec.changed:
             pkgfmri = self.repub_pkgs.curinfo
-            self.__generic_start(_("Republish: {0} ... ").format(
+            self.__generic_start(_("Republish: {0} ...").format(
                 pkgfmri.get_fmri(anarchy=True)))
         if "endpkg" in outspec.changed:
             self.__generic_done()
@@ -2214,14 +2214,14 @@ class CommandLineProgressTracker(ProgressTracker):
 
     def _job_output(self, outspec, jobitem):
         if outspec.first:
-            self.__generic_start("{0} ... ".format(jobitem.name))
+            self.__generic_start("{0} ...".format(jobitem.name))
         if outspec.last:
             self.__generic_done_item(jobitem)
 
     def _lint_output(self, outspec):
         if outspec.first:
             if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
-                self._pe.cprint("{0} ... ".format(
+                self._pe.cprint("{0} ...".format(
                     self.lintitems.name), end='')
             elif self.lint_phasetype == self.LINT_PHASETYPE_EXECUTE:
                 self._pe.cprint("# --- {0} ---".format(
@@ -2524,7 +2524,7 @@ class RADProgressTracker(CommandLineProgressTracker):
     def _republish_output(self, outspec):
         if "startpkg" in outspec.changed:
             pkgfmri = self.repub_pkgs.curinfo
-            self.__generic_start(_("Republish: {0} ... ").format(
+            self.__generic_start(_("Republish: {0} ...").format(
                 pkgfmri.get_fmri(anarchy=True)))
         if "endpkg" in outspec.changed:
             self.__generic_done()
@@ -2599,14 +2599,14 @@ class RADProgressTracker(CommandLineProgressTracker):
 
     def _job_output(self, outspec, jobitem):
         if outspec.first:
-            self.__generic_start("{0} ... ".format(jobitem.name))
+            self.__generic_start("{0} ...".format(jobitem.name))
         if outspec.last:
             self.__generic_done_item(jobitem)
 
     def _lint_output(self, outspec):
         if outspec.first:
             if self.lint_phasetype == self.LINT_PHASETYPE_SETUP:
-                msg = "{0} ... ".format(
+                msg = "{0} ...".format(
                     self.lintitems.name)
                 prog_json = {self.O_PHASE: _("Setup"),
                     self.O_MESSAGE: msg
