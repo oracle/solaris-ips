@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2024-06-14T13:34:53Z",
+  "generated_at": "2024-07-24T08:25:40Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0,
@@ -12,19 +12,6 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 15,
-      "nosec": 0,
-      "skipped_tests": 0
-    },
-    "./cffi_src/build_pspawn.py": {
-      "CONFIDENCE.HIGH": 0,
-      "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 0,
-      "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 0,
-      "SEVERITY.MEDIUM": 0,
-      "SEVERITY.UNDEFINED": 0,
-      "loc": 44,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -154,7 +141,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 375,
+      "loc": 374,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -505,7 +492,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2715,
+      "loc": 2713,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -804,7 +791,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2164,
+      "loc": 2163,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1077,7 +1064,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 8,
+      "loc": 9,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1194,7 +1181,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 773,
+      "loc": 772,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1562,19 +1549,6 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "./modules/pspawn.py": {
-      "CONFIDENCE.HIGH": 0,
-      "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 0,
-      "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 0,
-      "SEVERITY.MEDIUM": 0,
-      "SEVERITY.UNDEFINED": 0,
-      "loc": 115,
-      "nosec": 0,
-      "skipped_tests": 0
-    },
     "./modules/publish/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -1662,7 +1636,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2,
+      "loc": 10,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1927,15 +1901,15 @@
       "skipped_tests": 0
     },
     "./setup.py": {
-      "CONFIDENCE.HIGH": 18,
+      "CONFIDENCE.HIGH": 17,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 10,
+      "SEVERITY.HIGH": 9,
       "SEVERITY.LOW": 8,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1079,
+      "loc": 1059,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2247,7 +2221,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 594,
+      "loc": 596,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2291,15 +2265,15 @@
       "skipped_tests": 0
     },
     "_totals": {
-      "CONFIDENCE.HIGH": 147,
+      "CONFIDENCE.HIGH": 146,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 14,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 28,
+      "SEVERITY.HIGH": 27,
       "SEVERITY.LOW": 106,
       "SEVERITY.MEDIUM": 27,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 95621,
+      "loc": 95448,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -3305,7 +3279,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "1724         return os.path.join(self.__origin_root,\n1725             hashlib.sha1(misc.force_bytes(origin.uri)).hexdigest())\n1726 \n",
+      "code": "1723         return os.path.join(self.__origin_root,\n1724             hashlib.sha1(misc.force_bytes(origin.uri)).hexdigest())\n1725 \n",
       "col_offset": 12,
       "end_col_offset": 54,
       "filename": "./modules/client/publisher.py",
@@ -3316,16 +3290,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 1725,
+      "line_number": 1724,
       "line_range": [
-        1725
+        1724
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "1742         ohashes = [\n1743             hashlib.sha1(misc.force_bytes(o.uri)).hexdigest()\n1744             for o in self.repository.origins\n",
+      "code": "1741         ohashes = [\n1742             hashlib.sha1(misc.force_bytes(o.uri)).hexdigest()\n1743             for o in self.repository.origins\n",
       "col_offset": 12,
       "end_col_offset": 49,
       "filename": "./modules/client/publisher.py",
@@ -3336,16 +3310,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 1743,
+      "line_number": 1742,
       "line_range": [
-        1743
+        1742
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "1753                     continue\n1754             except Exception:\n1755                 # Discard anything that isn't an origin.\n1756                 pass\n1757 \n",
+      "code": "1752                     continue\n1753             except Exception:\n1754                 # Discard anything that isn't an origin.\n1755                 pass\n1756 \n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/client/publisher.py",
@@ -3356,18 +3330,18 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1754,
+      "line_number": 1753,
       "line_range": [
+        1753,
         1754,
-        1755,
-        1756
+        1755
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "2317         # here.\n2318         return hashlib.sha1(\n2319             c.public_bytes(serialization.Encoding.PEM)).hexdigest()\n2320 \n",
+      "code": "2316         # here.\n2317         return hashlib.sha1(\n2318             c.public_bytes(serialization.Encoding.PEM)).hexdigest()\n2319 \n",
       "col_offset": 15,
       "end_col_offset": 55,
       "filename": "./modules/client/publisher.py",
@@ -3378,17 +3352,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2318,
+      "line_number": 2317,
       "line_range": [
-        2318,
-        2319
+        2317,
+        2318
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2360         # inconsistent with OpenSSL.\n2361         subj_hsh = hashlib.sha1(misc.force_bytes(\n2362             cert.subject)).hexdigest()\n2363         c = 0\n",
+      "code": "2359         # inconsistent with OpenSSL.\n2360         subj_hsh = hashlib.sha1(misc.force_bytes(\n2361             cert.subject)).hexdigest()\n2362         c = 0\n",
       "col_offset": 19,
       "end_col_offset": 26,
       "filename": "./modules/client/publisher.py",
@@ -3399,17 +3373,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2361,
+      "line_number": 2360,
       "line_range": [
-        2361,
-        2362
+        2360,
+        2361
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2452         count = 0\n2453         name_hsh = hashlib.sha1(misc.force_bytes(name)).hexdigest()\n2454 \n",
+      "code": "2451         count = 0\n2452         name_hsh = hashlib.sha1(misc.force_bytes(name)).hexdigest()\n2453 \n",
       "col_offset": 19,
       "end_col_offset": 55,
       "filename": "./modules/client/publisher.py",
@@ -3420,16 +3394,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2453,
+      "line_number": 2452,
       "line_range": [
-        2453
+        2452
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2497             c = self.get_cert_by_hash(h, verify_hash=True)\n2498             s = hashlib.sha1(misc.force_bytes(\n2499                 c.subject)).hexdigest()\n2500             self.ca_dict.setdefault(s, [])\n",
+      "code": "2496             c = self.get_cert_by_hash(h, verify_hash=True)\n2497             s = hashlib.sha1(misc.force_bytes(\n2498                 c.subject)).hexdigest()\n2499             self.ca_dict.setdefault(s, [])\n",
       "col_offset": 16,
       "end_col_offset": 27,
       "filename": "./modules/client/publisher.py",
@@ -3440,17 +3414,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2498,
+      "line_number": 2497,
       "line_range": [
-        2498,
-        2499
+        2497,
+        2498
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2612         crl_issuer = crl.issuer\n2613         tas = ca_dict.get(hashlib.sha1(misc.force_bytes(\n2614             crl_issuer)).hexdigest(), [])\n2615         for t in tas:\n",
+      "code": "2611         crl_issuer = crl.issuer\n2612         tas = ca_dict.get(hashlib.sha1(misc.force_bytes(\n2613             crl_issuer)).hexdigest(), [])\n2614         for t in tas:\n",
       "col_offset": 26,
       "end_col_offset": 24,
       "filename": "./modules/client/publisher.py",
@@ -3461,17 +3435,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2613,
+      "line_number": 2612,
       "line_range": [
-        2613,
-        2614
+        2612,
+        2613
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2839             issuer = cert.issuer\n2840             issuer_hash = hashlib.sha1(misc.force_bytes(\n2841                 issuer)).hexdigest()\n2842 \n",
+      "code": "2838             issuer = cert.issuer\n2839             issuer_hash = hashlib.sha1(misc.force_bytes(\n2840                 issuer)).hexdigest()\n2841 \n",
       "col_offset": 26,
       "end_col_offset": 24,
       "filename": "./modules/client/publisher.py",
@@ -3482,17 +3456,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2840,
+      "line_number": 2839,
       "line_range": [
-        2840,
-        2841
+        2839,
+        2840
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2862             # be rejected.\n2863             if hashlib.sha1(misc.force_bytes(\n2864                 cert.subject)).hexdigest() == issuer_hash:\n2865                 if not verified:\n",
+      "code": "2861             # be rejected.\n2862             if hashlib.sha1(misc.force_bytes(\n2863                 cert.subject)).hexdigest() == issuer_hash:\n2864                 if not verified:\n",
       "col_offset": 15,
       "end_col_offset": 30,
       "filename": "./modules/client/publisher.py",
@@ -3503,10 +3477,10 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2863,
+      "line_number": 2862,
       "line_range": [
-        2863,
-        2864
+        2862,
+        2863
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
@@ -3614,7 +3588,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "1779             self._target)\n1780         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,\n1781             stderr=subprocess.PIPE)\n1782         out, err = p.communicate()\n",
+      "code": "1777             self._target)\n1778         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,\n1779             stderr=subprocess.PIPE)\n1780         out, err = p.communicate()\n",
       "col_offset": 12,
       "end_col_offset": 35,
       "filename": "./modules/config.py",
@@ -3625,10 +3599,10 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "subprocess call with shell=True identified, security issue.",
-      "line_number": 1780,
+      "line_number": 1778,
       "line_range": [
-        1780,
-        1781
+        1778,
+        1779
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b602_subprocess_popen_with_shell_equals_true.html",
       "test_id": "B602",
@@ -4004,7 +3978,7 @@
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "988                 raise\n989             except Exception:\n990                 pass\n991 \n",
+      "code": "987                 raise\n988             except Exception:\n989                 pass\n990 \n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/indexer.py",
@@ -4015,10 +3989,10 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 989,
+      "line_number": 988,
       "line_range": [
-        989,
-        990
+        988,
+        989
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -4070,7 +4044,7 @@
       "test_name": "hashlib"
     },
     {
-      "code": "1347         # older clients.\n1348         sha_1 = hashlib.sha1()\n1349         if isinstance(mfstcontent, str):\n",
+      "code": "1348         # older clients.\n1349         sha_1 = hashlib.sha1()\n1350         if isinstance(mfstcontent, str):\n",
       "col_offset": 16,
       "end_col_offset": 30,
       "filename": "./modules/manifest.py",
@@ -4081,16 +4055,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 1348,
+      "line_number": 1349,
       "line_range": [
-        1348
+        1349
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "1751                 os.rmdir(cache_root)\n1752             except:\n1753                 pass\n1754         except EnvironmentError as e:\n",
+      "code": "1752                 os.rmdir(cache_root)\n1753             except:\n1754                 pass\n1755         except EnvironmentError as e:\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/manifest.py",
@@ -4101,17 +4075,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1752,
+      "line_number": 1753,
       "line_range": [
-        1752,
-        1753
+        1753,
+        1754
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1789                     self.clear_cache(self.__cache_root)\n1790                 except Exception as e:\n1791                     # Ignore errors encountered during cache\n1792                     # dump for this specific case.\n1793                     pass\n1794 \n",
+      "code": "1790                     self.clear_cache(self.__cache_root)\n1791                 except Exception as e:\n1792                     # Ignore errors encountered during cache\n1793                     # dump for this specific case.\n1794                     pass\n1795 \n",
       "col_offset": 16,
       "end_col_offset": 24,
       "filename": "./modules/manifest.py",
@@ -4122,12 +4096,12 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1790,
+      "line_number": 1791,
       "line_range": [
-        1790,
         1791,
         1792,
-        1793
+        1793,
+        1794
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
@@ -4973,9 +4947,89 @@
       "test_name": "blacklist"
     },
     {
-      "code": "441             print(\" \".join(archcmd))\n442             os.system(\" \".join(archcmd))\n443             print(\" \".join(elfcmd))\n",
+      "code": "433             print(\" \".join(archcmd))\n434             os.system(\" \".join(archcmd))\n435             print(\" \".join(elfcmd))\n",
       "col_offset": 12,
       "end_col_offset": 40,
+      "filename": "./setup.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "HIGH",
+      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
+      "line_number": 434,
+      "line_range": [
+        434
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
+      "test_id": "B605",
+      "test_name": "start_process_with_a_shell"
+    },
+    {
+      "code": "435             print(\" \".join(elfcmd))\n436             os.system(\" \".join(elfcmd))\n437             print(\" \".join(_actionscmd))\n",
+      "col_offset": 12,
+      "end_col_offset": 39,
+      "filename": "./setup.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "HIGH",
+      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
+      "line_number": 436,
+      "line_range": [
+        436
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
+      "test_id": "B605",
+      "test_name": "start_process_with_a_shell"
+    },
+    {
+      "code": "437             print(\" \".join(_actionscmd))\n438             os.system(\" \".join(_actionscmd))\n439             print(\" \".join(_actcommcmd))\n",
+      "col_offset": 12,
+      "end_col_offset": 44,
+      "filename": "./setup.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "HIGH",
+      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
+      "line_number": 438,
+      "line_range": [
+        438
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
+      "test_id": "B605",
+      "test_name": "start_process_with_a_shell"
+    },
+    {
+      "code": "439             print(\" \".join(_actcommcmd))\n440             os.system(\" \".join(_actcommcmd))\n441             print(\" \".join(_varcetcmd))\n",
+      "col_offset": 12,
+      "end_col_offset": 44,
+      "filename": "./setup.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "HIGH",
+      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
+      "line_number": 440,
+      "line_range": [
+        440
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
+      "test_id": "B605",
+      "test_name": "start_process_with_a_shell"
+    },
+    {
+      "code": "441             print(\" \".join(_varcetcmd))\n442             os.system(\" \".join(_varcetcmd))\n443             print(\" \".join(_misccmd))\n",
+      "col_offset": 12,
+      "end_col_offset": 43,
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
@@ -4993,9 +5047,9 @@
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "443             print(\" \".join(elfcmd))\n444             os.system(\" \".join(elfcmd))\n445             print(\" \".join(_actionscmd))\n",
+      "code": "443             print(\" \".join(_misccmd))\n444             os.system(\" \".join(_misccmd))\n445             print(\" \".join(syscallatcmd))\n",
       "col_offset": 12,
-      "end_col_offset": 39,
+      "end_col_offset": 41,
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
@@ -5013,9 +5067,9 @@
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "445             print(\" \".join(_actionscmd))\n446             os.system(\" \".join(_actionscmd))\n447             print(\" \".join(_actcommcmd))\n",
+      "code": "445             print(\" \".join(syscallatcmd))\n446             os.system(\" \".join(syscallatcmd))\n447             print(\" \".join(sysattrcmd))\n",
       "col_offset": 12,
-      "end_col_offset": 44,
+      "end_col_offset": 45,
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
@@ -5033,9 +5087,9 @@
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "447             print(\" \".join(_actcommcmd))\n448             os.system(\" \".join(_actcommcmd))\n449             print(\" \".join(_varcetcmd))\n",
+      "code": "447             print(\" \".join(sysattrcmd))\n448             os.system(\" \".join(sysattrcmd))\n449             print(\" \".join(sha512_tcmd))\n",
       "col_offset": 12,
-      "end_col_offset": 44,
+      "end_col_offset": 43,
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
@@ -5053,9 +5107,9 @@
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "449             print(\" \".join(_varcetcmd))\n450             os.system(\" \".join(_varcetcmd))\n451             print(\" \".join(_misccmd))\n",
+      "code": "449             print(\" \".join(sha512_tcmd))\n450             os.system(\" \".join(sha512_tcmd))\n451 \n",
       "col_offset": 12,
-      "end_col_offset": 43,
+      "end_col_offset": 44,
       "filename": "./setup.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
@@ -5073,107 +5127,7 @@
       "test_name": "start_process_with_a_shell"
     },
     {
-      "code": "451             print(\" \".join(_misccmd))\n452             os.system(\" \".join(_misccmd))\n453             print(\" \".join(pspawncmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 41,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 452,
-      "line_range": [
-        452
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "453             print(\" \".join(pspawncmd))\n454             os.system(\" \".join(pspawncmd))\n455             print(\" \".join(syscallatcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 42,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 454,
-      "line_range": [
-        454
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "455             print(\" \".join(syscallatcmd))\n456             os.system(\" \".join(syscallatcmd))\n457             print(\" \".join(sysattrcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 45,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 456,
-      "line_range": [
-        456
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "457             print(\" \".join(sysattrcmd))\n458             os.system(\" \".join(sysattrcmd))\n459             print(\" \".join(sha512_tcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 43,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 458,
-      "line_range": [
-        458
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "459             print(\" \".join(sha512_tcmd))\n460             os.system(\" \".join(sha512_tcmd))\n461 \n",
-      "col_offset": 12,
-      "end_col_offset": 44,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 460,
-      "line_range": [
-        460
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "562                 os.unlink(dest)\n563             except Exception:\n564                 pass\n565             os.symlink(target, dest)\n",
+      "code": "552                 os.unlink(dest)\n553             except Exception:\n554                 pass\n555             os.symlink(target, dest)\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./setup.py",
@@ -5184,17 +5138,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 563,
+      "line_number": 553,
       "line_range": [
-        563,
-        564
+        553,
+        554
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "640         stderr = None\n641     ret = subprocess.Popen(args, cwd=swdir, env=env,\n642         stderr=stderr).wait()\n643     if ret != 0:\n",
+      "code": "630         stderr = None\n631     ret = subprocess.Popen(args, cwd=swdir, env=env,\n632         stderr=stderr).wait()\n633     if ret != 0:\n",
       "col_offset": 10,
       "end_col_offset": 22,
       "filename": "./setup.py",
@@ -5205,17 +5159,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 641,
+      "line_number": 631,
       "line_range": [
-        641,
-        642
+        631,
+        632
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "791     try:\n792         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n793         return p.communicate()[0].strip()\n",
+      "code": "781     try:\n782         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n783         return p.communicate()[0].strip()\n",
       "col_offset": 12,
       "end_col_offset": 85,
       "filename": "./setup.py",
@@ -5226,16 +5180,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Starting a process with a partial executable path",
-      "line_number": 792,
+      "line_number": 782,
       "line_range": [
-        792
+        782
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b607_start_process_with_partial_path.html",
       "test_id": "B607",
       "test_name": "start_process_with_partial_path"
     },
     {
-      "code": "791     try:\n792         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n793         return p.communicate()[0].strip()\n",
+      "code": "781     try:\n782         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n783         return p.communicate()[0].strip()\n",
       "col_offset": 12,
       "end_col_offset": 85,
       "filename": "./setup.py",
@@ -5246,16 +5200,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 792,
+      "line_number": 782,
       "line_range": [
-        792
+        782
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "936 \n937         p = subprocess.Popen(\n938             [\"/usr/bin/python3.9\", os.path.join(pwd, \"pydates\")],\n939             stdout=subprocess.PIPE, text=True)\n940 \n",
+      "code": "926 \n927         p = subprocess.Popen(\n928             [\"/usr/bin/python3.9\", os.path.join(pwd, \"pydates\")],\n929             stdout=subprocess.PIPE, text=True)\n930 \n",
       "col_offset": 12,
       "end_col_offset": 46,
       "filename": "./setup.py",
@@ -5266,18 +5220,18 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 937,
+      "line_number": 927,
       "line_range": [
-        937,
-        938,
-        939
+        927,
+        928,
+        929
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "963             # run the scripts\n964             p = subprocess.Popen(\n965                 [sys.executable, path])\n966 \n",
+      "code": "953             # run the scripts\n954             p = subprocess.Popen(\n955                 [sys.executable, path])\n956 \n",
       "col_offset": 16,
       "end_col_offset": 39,
       "filename": "./setup.py",
@@ -5288,17 +5242,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 964,
+      "line_number": 954,
       "line_range": [
-        964,
-        965
+        954,
+        955
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "1178             cmd.extend(args)\n1179         subprocess.call(cmd)\n1180 \n",
+      "code": "1166             cmd.extend(args)\n1167         subprocess.call(cmd)\n1168 \n",
       "col_offset": 8,
       "end_col_offset": 28,
       "filename": "./setup.py",
@@ -5309,9 +5263,9 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1179,
+      "line_number": 1167,
       "line_range": [
-        1179
+        1167
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
