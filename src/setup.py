@@ -283,9 +283,6 @@ sysattr_srcs = [
 syscallat_srcs = [
         'cffi_src/_syscallat.c'
         ]
-pspawn_srcs = [
-        'cffi_src/_pspawn.c'
-        ]
 elf_srcs = [
         'modules/elf.c',
         'modules/elfextract.c',
@@ -375,11 +372,6 @@ class clint_func(Command):
                 ["{0}{1}".format("-I", k) for k in include_dirs] + \
                 ['-I' + self.escape(get_python_inc())] + \
                 _misc_srcs
-            pspawncmd = lint + lint_flags + \
-                ['-D_FILE_OFFSET_BITS=64'] + \
-                ["{0}{1}".format("-I", k) for k in include_dirs] + \
-                ['-I' + self.escape(get_python_inc())] + \
-                pspawn_srcs
             syscallatcmd = lint + lint_flags + \
                 ['-D_FILE_OFFSET_BITS=64'] + \
                 ["{0}{1}".format("-I", k) for k in include_dirs] + \
@@ -410,8 +402,6 @@ class clint_func(Command):
             os.system(" ".join(_varcetcmd))
             print(" ".join(_misccmd))
             os.system(" ".join(_misccmd))
-            print(" ".join(pspawncmd))
-            os.system(" ".join(pspawncmd))
             print(" ".join(syscallatcmd))
             os.system(" ".join(syscallatcmd))
             print(" ".join(sysattrcmd))
@@ -1264,15 +1254,6 @@ if osname == 'sunos' or osname == "linux":
                 Extension(
                         '_arch',
                         arch_srcs,
-                        include_dirs = include_dirs,
-                        extra_compile_args = compile_args,
-                        extra_link_args = link_args,
-                        define_macros = [('_FILE_OFFSET_BITS', '64')],
-                        build_64 = True
-                        ),
-                Extension(
-                        '_pspawn',
-                        pspawn_srcs,
                         include_dirs = include_dirs,
                         extra_compile_args = compile_args,
                         extra_link_args = link_args,
