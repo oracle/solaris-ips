@@ -280,6 +280,9 @@ dir  path=var/log/pkg/mirror
 group groupname=pkg5srv gid=97
 user username=pkg5srv gcos-field="pkg(7) server UID" group=pkg5srv password=NP \
     uid=97
+license lic_yui license="BSD (YUI)" com.oracle.info.baid=174547 \
+    com.oracle.info.description="two css files from YUI 2.7.0" \
+    com.oracle.info.name=YUI com.oracle.info.version=2.7.0
 license lic_gustaebel license="MIT (Lars Gustaebel)" \
     com.oracle.info.baid=17831 \
     com.oracle.info.description="portions of the tarfile module from Python 2.4" \

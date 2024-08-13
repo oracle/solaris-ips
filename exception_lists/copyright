@@ -37,3 +37,4 @@ doc/*
 src/tests/*.txt
 src/po/LINGUAS
 src/po/POTFILES.*
+src/pkg/license_files/lic_*
