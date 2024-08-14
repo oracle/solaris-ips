@@ -40,13 +40,23 @@ class Firmware:
         self._cache = {}  # cache of things we've checked already
 
     def _check(self, dep_action, which):
-        """Performs the subprocess invocation and returns
-        (status, outputbuffer) to the caller"""
+        """Verifies that system meets given requirements and returns cached:
+        {
+            "ret": return code,
+            "buf": output buffer,
+            "args": command and arguments passed to subprocess
+        }
+        """
+
+        if DebugValues["firmware-dependency-bypass"]:
+            return {"ret": 0, "buf": None, "args": None}
+
+        # ignore non-solaris systems here
+        if portable.osname != "sunos":
+            return {"ret": 0, "buf": None, "args": None}
 
         # leverage smf test infrastructure
         cmds_dir = DebugValues["smf_cmds_dir"]
-        if DebugValues["firmware-dependency-bypass"]:
-            return (True, None)
         if cmds_dir:  # we're testing;
             firmware_dir = cmds_dir
         else:
@@ -62,10 +72,6 @@ class Firmware:
 
         # use a cache since each check may be expensive and each
         # pkg version may have the same dependency.
-        # ignore non-solaris systems here
-
-        if portable.osname != "sunos" and key not in self._cache:
-            self._cache[key] = (True, None)
 
         if key not in self._cache:
             # Set up the default return values
