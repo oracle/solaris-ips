@@ -276,22 +276,19 @@ class Actuator:
                 raise
 
     def exec_prep(self, image):
-        if not image.is_liveroot():
-            # we're doing off-line pkg ops; we need
-            # to support self-assembly milestone
-            # so create the necessary marker file
+        # To support self-assembly milestone, we need to create
+        # the necessary marker file. This is done even for the
+        # liveroot image as it might be needed for immutable zones
+        # and read-only file systems.
 
-            if image.type != IMG_USER:
-                path = os.path.join(image.root,
-                    ".SELF-ASSEMBLY-REQUIRED")
-                # create only if it doesn't exist
-                if not os.path.exists(path):
-                    os.close(os.open(path,
-                        os.O_EXCL  |
-                        os.O_CREAT |
-                        os.O_WRONLY))
-            if not DebugValues["smf_cmds_dir"] and not self.zone:
-                return
+        if image.type != IMG_USER:
+            path = os.path.join(image.root, ".SELF-ASSEMBLY-REQUIRED")
+            # create only if it doesn't exist
+            if not os.path.exists(path):
+                os.close(os.open(path, os.O_EXCL | os.O_CREAT | os.O_WRONLY))
+
+        if not DebugValues["smf_cmds_dir"] and not self.zone:
+            return
 
         self.do_nothing = False
 
