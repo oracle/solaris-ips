@@ -28,11 +28,15 @@ from cffi import FFI
 
 ffi = FFI()
 
-ffi.set_source("_arch", """
+ffi.set_source(
+    "_arch", """
 /* Includes */
 #include <sys/systeminfo.h>
 #include <stdlib.h>
-""")
+""",
+    extra_compile_args=['-O3'],
+    extra_link_args=['-zstrip-class=nonalloc']
+)
 
 ffi.cdef("""
 /* Macros */
@@ -49,4 +53,4 @@ int sysinfo(int, char *, long);
 """)
 
 if __name__ == "__main__":
-    ffi.compile(tmpdir="./cffi_src")
+    ffi.compile(verbose=True)

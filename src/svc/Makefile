@@ -30,6 +30,8 @@ SVCCFG =	/usr/sbin/svccfg
 PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
 SMF_APP_DIR =	$(PROTO_AREA)/lib/svc/manifest/application/pkg
 SMF_PROFILE_DIR =	$(PROTO_AREA)/etc/svc/profile/system
+SVC_METHOD_DIR =	$(PROTO_AREA)/lib/svc/method
+SVC_SHARE_DIR =		$(PROTO_AREA)/lib/svc/share
 
 SMF_MANIFESTS = \
 	pkg-auto-update.xml \
@@ -45,6 +47,20 @@ SMF_MANIFESTS = \
 
 SMF_PROFILE = \
 	pkg-auto-update-cleanup-enable.xml
+
+SVC_METHOD_SCRIPTS = \
+	svc-pkg-auto-update \
+	svc-pkg-auto-update-cleanup \
+	svc-pkg-depot \
+	svc-pkg-mdns \
+	svc-pkg-mirror \
+	svc-pkg-repositories-setup \
+	svc-pkg-server \
+	svc-pkg-sysrepo \
+	svc-pkg-sysrepo-cache
+
+SVC_SHARE_SCRIPT = \
+	pkg5_include.sh
 
 
 all:
@@ -62,6 +78,11 @@ install:
 	done; \
 	# install English .pot file to put into localizable file package \
 	$(INSTALL) -C $(SMF_PROFILE) $(SMF_PROFILE_DIR)/$(SMF_PROFILE);
+
+	@for script in $(SVC_METHOD_SCRIPTS); do \
+		$(INSTALL) -C $$script $(SVC_METHOD_DIR)/$$script; \
+	done; \
+	$(INSTALL) -C $(SVC_SHARE_SCRIPT) $(SVC_SHARE_DIR)/$(SVC_SHARE_SCRIPT);
 
 check:
 

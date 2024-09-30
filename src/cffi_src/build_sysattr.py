@@ -28,14 +28,19 @@ from cffi import FFI
 
 ffi = FFI()
 
-ffi.set_source("_sysattr", """
+ffi.set_source(
+    "_sysattr", """
 /* Includes */
 #include <attr.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <sys/nvpair.h>
-""")
+""",
+    extra_compile_args=['-O3'],
+    extra_link_args=['-zstrip-class=nonalloc'],
+    libraries=['nvpair']
+)
 
 ffi.cdef("""
 /* Macros */
@@ -148,4 +153,4 @@ int nvpair_value_boolean_value(nvpair_t *, boolean_t *);
 """)
 
 if __name__ == "__main__":
-    ffi.compile(tmpdir="./cffi_src")
+    ffi.compile(verbose=True)
