@@ -28,7 +28,7 @@ UPDATENUM         = 4
 # The SRUNUM will need to be reset once the final trunk build for
 # the delivery from trunk has been delivered.
 #
-SRUNUM            = 75
+SRUNUM            = 78
 ORDER             = 0
 #
 # In the normal case the PLATNUM should be 0, however when
