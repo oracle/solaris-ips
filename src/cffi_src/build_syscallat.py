@@ -28,13 +28,17 @@ from cffi import FFI
 
 ffi = FFI()
 
-ffi.set_source("_syscallat", """
+ffi.set_source(
+    "_syscallat", """
 /* Includes */
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-""")
+""",
+    extra_compile_args=['-O3'],
+    extra_link_args=['-zstrip-class=nonalloc']
+)
 
 ffi.cdef("""
 /* Types */
@@ -48,4 +52,4 @@ int unlinkat(int, const char *, int);
 """)
 
 if __name__ == "__main__":
-    ffi.compile(tmpdir="./cffi_src")
+    ffi.compile(verbose=True)

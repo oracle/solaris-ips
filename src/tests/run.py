@@ -119,12 +119,6 @@ if __name__ == "__main__":
     ))
 
     try:
-        #
-        # !!! WARNING !!!
-        #
-        # If you add options here, you need to also update setup.py's
-        # test_func to include said options.
-        #
         opts, pargs = getopt.getopt(sys.argv[1:], "a:c:dfghj:lpqtuvxb:o:s:z:",
             ["generate-baseline", "parseable", "port", "timing",
             "verbose", "baseline-file", "only"])

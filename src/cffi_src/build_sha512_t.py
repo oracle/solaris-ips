@@ -28,11 +28,16 @@ from cffi import FFI
 
 ffi = FFI()
 
-ffi.set_source("_sha512_t", """
+ffi.set_source(
+    "_sha512_t", """
 /* Includes */
 #include <sys/sha2.h>
 #include <string.h>
-""")
+""",
+    extra_compile_args=['-O3'],
+    extra_link_args=['-zstrip-class=nonalloc'],
+    libraries=['md']
+)
 
 ffi.cdef("""
 /* Types */
@@ -62,4 +67,4 @@ void *memcpy(void *restrict s1, const void *restrict s2, size_t n);
 """)
 
 if __name__ == "__main__":
-    ffi.compile(tmpdir="./cffi_src")
+    ffi.compile(verbose=True)

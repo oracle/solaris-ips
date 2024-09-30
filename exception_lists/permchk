@@ -20,18 +20,17 @@
 #
 
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2024, Oracle and/or its affiliates.
 #
 syntax: glob
 
-src/pydates
+src/cffi_src/build_*
 src/client.py
 src/depot-config.py
 src/depot.py
 src/pkgrepo.py
 src/publish.py
 src/pull.py
-src/setup.py
 src/sign.py
 src/sysrepo.py
 src/util/publish/pkgfmt.py

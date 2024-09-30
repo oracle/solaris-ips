@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2024-07-24T08:25:40Z",
+  "generated_at": "2024-08-05T10:05:37Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 15,
+      "loc": 19,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -24,7 +24,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 32,
+      "loc": 37,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -37,7 +37,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 107,
+      "loc": 112,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -50,7 +50,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 16,
+      "loc": 20,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -518,7 +518,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2668,
+      "loc": 2671,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1900,19 +1900,6 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "./setup.py": {
-      "CONFIDENCE.HIGH": 17,
-      "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 0,
-      "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 9,
-      "SEVERITY.LOW": 8,
-      "SEVERITY.MEDIUM": 0,
-      "SEVERITY.UNDEFINED": 0,
-      "loc": 1059,
-      "nosec": 0,
-      "skipped_tests": 0
-    },
     "./sign.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -2265,15 +2252,15 @@
       "skipped_tests": 0
     },
     "_totals": {
-      "CONFIDENCE.HIGH": 146,
+      "CONFIDENCE.HIGH": 129,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 14,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 27,
-      "SEVERITY.LOW": 106,
+      "SEVERITY.HIGH": 18,
+      "SEVERITY.LOW": 98,
       "SEVERITY.MEDIUM": 27,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 95448,
+      "loc": 94410,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -4925,351 +4912,6 @@
       "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
-    },
-    {
-      "code": "32 import re\n33 import subprocess\n34 import tarfile\n",
-      "col_offset": 0,
-      "end_col_offset": 17,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 33,
-      "line_range": [
-        33
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
-      "test_id": "B404",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "433             print(\" \".join(archcmd))\n434             os.system(\" \".join(archcmd))\n435             print(\" \".join(elfcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 40,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 434,
-      "line_range": [
-        434
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "435             print(\" \".join(elfcmd))\n436             os.system(\" \".join(elfcmd))\n437             print(\" \".join(_actionscmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 39,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 436,
-      "line_range": [
-        436
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "437             print(\" \".join(_actionscmd))\n438             os.system(\" \".join(_actionscmd))\n439             print(\" \".join(_actcommcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 44,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 438,
-      "line_range": [
-        438
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "439             print(\" \".join(_actcommcmd))\n440             os.system(\" \".join(_actcommcmd))\n441             print(\" \".join(_varcetcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 44,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 440,
-      "line_range": [
-        440
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "441             print(\" \".join(_varcetcmd))\n442             os.system(\" \".join(_varcetcmd))\n443             print(\" \".join(_misccmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 43,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 442,
-      "line_range": [
-        442
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "443             print(\" \".join(_misccmd))\n444             os.system(\" \".join(_misccmd))\n445             print(\" \".join(syscallatcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 41,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 444,
-      "line_range": [
-        444
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "445             print(\" \".join(syscallatcmd))\n446             os.system(\" \".join(syscallatcmd))\n447             print(\" \".join(sysattrcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 45,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 446,
-      "line_range": [
-        446
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "447             print(\" \".join(sysattrcmd))\n448             os.system(\" \".join(sysattrcmd))\n449             print(\" \".join(sha512_tcmd))\n",
-      "col_offset": 12,
-      "end_col_offset": 43,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 448,
-      "line_range": [
-        448
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "449             print(\" \".join(sha512_tcmd))\n450             os.system(\" \".join(sha512_tcmd))\n451 \n",
-      "col_offset": 12,
-      "end_col_offset": 44,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 450,
-      "line_range": [
-        450
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
-    },
-    {
-      "code": "552                 os.unlink(dest)\n553             except Exception:\n554                 pass\n555             os.symlink(target, dest)\n",
-      "col_offset": 12,
-      "end_col_offset": 20,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 553,
-      "line_range": [
-        553,
-        554
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
-      "code": "630         stderr = None\n631     ret = subprocess.Popen(args, cwd=swdir, env=env,\n632         stderr=stderr).wait()\n633     if ret != 0:\n",
-      "col_offset": 10,
-      "end_col_offset": 22,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 631,
-      "line_range": [
-        631,
-        632
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "781     try:\n782         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n783         return p.communicate()[0].strip()\n",
-      "col_offset": 12,
-      "end_col_offset": 85,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Starting a process with a partial executable path",
-      "line_number": 782,
-      "line_range": [
-        782
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b607_start_process_with_partial_path.html",
-      "test_id": "B607",
-      "test_name": "start_process_with_partial_path"
-    },
-    {
-      "code": "781     try:\n782         p = subprocess.Popen(['hg', 'id', '-i'], stdout = subprocess.PIPE, text=True)\n783         return p.communicate()[0].strip()\n",
-      "col_offset": 12,
-      "end_col_offset": 85,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 782,
-      "line_range": [
-        782
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "926 \n927         p = subprocess.Popen(\n928             [\"/usr/bin/python3.9\", os.path.join(pwd, \"pydates\")],\n929             stdout=subprocess.PIPE, text=True)\n930 \n",
-      "col_offset": 12,
-      "end_col_offset": 46,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 927,
-      "line_range": [
-        927,
-        928,
-        929
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "953             # run the scripts\n954             p = subprocess.Popen(\n955                 [sys.executable, path])\n956 \n",
-      "col_offset": 16,
-      "end_col_offset": 39,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 954,
-      "line_range": [
-        954,
-        955
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "1166             cmd.extend(args)\n1167         subprocess.call(cmd)\n1168 \n",
-      "col_offset": 8,
-      "end_col_offset": 28,
-      "filename": "./setup.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1167,
-      "line_range": [
-        1167
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
     },
     {
       "code": "683 \n684         httpd_conf_template = Template(\n685             filename=httpd_conf_template_path)\n686 \n",

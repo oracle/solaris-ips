@@ -42,10 +42,77 @@ test-generate := TARGET = test-generate
 PYCODESTYLE = /usr/bin/pycodestyle
 JOBS = 4
 
-SUBDIRS=zoneproxy util/mkcert man po svc web
+SUBDIRS=zoneproxy util/mkcert man po svc web cffi_src modules
+
+
+STASH:sh =	echo /opt/onbld/bin/$(uname -p)/stash
+INSTALL =	$(STASH) file -v
+MKDIR =		mkdir -p
 
 PROTO_AREA:sh = echo $(dirname $(pwd))/proto/root_$(uname -p)
 PROTO_VENDOR_PACKAGES = $(PROTO_AREA)/usr/lib/python3.9/vendor-packages
+
+RESOURCE_DIR =	$(PROTO_AREA)/usr/share/lib/pkg
+TRANSFORM_DIR =	$(PROTO_AREA)/usr/share/pkg/transforms
+
+EXECATTRD_DIR =	$(PROTO_AREA)/etc/security/exec_attr.d
+AUTHATTRD_DIR =	$(PROTO_AREA)/etc/security/auth_attr.d
+USERATTRD_DIR =	$(PROTO_AREA)/etc/user_attr.d
+
+SCRIPTS_DIR = $(PROTO_AREA)/usr/bin
+LIB_DIR = $(PROTO_AREA)/usr/lib
+RAD_DIR = $(PROTO_AREA)/usr/share/lib/pkg
+
+SYSREPO_DIR = $(PROTO_AREA)/etc/pkg/sysrepo
+SYSREPO_LOGS_DIR = $(PROTO_AREA)/var/log/pkg/sysrepo
+
+DEPOT_DIR = $(PROTO_AREA)/etc/pkg/depot
+DEPOT_LOGS_DIR = $(PROTO_AREA)/var/log/pkg/depot
+
+EMPTY_DIRS = \
+	$(PROTO_AREA)/var/cache/pkg/depot \
+	$(PROTO_AREA)/etc/pkg/depot/conf.d \
+	$(PROTO_AREA)/usr/share/pkg/ignored_deps \
+	$(PROTO_AREA)/var/cache/pkg/mirror \
+	$(PROTO_AREA)/var/log/pkg/mirror \
+	$(PROTO_AREA)/var/cache/pkg/sysrepo
+
+
+RESOURCE_FILES = \
+	util/opensolaris.org.sections \
+	util/pkglintrc
+
+TRANSFORM_FILES = \
+	util/publish/transforms/developer \
+	util/publish/transforms/documentation \
+	util/publish/transforms/locale \
+	util/publish/transforms/smf-manifests
+
+EXECATTRD_FILE = util/misc/exec_attr.d/package:pkg
+AUTHATTRD_FILE = util/misc/auth_attr.d/package:pkg
+USERATTRD_FILE = util/misc/user_attr.d/package:pkg
+
+SYSREPO_FILES = \
+	util/apache2/sysrepo/sysrepo_httpd.conf.mako \
+	util/apache2/sysrepo/sysrepo_publisher_response.mako
+SYSREPO_PYTHON_FILE = \
+	util/apache2/sysrepo/sysrepo_p5p.py
+
+SYSREPO_LOG_STUBS = \
+	util/apache2/sysrepo/logs/access_log \
+	util/apache2/sysrepo/logs/error_log
+
+DEPOT_FILES = \
+	util/apache2/depot/depot.conf.mako \
+	util/apache2/depot/depot_httpd.conf.mako \
+	util/apache2/depot/depot_httpd_ssl_protocol.conf
+DEPOT_PYTHON_FILE = \
+	util/apache2/depot/depot_index.py
+
+DEPOT_LOG_STUBS = \
+	util/apache2/depot/logs/access_log \
+	util/apache2/depot/logs/error_log
+
 
 PYLINT_TARGETS = \
 	pkg.altroot \
@@ -63,30 +130,89 @@ PYLINT_TARGETS = \
 
 
 all: $(SUBDIRS)
-	$(PYTHON39) setup.py build
-	$(PYTHON311) setup.py build
 
 clean: $(SUBDIRS)
-	$(PYTHON39) setup.py clean
-	$(PYTHON311) setup.py clean
 	@cd pkg; pwd; make clean
 
 clobber: $(SUBDIRS)
-	$(PYTHON39) setup.py clobber
-	$(PYTHON311) setup.py clobber
+	rm -rf $(PROTO_AREA)
 	@cd pkg; pwd; make clobber
 
+
 install: $(SUBDIRS)
-	$(PYTHON39) setup.py install
-	$(PYTHON311) setup.py install
+	@# add resource files
+	@for file in $(RESOURCE_FILES); do \
+		$(INSTALL) -C $$file $(RESOURCE_DIR)/$$(basename $$file); \
+	done
+	@# add transforms
+	@for file in $(TRANSFORM_FILES); do \
+		$(INSTALL) -C $$file $(TRANSFORM_DIR)/$$(basename $$file); \
+	done
+	@$(INSTALL) $(EXECATTRD_FILE) $(EXECATTRD_DIR)/$$(basename $(EXECATTRD_FILE))
+	@$(INSTALL) $(AUTHATTRD_FILE) $(AUTHATTRD_DIR)/$$(basename $(AUTHATTRD_FILE))
+	@$(INSTALL) $(USERATTRD_FILE) $(USERATTRD_DIR)/$$(basename $(USERATTRD_FILE))
 
-lint: pylint svc
-	$(PYTHON39) setup.py lint
-	$(PYTHON311) setup.py lint
-	@cd zoneproxy; pwd; make lint
+	@# additional files
+	@$(INSTALL) -Cp client.py $(SCRIPTS_DIR)/pkg
+	@$(INSTALL) -Cp pkgdep.py $(SCRIPTS_DIR)/pkgdepend
+	@$(INSTALL) -Cp pkgrepo.py $(SCRIPTS_DIR)/pkgrepo
+	@$(INSTALL) -Cp publish.py $(SCRIPTS_DIR)/pkgsend
+	@$(INSTALL) -Cp pull.py $(SCRIPTS_DIR)/pkgrecv
+	@$(INSTALL) -Cp sign.py $(SCRIPTS_DIR)/pkgsign
 
-clint:
-	$(PYTHON39) setup.py clint
+	@$(INSTALL) -Cp util/publish/pkgdiff.py $(SCRIPTS_DIR)/pkgdiff
+	@$(INSTALL) -Cp util/publish/pkgfmt.py $(SCRIPTS_DIR)/pkgfmt
+	@$(INSTALL) -Cp util/publish/pkglint.py $(SCRIPTS_DIR)/pkglint
+	@$(INSTALL) -Cp util/publish/pkgmerge.py $(SCRIPTS_DIR)/pkgmerge
+	@$(INSTALL) -Cp util/publish/pkgmogrify.py $(SCRIPTS_DIR)/pkgmogrify
+	@$(INSTALL) -Cp util/publish/pkgsurf.py $(SCRIPTS_DIR)/pkgsurf
+
+	@$(INSTALL) -Cp depot.py $(LIB_DIR)/pkg.depotd
+	@$(INSTALL) -Cp sysrepo.py $(LIB_DIR)/pkg.sysrepo
+	@$(INSTALL) -Cp depot-config.py $(LIB_DIR)/pkg.depot-config
+	@$(INSTALL) -Cp cronjob-removal.sh $(LIB_DIR)/cronjob-removal.sh
+
+	@$(INSTALL) -Cp rad-invoke.py $(RAD_DIR)/rad-invoke
+
+	@# add sysrepo files and log stubs
+	@for file in $(SYSREPO_FILES); do \
+		$(INSTALL) -C $$file $(SYSREPO_DIR)/$$(basename $$file); \
+	done
+	@$(INSTALL) -Cp $(SYSREPO_PYTHON_FILE) $(SYSREPO_DIR)/$$(basename $(SYSREPO_PYTHON_FILE));
+	@for file in $(SYSREPO_LOG_STUBS); do \
+		$(INSTALL) $$file $(SYSREPO_LOGS_DIR)/$$(basename $$file); \
+	done
+
+	@# add depot files and log stubs
+	@for file in $(DEPOT_FILES); do \
+		$(INSTALL) -C $$file $(DEPOT_DIR)/$$(basename $$file); \
+	done
+	@$(INSTALL) -Cp $(DEPOT_PYTHON_FILE) $(DEPOT_DIR)/$$(basename $(DEPOT_PYTHON_FILE));
+	@for file in $(DEPOT_LOG_STUBS); do \
+		$(INSTALL) $$file $(DEPOT_LOGS_DIR)/$$(basename $$file); \
+	done
+
+	@# add symlinks
+	@$(STASH) symlink -v cronjob-removal.sh $(LIB_DIR)/update-refresh.sh
+	@$(STASH) symlink -v ../cronjob-removal.sh $(LIB_DIR)/update-manager/update-refresh.sh
+
+	@# create additional empty directories
+	@for dir in $(EMPTY_DIRS); do \
+		$(MKDIR) $$dir; \
+	done
+
+
+lint: $(SUBDIRS) clint pylint
+
+# Allow for CLINT variable being set from the environment.
+$(LINT)CLINT = lint
+CLINT = $(LINT)
+
+CLINT_FLAGS = -m64 -u -axms -erroff=E_NAME_DEF_NOT_USED2
+CLINT_INCLUDES = -Imodules -I/usr/include/python3.9
+
+# Runs lint tools over IPS C extension source code.
+clint: cffi_src modules
 	@cd zoneproxy; pwd; make lint
 
 #
@@ -148,12 +274,8 @@ test:
 	$(MAKE) -k test-39 JOBS=${JOBS}
 	$(MAKE) -k test-311 JOBS=${JOBS}
 
-test-verbose:
-	$(PYTHON39) setup.py test -v
-	$(PYTHON311) setup.py test -v
-
 test-generate:
-	$(PYTHON39) setup.py test -g
-	$(PYTHON311) setup.py test -g
+	$(PYTHON39) tests/run.py test -g
+	$(PYTHON311) tests/run.py test -g
 
 FRC:
