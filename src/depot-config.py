@@ -26,6 +26,7 @@
 
 try:
     import pkg.no_site_packages
+    import datetime
     import errno
     import getopt
     import gettext
@@ -40,9 +41,13 @@ try:
     import traceback
     import warnings
 
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.x509.oid import NameOID
+
     from mako.template import Template
     from mako.lookup import TemplateLookup
-    from OpenSSL import crypto
 
     import pkg
     import pkg.client.api_errors as apx
@@ -396,19 +401,18 @@ def _write_status_response(status, htdocs_path, repo_prefix):
 
 
 def _createCertificateKey(serial, CN, starttime, endtime,
-    dump_cert_path, dump_key_path, issuerCert=None, issuerKey=None,
-    key_type=crypto.TYPE_RSA, key_bits=2048, digest="sha256"):
+    dump_cert_path, dump_key_path, issuerCert=None, issuerKey=None):
     """Generate a certificate given a certificate request.
 
     'serial' is the serial number for the certificate
 
     'CN' is the subject common name of the certificate.
 
-    'starttime' is the timestamp when the certificate starts
-                      being valid. 0 means now.
+    'starttime' is the timestamp (datetime object) when the
+        certificate starts being valid.
 
-    'endtime' is the timestamp when the certificate stops being
-                    valid
+    'endtime' is the timestamp (datetime object) when the
+        certificate stops being valid.
 
     'dump_cert_path' is the file the generated certificate gets dumped.
 
@@ -417,53 +421,52 @@ def _createCertificateKey(serial, CN, starttime, endtime,
     'issuerCert' is the certificate object of the issuer.
 
     'issuerKey' is the key object of the issuer.
-
-    'key_type' is the key type. allowed value: TYPE_RSA and TYPE_DSA.
-
-    'key_bits' is number of bits to use in the key.
-
-    'digest' is the digestion method to use for signing.
     """
 
-    key = crypto.PKey()
-    key.generate_key(key_type, key_bits)
+    key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048
+    )
 
-    cert = crypto.X509()
-    cert.set_serial_number(serial)
-    cert.gmtime_adj_notBefore(starttime)
-    cert.gmtime_adj_notAfter(endtime)
+    subject = x509.Name([
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, 'pkg5'),
+        x509.NameAttribute(NameOID.COMMON_NAME, CN if issuerCert else "Depot Test CA"),
+    ])
 
-    cert.get_subject().C = "US"
-    cert.get_subject().ST = "California"
-    cert.get_subject().L = "Santa Clara"
-    cert.get_subject().O = "pkg5"
-
-    cert.set_pubkey(key)
-    # If a issuer is specified, set the issuer. otherwise set cert
-    # itself as a issuer.
-    if issuerCert:
-        cert.get_subject().CN = CN
-        cert.set_issuer(issuerCert.get_subject())
-    else:
-        cert.get_subject().CN = "Depot Test CA"
-        cert.set_issuer(cert.get_subject())
+    # If an issuer is specified, set the issuer; otherwise set cert
+    # itself as an issuer.
+    issuer = issuerCert.issuer if issuerCert else subject
 
     # If there is a issuer key, sign with that key. Otherwise,
     # create a self-signed cert.
-    # Cert requires bytes.
     if issuerKey:
-        cert.add_extensions([crypto.X509Extension(b"basicConstraints", True,
-            b"CA:FALSE")])
-        cert.sign(issuerKey, digest)
+        extension = x509.BasicConstraints(ca=False, path_length=None)
+        sign_key = issuerKey
     else:
-        cert.add_extensions([crypto.X509Extension(b"basicConstraints", True,
-            b"CA:TRUE")])
-        cert.sign(key, digest)
+        extension = x509.BasicConstraints(ca=True, path_length=None)
+        sign_key = key
+
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(issuer)
+        .public_key(key.public_key())
+        .serial_number(serial)
+        .not_valid_before(starttime)
+        .not_valid_after(endtime)
+        .add_extension(extension, critical=True)
+        .sign(sign_key, algorithm=hashes.SHA256())
+    )
+
     with open(dump_cert_path, "wb") as f:
-        f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        f.write(cert.public_bytes(encoding=serialization.Encoding.PEM))
     with open(dump_key_path, "wb") as f:
-        f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
-    return (cert, key)
+        f.write(key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        ))
+    return cert, key
 
 
 def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
@@ -486,8 +489,9 @@ def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
     # If the cert and key files do not exist, then generate one.
     if not os.path.exists(server_cert_file) or not os.path.exists(
         server_key_file):
-        # Used as a factor to easily specify a year.
-        year_factor = 60 * 60 * 24 * 365
+
+        starttime = datetime.datetime.now()
+        endtime = starttime + datetime.timedelta(days=10*365)
 
         # If user specifies ca_cert_file and ca_key_file, just load
         # the files. Otherwise, generate new ca_cert and ca_key.
@@ -497,7 +501,7 @@ def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
             ca_key_file = os.path.join(output_dir,
                 "ca_{0}_key.pem".format(server_id))
             ca_cert, ca_key = _createCertificateKey(1, host,
-                0, year_factor * 10, ca_cert_file, ca_key_file)
+                starttime, endtime, ca_cert_file, ca_key_file)
         else:
             if not os.path.exists(ca_cert_file):
                 raise DepotException(_("Cannot find user "
@@ -507,14 +511,12 @@ def _generate_server_cert_key(host, port, ca_cert_file="", ca_key_file="",
                 raise DepotException(_("Cannot find user "
                     "provided CA key file: {0}").format(
                     ca_key_file))
-            with open(ca_cert_file, "r") as fr:
-                ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                    fr.read())
-            with open(ca_key_file, "r") as fr:
-                ca_key = crypto.load_privatekey(crypto.FILETYPE_PEM,
-                    fr.read())
+            with open(ca_cert_file, "rb") as fr:
+                ca_cert = x509.load_pem_x509_certificate(fr.read())
+            with open(ca_key_file, "rb") as fr:
+                ca_key = serialization.load_pem_private_key(fr.read(), password=None)
 
-        _createCertificateKey(2, host, 0, year_factor * 10,
+        _createCertificateKey(2, host, starttime, endtime,
             server_cert_file, server_key_file, issuerCert=ca_cert,
             issuerKey=ca_key)
 
