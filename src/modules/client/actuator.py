@@ -287,8 +287,9 @@ class Actuator:
             if not os.path.exists(path):
                 os.close(os.open(path, os.O_EXCL | os.O_CREAT | os.O_WRONLY))
 
-        if not DebugValues["smf_cmds_dir"] and not self.zone:
-            return
+        if not image.is_liveroot():
+            if not DebugValues["smf_cmds_dir"] and not self.zone:
+                return
 
         self.do_nothing = False
 
