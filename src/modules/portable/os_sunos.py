@@ -32,6 +32,7 @@ import os
 import subprocess
 import tempfile
 
+# pylint: disable-next=unused-import
 from pkg.portable.os_unix import \
     get_group_by_name, get_user_by_name, get_name_by_gid, get_name_by_uid, \
     get_usernames_by_gid, is_admin, get_userid, get_username, chown, rename, \
@@ -39,7 +40,9 @@ from pkg.portable.os_unix import \
 from pkg.portable import ELF, EXEC, PD_LOCAL_PATH, UNFOUND, SMF_MANIFEST
 
 import pkg.arch as arch
+# pylint: disable-next=unused-import
 from pkg.sysattr import fgetattr, fsetattr
+# pylint: disable-next=unused-import
 from pkg.sysattr import get_attr_dict as get_sysattr_dict
 
 

@@ -24,8 +24,6 @@
 # Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
-import os
-import datetime
 import random
 from urllib.parse import urlsplit
 import pkg.misc as misc

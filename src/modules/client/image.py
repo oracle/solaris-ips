@@ -35,9 +35,7 @@ import os
 import platform
 import shutil
 import rapidjson as json
-import stat
 import subprocess
-import sys
 import tempfile
 import time
 
@@ -52,8 +50,6 @@ import pkg.client.imageconfig           as imageconfig
 import pkg.client.imageplan             as imageplan
 import pkg.client.linkedimage           as li
 import pkg.client.pkgdefs               as pkgdefs
-import pkg.client.pkgplan               as pkgplan
-import pkg.client.plandesc              as plandesc
 import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
 import pkg.client.sigpolicy             as sigpolicy

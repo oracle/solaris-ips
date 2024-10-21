@@ -28,7 +28,6 @@ from collections import defaultdict, namedtuple
 import contextlib
 import errno
 import fnmatch
-import io
 import itertools
 import mmap
 import operator
@@ -70,7 +69,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.plandesc import _ActionPlan
 from pkg.mediator import mediator_impl_matches
 from pkg.client.pkgdefs import (PKG_OP_DEHYDRATE, PKG_OP_REHYDRATE, MSG_ERROR,
-    MSG_WARNING, MSG_INFO, MSG_GENERAL, MSG_UNPACKAGED, PKG_OP_VERIFY)
+    MSG_WARNING, MSG_INFO, MSG_UNPACKAGED)
 
 
 def _reorder_hardlinks(hardlinks):

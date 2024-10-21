@@ -38,12 +38,10 @@ try:
     import traceback
     import warnings
 
-    import pkg
     import pkg.actions as actions
     import pkg.client.api as api
     import pkg.client.api_errors as api_errors
     import pkg.client.progress as progress
-    import pkg.manifest as manifest
     import pkg.misc as misc
     import pkg.publish.dependencies as dependencies
     from pkg.misc import msg, emsg, PipeError

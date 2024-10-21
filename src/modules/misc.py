@@ -47,9 +47,7 @@ import sys
 import threading
 import time
 import traceback
-import urllib
 import zlib
-import ipaddress
 import hashlib
 
 # ungrouped-imports: pylint: disable=C0412
@@ -3106,8 +3104,6 @@ def check_ca(cert):
     identify it as a CA cert and it needs to have the CertSign
     (key_cert_sign in Cryptography) KeyUsage flag. Based loosely on
     OpenSSL's check_ca()"""
-
-    from cryptography import x509
 
     bconst_ca = None
     kuse_sign = None

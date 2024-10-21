@@ -31,7 +31,7 @@ import os
 import pkg.misc
 
 from pkg.client.debugvalues import DebugValues
-from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
+from pkg.client.imagetypes import IMG_USER
 
 
 class Actuator:

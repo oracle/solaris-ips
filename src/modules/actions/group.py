@@ -30,12 +30,13 @@ This module contains the UserAction class, which represents a user
 packaging object.  This contains the attributes necessary to create
 a new user."""
 
+import errno
+
 from pkg.actions import generic
 try:
-    from pkg.cfgfiles import *
-    have_cfgfiles = True
+    from pkg import cfgfiles
 except ImportError:
-    have_cfgfiles = False
+    cfgfiles = None
 
 import pkg.client.api_errors as apx
 import pkg.actions
@@ -64,22 +65,21 @@ class GroupAction(generic.Action):
     def install(self, pkgplan, orig, retry=False):
         """client-side method that adds the group
            use gid from disk if different"""
-        if not have_cfgfiles:
-            # the group action is ignored if cfgfiles is not
-            # available.
+        if cfgfiles is None:
+            # the group action is ignored if cfgfiles is not available.
             return
 
         template = self.extract(["groupname", "gid"])
 
         root = pkgplan.image.get_root()
         try:
-            pw = PasswordFile(root, lock=True)
+            pw = cfgfiles.PasswordFile(root, lock=True)
         except EnvironmentError as e:
             if e.errno != errno.ENOENT:
                 raise
             pw = None
 
-        gr = GroupFile(pkgplan.image)
+        gr = cfgfiles.GroupFile(pkgplan.image)
 
         cur_attrs = gr.getvalue(template)
 
@@ -170,12 +170,11 @@ class GroupAction(generic.Action):
         errors = []
         warnings = []
         info = []
-        if not have_cfgfiles:
-            # The user action is ignored if cfgfiles is not
-            # available.
+        if cfgfiles is None:
+            # The user action is ignored if cfgfiles is not available.
             return errors, warnings, info
 
-        gr = GroupFile(img)
+        gr = cfgfiles.GroupFile(img)
 
         cur_attrs = gr.getvalue(self.attrs)
 
@@ -222,11 +221,10 @@ class GroupAction(generic.Action):
 
     def remove(self, pkgplan):
         """client-side method that removes this group"""
-        if not have_cfgfiles:
-            # The user action is ignored if cfgfiles is not
-            # available.
+        if cfgfiles is None:
+            # The user action is ignored if cfgfiles is not available.
             return
-        gr = GroupFile(pkgplan.image)
+        gr = cfgfiles.GroupFile(pkgplan.image)
         try:
             gr.removevalue(self.attrs)
         except KeyError as e:

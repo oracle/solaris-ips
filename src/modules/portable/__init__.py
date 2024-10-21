@@ -277,7 +277,6 @@ PD_DEFAULT_RUNPATH = "$PKGDEPEND_RUNPATH"
 # dependency on dtracestubs from platform/i86pc/kernel/amd64/unix
 PD_BYPASS_GENERATE = "pkg.depend.bypass-generate"
 
-import platform
 from pkg.portable import util as os_util
 
 osname = os_util.get_canonical_os_name()

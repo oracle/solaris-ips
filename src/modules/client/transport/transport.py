@@ -37,7 +37,7 @@ from functools import cmp_to_key
 from io import BytesIO
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from urllib.parse import quote, urlsplit, urlparse, urlunparse, ParseResult
+from urllib.parse import quote, urlparse, urlunparse, ParseResult
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx

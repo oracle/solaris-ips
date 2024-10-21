@@ -35,7 +35,6 @@ import pkg.misc as misc
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
-from urllib.parse import urlparse
 
 logger = global_settings.logger
 

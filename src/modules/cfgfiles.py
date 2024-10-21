@@ -28,11 +28,8 @@
 # that use this module to not use it on other operating systems.
 
 import datetime
-import errno
 import os
 import re
-import stat
-import sys
 import tempfile
 import time
 

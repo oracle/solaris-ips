@@ -46,7 +46,6 @@ from pkg.client import global_settings
 logger = global_settings.logger
 
 from pkg.misc import DictProperty, SIGNATURE_POLICY
-from pkg.client.debugvalues import DebugValues
 from pkg.client.transport.exception import TransportFailures
 # The default_policies dictionary defines the policies that are supported by
 # pkg(7) and their default values. Calls to the ImageConfig.get_policy method

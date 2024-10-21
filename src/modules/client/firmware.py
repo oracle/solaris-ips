@@ -26,7 +26,6 @@
 
 import os.path
 import subprocess
-import sys
 
 import pkg.misc as misc
 import pkg.portable as portable

@@ -29,7 +29,6 @@
 This module contains the LinkAction class, which represents a link-type
 packaging object."""
 
-import errno
 import os
 import stat
 
@@ -38,7 +37,6 @@ import pkg.actions
 import pkg.mediator as med
 
 from pkg import misc
-from pkg.client.api_errors import ActionExecutionError
 
 
 class LinkAction(generic.Action):

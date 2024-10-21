@@ -28,7 +28,6 @@ import os
 import rapidjson as json
 import subprocess
 import traceback
-import pkg
 import pkg.fmri as fmri
 import pkg.client.client_api as entry
 import pkg.client.pkgdefs as pkgdefs
