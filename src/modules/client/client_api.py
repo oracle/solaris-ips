@@ -29,43 +29,40 @@ import calendar
 import datetime
 import errno
 import getopt
-import itertools
 import rapidjson as json
 import os
 import re
-import socket
 import sys
-import tempfile
-import textwrap
 import time
 import traceback
 import jsonschema
 
 import pkg
-import pkg.actions as actions
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
-import pkg.client.bootenv as bootenv
 import pkg.client.progress as progress
-import pkg.client.linkedimage as li
 import pkg.client.publisher as publisher
 import pkg.client.options as options
 import pkg.fmri as fmri
 import pkg.misc as misc
-import pkg.pipeutils as pipeutils
-import pkg.portable as portable
 import pkg.version as version
 
 from pkg.client import global_settings
-from pkg.client.api import (IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL,
-    IMG_TYPE_USER, RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
-    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_CONSTRAINED,
+from pkg.client.api import (
+    RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST, RESULT_FAILED_CONFIGURATION,
     RESULT_FAILED_LOCKED, RESULT_FAILED_STORAGE, RESULT_NOTHING_TO_DO,
-    RESULT_SUCCEEDED, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
-    RESULT_FAILED_OUTOFMEMORY)
+    RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY
+)
 from pkg.client.debugvalues import DebugValues
-from pkg.client.pkgdefs import *
-from pkg.misc import EmptyI, msg, emsg, PipeError
+from pkg.client.pkgdefs import (
+    API_STAGE_DEFAULT, API_STAGE_EXECUTE, API_STAGE_PLAN, API_STAGE_PREPARE,
+    EXIT_ACTUATOR, EXIT_BADOPT, EXIT_CONSTRAINED, EXIT_LICENSE, EXIT_LOCKED,
+    EXIT_NOP, EXIT_NOTLIVE, EXIT_OK, EXIT_OOPS, EXIT_PARTIAL,  MSG_ERROR,
+    PKG_OP_ATTACH, PKG_OP_CHANGE_FACET, PKG_OP_CHANGE_VARIANT, PKG_OP_DEHYDRATE,
+    PKG_OP_DETACH, PKG_OP_EXACT_INSTALL, PKG_OP_FIX, PKG_OP_INSTALL,
+    PKG_OP_REHYDRATE, PKG_OP_REVERT, PKG_OP_SYNC, PKG_OP_UNINSTALL,
+    PKG_OP_UPDATE, PKG_OP_VERIFY)
+from pkg.misc import EmptyI, PipeError
 
 CLIENT_API_VERSION = 83
 PKG_CLIENT_NAME = "pkg"

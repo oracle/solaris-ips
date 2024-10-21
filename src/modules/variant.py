@@ -28,7 +28,6 @@
 
 import copy
 import itertools
-import types
 
 from collections import namedtuple
 from pkg._varcet import _allow_variant

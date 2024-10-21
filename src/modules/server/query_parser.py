@@ -26,7 +26,8 @@
 
 import sys
 import pkg.query_parser as qp
-from pkg.query_parser import BooleanQueryException, ParseError, QueryException, QueryLengthExceeded
+# pylint: disable-next=unused-import
+from pkg.query_parser import BooleanQueryException, ParseError, QueryException
 
 
 class QueryLexer(qp.QueryLexer):

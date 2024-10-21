@@ -43,7 +43,6 @@ except ImportError:
 import pkg.client.api_errors            as api_errors
 import pkg.client.transport.exception   as tx
 import pkg.client.transport.fileobj     as fileobj
-import pkg.misc                         as misc
 
 from collections        import deque
 from pkg.client         import global_settings

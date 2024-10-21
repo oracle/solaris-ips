@@ -29,7 +29,7 @@ import os
 import pkg.elf as elf
 import pkg.flavor.base as base
 
-from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_DEFAULT_RUNPATH
+from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR
 
 
 class BadElfFile(base.DependencyAnalysisError):

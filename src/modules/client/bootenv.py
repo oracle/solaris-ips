@@ -22,7 +22,6 @@
 
 # Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
-import errno
 import os
 import shutil
 import subprocess
@@ -46,7 +45,7 @@ try:
     # First, try importing the pybemgmt module.
     import bemgmt
     from bemgmt.be_errors import BeFmriError, BeNameError, \
-        BeNotFoundError, BeMgmtError, BeMgmtOpError
+        BeMgmtError, BeMgmtOpError
 except ImportError:
     # Try importing older libbe
     try:

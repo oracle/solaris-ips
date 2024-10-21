@@ -34,7 +34,6 @@ from pkg.actions import generic
 import os
 import stat
 import tempfile
-import types
 import zlib
 import time
 

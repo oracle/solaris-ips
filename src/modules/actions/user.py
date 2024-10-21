@@ -30,12 +30,13 @@ This module contains the UserAction class, which represents a user
 packaging object.  This contains the attributes necessary to create
 a new user."""
 
+import errno
+
 from pkg.actions import generic
 try:
-    from pkg.cfgfiles import *
-    have_cfgfiles = True
+    from pkg import cfgfiles
 except ImportError:
-    have_cfgfiles = False
+    cfgfiles = None
 
 import pkg.client.api_errors as apx
 import pkg.actions
@@ -107,9 +108,9 @@ class UserAction(generic.Action):
     def readstate(self, image, username, lock=False):
         """read state of user from files.  May raise KeyError"""
         root = image.get_root()
-        pw = PasswordFile(root, lock)
-        gr = GroupFile(image)
-        ftp = FtpusersFile(root)
+        pw = cfgfiles.PasswordFile(root, lock)
+        gr = cfgfiles.GroupFile(image)
+        ftp = cfgfiles.FtpusersFile(root)
 
         username = self.attrs["username"]
 
@@ -131,9 +132,8 @@ class UserAction(generic.Action):
            update any attrs that changed from orig
            unless the on-disk stuff was changed"""
 
-        if not have_cfgfiles:
-            # The user action is ignored if cfgfiles is not
-            # available.
+        if cfgfiles is None:
+            # The user action is ignored if cfgfiles is not available.
             return
 
         username = self.attrs["username"]
@@ -227,9 +227,8 @@ class UserAction(generic.Action):
         warnings = []
         info = []
 
-        if not have_cfgfiles:
-            # The user action is ignored if cfgfiles is not
-            # available.
+        if cfgfiles is None:
+            # The user action is ignored if cfgfiles is not available.
             return errors, warnings, info
 
         username = self.attrs["username"]
@@ -317,16 +316,15 @@ class UserAction(generic.Action):
 
     def remove(self, pkgplan):
         """client-side method that removes this user"""
-        if not have_cfgfiles:
-            # The user action is ignored if cfgfiles is not
-            # available.
+        if cfgfiles is None:
+            # The user action is ignored if cfgfiles is not available.
             return
 
         root = pkgplan.image.get_root()
-        pw = PasswordFile(root, lock=True)
+        pw = cfgfiles.PasswordFile(root, lock=True)
         try:
-            gr = GroupFile(pkgplan.image)
-            ftp = FtpusersFile(root)
+            gr = cfgfiles.GroupFile(pkgplan.image)
+            ftp = cfgfiles.FtpusersFile(root)
 
             pw.removevalue(self.attrs)
             gr.removeuser(self.attrs["username"])

@@ -24,12 +24,10 @@
 # Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 #
 
-import abc
 import hashlib
 import os
 import shutil
 import tempfile
-from sys import version_info
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend

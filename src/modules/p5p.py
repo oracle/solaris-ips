@@ -30,7 +30,6 @@ import errno
 import tarfile as tf
 import os
 import shutil
-import sys
 import tempfile
 from urllib.parse import unquote
 

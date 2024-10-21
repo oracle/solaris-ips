@@ -26,7 +26,6 @@
 
 import copy
 import itertools
-import operator
 import os
 import re
 
@@ -43,7 +42,6 @@ import pkg.flavor.script as script
 import pkg.flavor.smf_manifest as smf_manifest
 import pkg.fmri as fmri
 import pkg.manifest as manifest
-import pkg.misc as misc
 import pkg.portable as portable
 import pkg.variant as variants
 

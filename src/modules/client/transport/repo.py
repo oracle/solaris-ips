@@ -42,7 +42,6 @@ from urllib.request import url2pathname, pathname2url
 import pkg
 import pkg.p5i as p5i
 import pkg.client.api_errors as apx
-import pkg.client.publisher as pub
 import pkg.client.transport.exception as tx
 import pkg.config as cfg
 import pkg.p5p

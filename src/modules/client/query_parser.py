@@ -21,7 +21,6 @@
 #
 # Copyright (c) 2009, 2024, Oracle and/or its affiliates.
 
-import os
 import sys
 import threading
 import pkg.client.api_errors as api_errors
@@ -32,6 +31,7 @@ import pkg.fmri as fmri
 from pkg.choose import choose
 
 import pkg.query_parser as qp
+# pylint: disable-next=unused-import
 from pkg.query_parser import BooleanQueryException, ParseError, QueryLengthExceeded
 import itertools
 

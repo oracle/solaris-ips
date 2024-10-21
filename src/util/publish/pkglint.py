@@ -30,14 +30,12 @@ try:
     import codecs
     import logging
     import sys
-    import os
     import gettext
     import locale
     import traceback
     import warnings
 
     from pkg.client.api_errors import InvalidPackageErrors
-    from pkg import VERSION
     from pkg.misc import PipeError
     from pkg.client.pkgdefs import EXIT_OK, EXIT_OOPS, EXIT_BADOPT, EXIT_FATAL
 

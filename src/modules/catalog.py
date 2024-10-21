@@ -35,7 +35,6 @@ import os
 import rapidjson as json
 import stat
 import threading
-import types
 
 from collections import OrderedDict
 from operator import itemgetter

@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2024, Oracle and/or its affiliates.
 #
 
 """Remove site-packages directories from sys.path.
@@ -31,7 +31,7 @@ in the system site-packages area."""
 import sys
 
 if sys.platform == "sunos5":
-    from site import getsitepackages as getsitepackages
+    from site import getsitepackages
 
     sitepackages = getsitepackages()
     newpath = list(sys.path)

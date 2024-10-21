@@ -29,7 +29,7 @@ import stat
 import tarfile
 import pkg.bundle
 import pkg.misc as misc
-from pkg.actions import *
+from pkg.actions import directory, file, hardlink, link, unknown
 
 
 class TarBundle(pkg.bundle.Bundle):

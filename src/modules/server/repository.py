@@ -21,10 +21,8 @@
 #
 # Copyright (c) 2008, 2024, Oracle and/or its affiliates.
 
-import codecs
 import datetime
 import errno
-import hashlib
 import logging
 import os
 import os.path
@@ -35,7 +33,6 @@ import sys
 import tempfile
 import zlib
 
-from io import BytesIO
 from urllib.parse import unquote
 
 import pkg.actions as actions

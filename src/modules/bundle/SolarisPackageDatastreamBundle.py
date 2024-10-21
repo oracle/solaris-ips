@@ -29,7 +29,7 @@ import stat
 import pkg.misc as misc
 
 from pkg.sysvpkg import SolarisPackage, MultiPackageDatastreamException
-from pkg.actions import *
+from pkg.actions import directory, file, hardlink, link, license, unknown
 from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
 from pkg.bundle import InvalidBundleException
 

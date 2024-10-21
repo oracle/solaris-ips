@@ -38,7 +38,6 @@ try:
 except AttributeError:
     os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import stat
-import types
 from io import BytesIO
 
 import pkg.actions

@@ -26,12 +26,10 @@
 
 import errno
 import os
-import platform
 import shutil
 from urllib.parse import unquote
 
 import pkg.fmri as fmri
-import pkg.misc as misc
 import pkg.lockfile as lockfile
 import pkg.manifest as manifest
 import pkg.portable as portable

@@ -29,7 +29,7 @@ import os
 import pkg.bundle
 import pkg.misc as misc
 
-from pkg.actions import *
+from pkg.actions import directory, file, hardlink, link, license, unknown
 from pkg.actions.attribute import AttributeAction
 from pkg.actions.legacy import LegacyAction
 from pkg.cpiofile import CpioFile
