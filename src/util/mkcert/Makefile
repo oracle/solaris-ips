@@ -22,15 +22,15 @@
 # Copyright (c) 2016, 2024, Oracle and/or its affiliates.
 #
 
-EXEC =	certgen
+EXEC =	mkcert
 SRCS =	mkcert.c
 OBJS =	$(SRCS:%.c=%.o)
 CERTS = cust_key.pem cust_cert.pem
 CLEANFILES = $(OBJS) $(EXEC) $(CERTS)
 
 CC = cc
-CFLAGS = -D CUSTOM_EXT
-LDLIBS = -lcrypto
+CFLAGS = -m64 -I/usr/openssl/3/include
+LDLIBS = -L/usr/openssl/3/lib/64 -lcrypto 
 
 all:	install
 
@@ -45,4 +45,3 @@ clobber: clean
 
 $(EXEC): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(LDLIBS) $^
-

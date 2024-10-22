@@ -199,14 +199,14 @@ if __name__ == "__main__":
     # understand. We can't do it by the OpenSSL CLI, but we can use a C
     # program that calls OpenSSL libraries to do it.
     os.chdir("../../../util/mkcert")
-    cmdline = "./certgen"
+    cmdline = "./mkcert"
     p = subprocess.Popen(cmdline, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, shell=True)
     p.wait()
 
     output, error = p.communicate()
     if p.returncode == 127:
-        print("certgen not found; execute 'make' in the mkcert "
+        print("mkcert not found; execute 'make' in the mkcert "
             "directory first")
         sys.exit(p.returncode)
     elif p.returncode != 0:
