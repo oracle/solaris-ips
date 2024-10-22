@@ -20,111 +20,72 @@
  */
 
 /*
- * Copyright (c) 2016, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2016, 2024, Oracle and/or its affiliates.
  */
 
 /*
- * Certificate creation. Demonstrates some certificate related
- * operations.
+ * Generate a test certificate with a custom extension.  This is easier
+ * done in C code than via Python cryptography or OpenSSL interfaces.
  */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <openssl/pem.h>
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
-#ifndef OPENSSL_NO_ENGINE
-#include <openssl/engine.h>
-#endif
 
-int mkcert(X509 **x509p, EVP_PKEY **pkeyp, int bits, int serial, int days);
-int add_ext(X509 *cert, int nid, char *value);
+static bool
+add_ext(X509 *cert, int nid, char *value)
+{
+	X509_EXTENSION *ex;
+	X509V3_CTX ctx;
+	/* This sets the 'context' of the extensions. */
+	/* No configuration database */
+	X509V3_set_ctx_nodb(&ctx);
+	/*
+	 * Issuer and subject certs: both the target since it is self signed,
+	 * no request and no CRL
+	 */
+	X509V3_set_ctx(&ctx, cert, cert, NULL, NULL, 0);
+	/* set config as NULL to avoid referencing any sections */
+	ex = X509V3_EXT_conf_nid(NULL, &ctx, nid, value);
+	if (!ex) {
+		return (false);
+	}
+
+	X509_add_ext(cert, ex, -1);
+	X509_EXTENSION_free(ex);
+	return (true);
+}
 
 int
 main(int argc, char **argv)
 {
-	BIO *bio_err;
-	X509 *x509 = NULL;
-	EVP_PKEY *pkey = NULL;
-	FILE *fp = NULL;
-
-	CRYPTO_mem_ctrl(CRYPTO_MEM_CHECK_ON);
-
-	bio_err = BIO_new_fp(stderr, BIO_NOCLOSE);
-
-	mkcert(&x509, &pkey, 2048, 0, 365);
-
-	RSA_print_fp(stdout, pkey->pkey.rsa, 0);
-	X509_print_fp(stdout, x509);
-
-	fp = fopen("cust_key.pem", "w");
-	PEM_write_PrivateKey(fp, pkey, NULL, NULL, 0, NULL, NULL);
-	fp = fopen("cust_cert.pem", "w");
-	PEM_write_X509(fp, x509);
-
-	X509_free(x509);
-	EVP_PKEY_free(pkey);
-
-#ifndef OPENSSL_NO_ENGINE
-	ENGINE_cleanup();
-#endif
-	CRYPTO_cleanup_all_ex_data();
-
-	CRYPTO_mem_leaks(bio_err);
-	BIO_free(bio_err);
-	return (0);
-}
-
-static void callback(int p, int n, void *arg)
-{
-	char c = 'B';
-
-	if (p == 0) c = '.';
-	if (p == 1) c = '+';
-	if (p == 2) c = '*';
-	if (p == 3) c = '\n';
-	fputc(c, stderr);
-}
-
-int
-mkcert(X509 **x509p, EVP_PKEY **pkeyp, int bits, int serial, int days)
-{
-	X509 *x;
-	EVP_PKEY *pk;
-	RSA *rsa;
+	X509 *cert;
+	EVP_PKEY *pkey;
 	X509_NAME *name = NULL;
 
-	if ((pkeyp == NULL) || (*pkeyp == NULL)) {
-		if ((pk = EVP_PKEY_new()) == NULL) {
-			abort();
-		}
-	}
-	else
-		pk = *pkeyp;
-
-	if ((x509p == NULL) || (*x509p == NULL)) {
-		if ((x = X509_new()) == NULL)
-			goto err;
-	}
-	else
-		x = *x509p;
-
-	rsa = RSA_generate_key(bits, RSA_F4, callback, NULL);
-	if (!EVP_PKEY_assign_RSA(pk, rsa)) {
+	cert = X509_new();
+	if (cert == NULL) {
+		fprintf(stderr, "X509_new() failed\n");
 		abort();
 	}
-	rsa = NULL;
 
-	X509_set_version(x, 2);
-	ASN1_INTEGER_set(X509_get_serialNumber(x), serial);
-	X509_gmtime_adj(X509_get_notBefore(x), 0);
-	X509_gmtime_adj(X509_get_notAfter(x), (long)60*60*24*days);
-	X509_set_pubkey(x, pk);
+	pkey = EVP_RSA_gen(4096);
+	if (pkey == NULL) {
+		fprintf(stderr, "EVP_RSA_gen() failed\n");
+		abort();
+	}
 
-	name = X509_get_subject_name(x);
+	X509_set_version(cert, 2);
+	ASN1_INTEGER_set(X509_get_serialNumber(cert), 0);
+	X509_gmtime_adj(X509_get_notBefore(cert), 0);
+	X509_gmtime_adj(X509_get_notAfter(cert), (long)60*60*24*365);
+	X509_set_pubkey(cert, pkey);
+
+	name = X509_get_subject_name(cert);
 
 	/*
 	 * This function creates and adds the entry, working out the
@@ -140,59 +101,41 @@ mkcert(X509 **x509p, EVP_PKEY **pkeyp, int bits, int serial, int days)
 	X509_NAME_add_entry_by_txt(name, "O",
 	    MBSTRING_ASC, (unsigned char *)"pkg5", -1, -1, 0);
 	X509_NAME_add_entry_by_txt(name, "CN",
-	    MBSTRING_ASC, (unsigned char *)"OpenSSL Group", -1, -1, 0);
+	    MBSTRING_ASC, (unsigned char *)"IPS Gate Test", -1, -1, 0);
 
 	/*
 	 * Its self signed so set the issuer name to be the same as the
 	 * subject.
 	 */
-	X509_set_issuer_name(x, name);
+	X509_set_issuer_name(cert, name);
 
 
-#ifdef CUSTOM_EXT
-	/* Maybe even add our own extension based on existing */
-	{
-		int nid;
-		nid = OBJ_create("1.2.3.4", "MyAlias",
-		    "My Test Alias Extension");
-		X509V3_EXT_add_alias(nid, NID_netscape_comment);
-		add_ext(x, nid, "critical,example comment alias");
+	/* Add our own custom extension */
+	int nid;
+	nid = OBJ_create("1.2.3.4", "MyAlias", "My Test Alias Extension");
+	X509V3_EXT_add_alias(nid, NID_netscape_comment);
+	if (!add_ext(cert, nid, "critical,example comment alias")) {
+		fprintf(stderr, "Failed to add custom extension.\n");
+		return (1);
 	}
-#endif
 
-	if (!X509_sign(x, pk, EVP_sha256()))
-		goto err;
+	if (!X509_sign(cert, pkey, EVP_sha256())) {
+		fprintf(stderr, "Failed to sign certificate.\n");
+		return (1);
+	}
 
-	*x509p = x;
-	*pkeyp = pk;
-	return (1);
-err:
+	EVP_PKEY_print_public_fp(stdout, pkey, 0, NULL);
+	X509_print_fp(stdout, cert);
+
+	FILE *fp = fopen("cust_key.pem", "w");
+	PEM_write_PrivateKey(fp, pkey, NULL, NULL, 0, NULL, NULL);
+	(void) fclose(fp);
+	fp = fopen("cust_cert.pem", "w");
+	PEM_write_X509(fp, cert);
+	(void) fclose(fp);
+
+	X509_free(cert);
+	EVP_PKEY_free(pkey);
+
 	return (0);
-}
-
-/*
- * Add extension using V3 code: we can set the config file as NULL
- * because we wont reference any other sections.
- */
-
-int
-add_ext(X509 *cert, int nid, char *value)
-{
-	X509_EXTENSION *ex;
-	X509V3_CTX ctx;
-	/* This sets the 'context' of the extensions. */
-	/* No configuration database */
-	X509V3_set_ctx_nodb(&ctx);
-	/*
-	 * Issuer and subject certs: both the target since it is self signed,
-	 * no request and no CRL
-	 */
-	X509V3_set_ctx(&ctx, cert, cert, NULL, NULL, 0);
-	ex = X509V3_EXT_conf_nid(NULL, &ctx, nid, value);
-	if (!ex)
-		return (0);
-
-	X509_add_ext(cert, ex, -1);
-	X509_EXTENSION_free(ex);
-	return (1);
 }
