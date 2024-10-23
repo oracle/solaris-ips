@@ -69,6 +69,31 @@ class CfgFile:
         return "CfgFile({0}):{1}:{2}:{3}".format(
             self.filename, self.keys, self.column_names, self.index)
 
+    # Historically this class allocated from the 0-99 range, but
+    # UID/GID 0-99 are reserved for the OS vendor and Solaris always
+    # registers the id/name mappings.
+    #
+    # Following other platforms behaviour:
+    #   https://en.wikipedia.org/wiki/User_identifier 
+    #
+    # 100-499 will be used for actions where no uid/gid provided.
+    MIN_DYNAMIC_ID = 100
+    MAX_DYNAMIC_ID = 499
+
+    def getnextid(self, values, idtype):
+        """returns a free id (uid or gid) from the dynamic space 100-499"""
+        ids = set()
+        for t in values:
+            if t[1]:
+                nid = int(t[1][idtype])
+                if nid >= self.MIN_DYNAMIC_ID and nid <= self.MAX_DYNAMIC_ID:
+                    ids.add(nid)
+        for i in range(self.MIN_DYNAMIC_ID, self.MAX_DYNAMIC_ID + 1):
+            if i not in ids:
+                return i
+        raise RuntimeError(f"No free {idtype} in dynamic allocation range: " +
+                           f"{self.MIN_DYNAMIC_ID}-{self.MAX_DYNAMIC_ID}.")
+
     def getcolumnnames(self):
         return self.column_names
 
@@ -236,7 +261,6 @@ class PasswordFile(CfgFile):
         if lock:
             self.lock()
         self.readfile()
-        self.password_file.default_values["uid"] = self.getnextuid()
 
     def __str__(self):
         return "PasswordFile: [{0} {1}]".format(self.password_file,
@@ -268,15 +292,7 @@ class PasswordFile(CfgFile):
         self.shadow_file.removevalue(template)
 
     def getnextuid(self):
-        """returns next free system (<=99) uid"""
-        uids = []
-        for t in self.password_file.index.values():
-            if t[1]:
-                uids.append(t[1]["uid"])
-        for i in range(100):
-            if str(i) not in uids:
-                return i
-        raise RuntimeError("No free system uids")
+        return self.getnextid(self.password_file.index.values(), "uid")
 
     def getcolumnnames(self):
         names = self.password_file.column_names.copy()
@@ -321,18 +337,9 @@ class GroupFile(CfgFile):
                          "groupname", comment_match="[+-]")
 
         self.readfile()
-        self.default_values["gid"] = self.getnextgid()
 
     def getnextgid(self):
-        """returns next free system (<=99) gid"""
-        gids = []
-        for t in self.index.values():
-            if t[1]:
-                gids.append(t[1]["gid"])
-        for i in range(100):
-            if str(i) not in gids:
-                return i
-        raise RuntimeError("No free system gids")
+        return self.getnextid(self.index.values(), "gid")
 
     def adduser(self, groupname, username):
         """"add named user to group; does not check if user exists"""

@@ -3706,9 +3706,9 @@ adm
         self._assertEditables()
 
         # make sure Kermie is still installed and still has our local
-        # changes
+        # changes. The uid should be the first in the dynamic range 100-499.
         self.file_contains("etc/passwd",
-            "Kermit:x:5:4:Kermit loves Miss Piggy:/export/home/Kermit:")
+            "Kermit:x:100:4:Kermit loves Miss Piggy:/export/home/Kermit:")
 
         # also make sure that /etc/silly hasn't been removed and added
         # again, even though it wasn't marked specially
@@ -5964,14 +5964,19 @@ adm:NP:6445::::::
         # properly install group w/o a gid
         self.pkg("install simplegroup@0")
         self.pkg("verify simplegroup")
-        # install w/ different gid
-        self.pkg("install simplegroup@1")
-        self.pkg("verify simplegroup")
-        # check # lines beginning w/ 'muppets' in group file
+        # check the uid did not change
         with open(gpath) as f:
             gdata = f.readlines()
         self.assertTrue(
-            len([a for a in gdata if a.find("muppets") == 0]) == 1)
+            len([a for a in gdata if a.find("muppets::1010") == 0]) == 1)
+        # install w/ different gid
+        self.pkg("install simplegroup@1")
+        self.pkg("verify simplegroup")
+        # check lines beginning with 'muppets' in group file
+        with open(gpath) as f:
+            gdata = f.readlines()
+        self.assertTrue(
+            len([a for a in gdata if a.find("muppets::70") == 0]) == 1)
 
         # make sure we can add new version of same package
         self.pkg("update simplegroup")
@@ -6283,16 +6288,22 @@ adm:NP:6445::::::
         else:
             self.pkg("exact-install basics ugidtest")
         passwd_file = open(os.path.join(self.get_img_path(),
-            "/etc/passwd"))
+            "etc/passwd"))
+        userfound = False
         for line in passwd_file:
             if line.startswith("dummy"):
-                self.assertTrue(line.startswith("dummy:x:5:"))
+                self.assertTrue(line.startswith("dummy:x:100:"))
+                userfound = True
         passwd_file.close()
+        self.assertTrue(userfound)
         group_file = open(os.path.join(self.get_img_path(),
-            "/etc/group"))
+            "etc/group"))
+        groupfound = False
         for line in group_file:
             if line.startswith("dummy"):
-                self.assertTrue(line.startswith("dummy::5:"))
+                self.assertTrue(line.startswith("dummy::100:"))
+                groupfound = True
+        self.assertTrue(groupfound)
         group_file.close()
 
     def test_upgrade_with_user(self):

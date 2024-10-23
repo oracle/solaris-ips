@@ -172,6 +172,12 @@ class UserAction(generic.Action):
             self.attrs["group-list"] = self.attrlist("group-list")
             final_attrs = self.merge(orig_attrs, cur_attrs)
 
+            # When the user already exists uid will be in cur_attrs,
+            # if this is a new user and a uid is not specified in self.attrs
+            # we need to allocate one.
+            if "uid" not in final_attrs:
+                final_attrs["uid"] = pw.getnextuid()
+
             pw.setvalue(final_attrs)
 
             if "group-list" in final_attrs:
