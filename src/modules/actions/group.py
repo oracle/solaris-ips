@@ -88,8 +88,10 @@ class GroupAction(generic.Action):
         #        (XXX this doesn't chown any files on-disk)
         # else, nothing to do
         if cur_attrs:
+            # if the action doesn't specify the gid keep the one
+            # already allocated.
             if "gid" not in self.attrs:
-                self.attrs["gid"] = cur_attrs["gid"]
+                template["gid"] = cur_attrs["gid"]
             elif self.attrs["gid"] != cur_attrs["gid"]:
                 cur_gid = cur_attrs["gid"]
                 template = cur_attrs
@@ -129,6 +131,9 @@ class GroupAction(generic.Action):
             # attempting to validate it in any way.
             if cur_attrs["user-list"]:
                 template["user-list"] = cur_attrs["user-list"]
+
+        if "gid" not in template:
+            template["gid"] = gr.getnextgid()
 
         gr.setvalue(template)
         try:

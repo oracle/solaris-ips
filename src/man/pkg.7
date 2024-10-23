@@ -6,11 +6,11 @@
 
 <refentry id="pkg-7">
 <refmeta><refentrytitle>pkg</refentrytitle><manvolnum>7</manvolnum>
-<refmiscinfo class="date">06 Mar 2023</refmiscinfo>
+<refmiscinfo class="date">11 Sep 2024</refmiscinfo>
 <refmiscinfo class="sectdesc">&man7;</refmiscinfo>
 <refmiscinfo class="software">&release;</refmiscinfo>
 <refmiscinfo class="arch">generic</refmiscinfo>
-<refmiscinfo class="copyright">Copyright (c) 2009, 2023, Oracle and/or its affiliates.</refmiscinfo>
+<refmiscinfo class="copyright">Copyright (c) 2009, 2024, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System</refpurpose>
@@ -926,8 +926,10 @@ fixes will use the package definition for the <literal>group</literal>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>gid</literal></term>
-<listitem><para>The group's unique numerical id. The default value is the
-first free group under 100.</para>
+<listitem><para>The group's unique numerical id.
+If not specified the first free value in the dynamic allocation range
+100-499 in the install image is used.  The range 0-99 is reserved for
+static allocation by the operating system vendor only.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -967,8 +969,10 @@ change the value back to that of the manifest.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>uid</literal></term>
-<listitem><para>The unique uid of the user. Default value is first free value
-under 100.</para>
+<listitem><para>The unique uid of the user.
+If not specified the first free value in the dynamic allocation range:
+100-499 in the install image is used.  The range 0-99 is reserved for
+static allocation by the operating system vendor only.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>group</literal></term>
