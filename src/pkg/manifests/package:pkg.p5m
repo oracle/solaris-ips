@@ -291,7 +291,7 @@ license lic_minisat license="MIT (MiniSAT)" com.oracle.info.baid=17890 \
     com.oracle.info.description="MiniSAT 1.14.1" com.oracle.info.name=MiniSAT \
     com.oracle.info.version=1.14.1
 license cr_Oracle license=cr_Oracle
-depend type=conditional fmri=package/pkg-311 predicate=runtime/python-311
+depend type=conditional fmri=package/pkg-39 predicate=runtime/python-39
 depend type=group fmri=package/pkg/zones-proxy \
     variant.opensolaris.zone=nonglobal
 # cross zone dependency on linked image metadata
@@ -299,4 +299,4 @@ depend type=parent fmri=feature/package/dependency/self \
     variant.opensolaris.zone=nonglobal
 depend type=require fmri=crypto/ca-certificates
 # CFFI import is done in C code, so it isn't picked up by pkgdepend
-depend type=require fmri=library/python/cffi-39@1.15.1
+depend type=require fmri=library/python/cffi-311@1.15.1

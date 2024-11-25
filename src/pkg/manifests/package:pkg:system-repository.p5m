@@ -73,4 +73,4 @@ depend type=conditional fmri=web/server/apache-24/module/apache-ssl-fips-140 \
 depend type=require fmri=web/server/apache-24
 depend type=require fmri=web/server/apache-24/module/apache-ssl
 # p5p support in the system repository requires mod_wsgi
-depend type=require fmri=web/server/apache-24/module/apache-wsgi-39
+depend type=require fmri=web/server/apache-24/module/apache-wsgi-311
