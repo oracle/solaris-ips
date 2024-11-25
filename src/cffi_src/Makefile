@@ -65,7 +65,7 @@ $(LINT)CLINT = lint
 CLINT = $(LINT)
 
 CLINT_FLAGS = -m64 -u -axms -erroff=E_NAME_DEF_NOT_USED2
-CLINT_INCLUDES = -I/usr/include/python3.9
+CLINT_INCLUDES = -I/usr/include/python3.11
 
 clint: all
 	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) _arch.c

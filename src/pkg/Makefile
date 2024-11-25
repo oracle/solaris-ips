@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 #
 
 PKGVERS_BUILTON   = 5.11
@@ -97,11 +97,11 @@ PYTHON311	  = python3.11
 PY311DIR	  = usr/lib/$(PYTHON311)
 PY311DIRVP	  = $(PY311DIR)/vendor-packages
 
-PYDIR		  = usr/lib/$(PYTHON39)
+PYDIR		  = usr/lib/$(PYTHON311)
 PYDIRVP		  = $(PYDIR)/vendor-packages
 PKGCMDENV         = \
 	PATH=$(PKGROOT)/usr/bin:/usr/sbin:/usr/bin \
-	PYTHONPATH=$(PKGROOT)/$(PYDIRVP) $(PYTHON39) $(PKGROOT)/usr/bin/
+	PYTHONPATH=$(PKGROOT)/$(PYDIRVP) $(PYTHON311) $(PKGROOT)/usr/bin/
 PKG               = $(PKGCMDENV)/pkg
 PKGDEPEND         = $(PKGCMDENV)/pkgdepend
 PKGDIFF           = $(PKGCMDENV)/pkgdiff

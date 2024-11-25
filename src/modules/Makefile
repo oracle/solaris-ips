@@ -116,7 +116,7 @@ $(LINT)CLINT = lint
 CLINT = $(LINT)
 
 CLINT_FLAGS = -m64 -u -axms -erroff=E_NAME_DEF_NOT_USED2
-CLINT_INCLUDES = -I/usr/include/python3.9 -I.
+CLINT_INCLUDES = -I/usr/include/python3.11 -I.
 
 clint: all
 	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) -lelf -lmd elf.c elfextract.c liblist.c

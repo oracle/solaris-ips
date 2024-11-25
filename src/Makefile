@@ -50,7 +50,7 @@ INSTALL =	$(STASH) file -v
 MKDIR =		mkdir -p
 
 PROTO_AREA:sh = echo $(dirname $(pwd))/proto/root_$(uname -p)
-PROTO_VENDOR_PACKAGES = $(PROTO_AREA)/usr/lib/python3.9/vendor-packages
+PROTO_VENDOR_PACKAGES = $(PROTO_AREA)/usr/lib/python3.11/vendor-packages
 
 RESOURCE_DIR =	$(PROTO_AREA)/usr/share/lib/pkg
 TRANSFORM_DIR =	$(PROTO_AREA)/usr/share/pkg/transforms
@@ -209,7 +209,7 @@ $(LINT)CLINT = lint
 CLINT = $(LINT)
 
 CLINT_FLAGS = -m64 -u -axms -erroff=E_NAME_DEF_NOT_USED2
-CLINT_INCLUDES = -Imodules -I/usr/include/python3.9
+CLINT_INCLUDES = -Imodules -I/usr/include/python3.11
 
 # Runs lint tools over IPS C extension source code.
 clint: cffi_src modules
@@ -227,18 +227,18 @@ clint: cffi_src modules
 #
 pylint:
 	PYTHONPATH=$(PROTO_VENDOR_PACKAGES):tests \
-		$(PYTHON39) -m pylint --rcfile tests/pylintrc $(PYLINT_TARGETS)
+		$(PYTHON311) -m pylint --rcfile tests/pylintrc $(PYLINT_TARGETS)
 
 # A note about bandit baselines: bandit will report new errors but it
 # will not fail on a new duplicate issues (bandit bugs: 466 and 558)
 
 bandit:
-	$(PYTHON39) -m bandit -r -q -c tests/banditrc . -b tests/bandit-baseline.json
+	$(PYTHON311) -m bandit -r -q -c tests/banditrc . -b tests/bandit-baseline.json
 
 # When generating a baseline, if there are warnings/errors
 # bandit will exit with a value of 1.
 regen-bandit:
-	$(PYTHON39) -m bandit -r -q -c tests/banditrc . -o tests/bandit-baseline.json -f json || true
+	$(PYTHON311) -m bandit -r -q -c tests/banditrc . -o tests/bandit-baseline.json -f json || true
 
 check: $(SUBDIRS)
 	$(PYCODESTYLE) --statistics --count `cat tests/pycodestyle-whitelist.txt`

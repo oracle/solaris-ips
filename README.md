@@ -23,7 +23,7 @@ The above will run all test cases in 8 parallel processes. Other options are als
 Tests running can also be done by using make:
 >       $cd src; sudo make test
 
-Make targets test-37 and test-39 are available for testing specific Python versions.
+Make targets test-39 and test-311 are available for testing specific Python versions.
 
 IPS applications and libraries can be packaged and published into an IPS repository using:
 >       $cd src; make packages;
@@ -85,7 +85,7 @@ security vulnerability reporting and disclosure process.
 
 ## License
 
-Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+Copyright (c) 2010, 2024, Oracle and/or its affiliates.
 
 The Image Packaging System is primarily distributed under the terms of the CDDL (Common Development and Distribution License), with a few portions covered by BSD-style or MIT-style licenses.
 
