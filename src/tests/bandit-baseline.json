@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2024-08-05T10:05:37Z",
+  "generated_at": "2024-11-21T14:05:14Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0,
@@ -63,7 +63,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 4575,
+      "loc": 4580,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -76,7 +76,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 4,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 757,
+      "loc": 761,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -89,7 +89,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 3,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 737,
+      "loc": 746,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -180,7 +180,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 616,
+      "loc": 615,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -193,7 +193,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 894,
+      "loc": 893,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -206,7 +206,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 170,
+      "loc": 172,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -258,7 +258,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 131,
+      "loc": 129,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -271,7 +271,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 429,
+      "loc": 427,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -297,7 +297,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 255,
+      "loc": 257,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -414,7 +414,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2775,
+      "loc": 2774,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -427,7 +427,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 364,
+      "loc": 358,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -466,7 +466,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 280,
+      "loc": 276,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -505,7 +505,7 @@
       "SEVERITY.LOW": 5,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 989,
+      "loc": 988,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -518,7 +518,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2671,
+      "loc": 2668,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -544,7 +544,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 139,
+      "loc": 143,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -570,7 +570,7 @@
       "SEVERITY.LOW": 6,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 3133,
+      "loc": 3129,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -583,7 +583,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1120,
+      "loc": 1119,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -596,7 +596,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 4352,
+      "loc": 4351,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -726,7 +726,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 465,
+      "loc": 464,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -791,7 +791,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2163,
+      "loc": 2160,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -804,7 +804,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 330,
+      "loc": 329,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -817,7 +817,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 518,
+      "loc": 517,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -856,7 +856,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 794,
+      "loc": 793,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -908,7 +908,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 1,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1893,
+      "loc": 1892,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -921,7 +921,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 349,
+      "loc": 347,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1012,7 +1012,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 295,
+      "loc": 294,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1181,7 +1181,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 772,
+      "loc": 770,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1337,7 +1337,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 1,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2161,
+      "loc": 2158,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1402,7 +1402,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 881,
+      "loc": 880,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1415,16 +1415,16 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 192,
+      "loc": 190,
       "nosec": 0,
       "skipped_tests": 0
     },
     "./modules/pipeutils.py": {
-      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 0,
+      "SEVERITY.HIGH": 1,
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
@@ -1467,7 +1467,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 1,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 163,
+      "loc": 162,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1571,7 +1571,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1324,
+      "loc": 1322,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1727,7 +1727,7 @@
       "SEVERITY.LOW": 5,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 3210,
+      "loc": 3207,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1766,7 +1766,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 195,
+      "loc": 194,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1818,7 +1818,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 330,
+      "loc": 329,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1844,7 +1844,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 504,
+      "loc": 502,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1870,7 +1870,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 691,
+      "loc": 690,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1909,7 +1909,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 295,
+      "loc": 294,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2169,7 +2169,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 254,
+      "loc": 252,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2252,22 +2252,22 @@
       "skipped_tests": 0
     },
     "_totals": {
-      "CONFIDENCE.HIGH": 129,
+      "CONFIDENCE.HIGH": 130,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 14,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 18,
+      "SEVERITY.HIGH": 19,
       "SEVERITY.LOW": 98,
       "SEVERITY.MEDIUM": 27,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 94410,
+      "loc": 94376,
       "nosec": 0,
       "skipped_tests": 0
     }
   },
   "results": [
     {
-      "code": "1018             return path\n1019         except Exception:\n1020             pass\n1021 \n",
+      "code": "1023             return path\n1024         except Exception:\n1025             pass\n1026 \n",
       "col_offset": 8,
       "end_col_offset": 16,
       "filename": "./client.py",
@@ -2278,17 +2278,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1019,
+      "line_number": 1024,
       "line_range": [
-        1019,
-        1020
+        1024,
+        1025
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "5948             _api_inst.abort(result=RESULT_CANCELED)\n5949     except:\n5950         # If history operation fails for some reason, drive on.\n5951         pass\n5952 \n",
+      "code": "5953             _api_inst.abort(result=RESULT_CANCELED)\n5954     except:\n5955         # If history operation fails for some reason, drive on.\n5956         pass\n5957 \n",
       "col_offset": 4,
       "end_col_offset": 12,
       "filename": "./client.py",
@@ -2299,18 +2299,18 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 5949,
+      "line_number": 5954,
       "line_range": [
-        5949,
-        5950,
-        5951
+        5954,
+        5955,
+        5956
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "289         if fragment:\n290             conf_template = Template(\n291                 filename=fragment_conf_template_path,\n292                 lookup=conf_lookup)\n293             conf_path = os.path.join(runtime_dir,\n",
+      "code": "294         if fragment:\n295             conf_template = Template(\n296                 filename=fragment_conf_template_path,\n297                 lookup=conf_lookup)\n298             conf_path = os.path.join(runtime_dir,\n",
       "col_offset": 28,
       "end_col_offset": 35,
       "filename": "./depot-config.py",
@@ -2321,40 +2321,40 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Mako templates allow HTML/JS rendering by default and are inherently open to XSS attacks. Ensure variables in all templates are properly sanitized via the 'n', 'h' or 'x' flags (depending on context). For example, to HTML escape the variable 'data' do ${ data |h }.",
-      "line_number": 290,
+      "line_number": 295,
       "line_range": [
-        290,
-        291,
-        292
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b702_use_of_mako_templates.html",
-      "test_id": "B702",
-      "test_name": "use_of_mako_templates"
-    },
-    {
-      "code": "295         else:\n296             conf_template = Template(\n297                 filename=httpd_conf_template_path,\n298                 lookup=conf_lookup)\n299             conf_path = os.path.join(runtime_dir,\n",
-      "col_offset": 28,
-      "end_col_offset": 35,
-      "filename": "./depot-config.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 80,
-        "link": "https://cwe.mitre.org/data/definitions/80.html"
-      },
-      "issue_severity": "MEDIUM",
-      "issue_text": "Mako templates allow HTML/JS rendering by default and are inherently open to XSS attacks. Ensure variables in all templates are properly sanitized via the 'n', 'h' or 'x' flags (depending on context). For example, to HTML escape the variable 'data' do ${ data |h }.",
-      "line_number": 296,
-      "line_range": [
+        295,
         296,
-        297,
-        298
+        297
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b702_use_of_mako_templates.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b702_use_of_mako_templates.html",
       "test_id": "B702",
       "test_name": "use_of_mako_templates"
     },
     {
-      "code": "469 def _generate_server_cert_key(host, port, ca_cert_file=\"\", ca_key_file=\"\",\n470     output_dir=\"/tmp\"):\n471     \"\"\" Generate certificate and key files for https service.\"\"\"\n472     if os.path.exists(output_dir):\n",
+      "code": "300         else:\n301             conf_template = Template(\n302                 filename=httpd_conf_template_path,\n303                 lookup=conf_lookup)\n304             conf_path = os.path.join(runtime_dir,\n",
+      "col_offset": 28,
+      "end_col_offset": 35,
+      "filename": "./depot-config.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 80,
+        "link": "https://cwe.mitre.org/data/definitions/80.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Mako templates allow HTML/JS rendering by default and are inherently open to XSS attacks. Ensure variables in all templates are properly sanitized via the 'n', 'h' or 'x' flags (depending on context). For example, to HTML escape the variable 'data' do ${ data |h }.",
+      "line_number": 301,
+      "line_range": [
+        301,
+        302,
+        303
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b702_use_of_mako_templates.html",
+      "test_id": "B702",
+      "test_name": "use_of_mako_templates"
+    },
+    {
+      "code": "472 def _generate_server_cert_key(host, port, ca_cert_file=\"\", ca_key_file=\"\",\n473     output_dir=\"/tmp\"):\n474     \"\"\" Generate certificate and key files for https service.\"\"\"\n475     if os.path.exists(output_dir):\n",
       "col_offset": 15,
       "end_col_offset": 21,
       "filename": "./depot-config.py",
@@ -2365,17 +2365,17 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Probable insecure usage of temp file/directory.",
-      "line_number": 470,
+      "line_number": 473,
       "line_range": [
-        469,
-        470
+        472,
+        473
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b108_hardcoded_tmp_directory.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b108_hardcoded_tmp_directory.html",
       "test_id": "B108",
       "test_name": "hardcoded_tmp_directory"
     },
     {
-      "code": "695     # some sensible defaults\n696     host = \"0.0.0.0\"\n697     # the port we listen on\n",
+      "code": "697     # some sensible defaults\n698     host = \"0.0.0.0\"\n699     # the port we listen on\n",
       "col_offset": 11,
       "end_col_offset": 20,
       "filename": "./depot-config.py",
@@ -2386,16 +2386,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Possible binding to all interfaces.",
-      "line_number": 696,
+      "line_number": 698,
       "line_range": [
-        696
+        698
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b104_hardcoded_bind_all_interfaces.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b104_hardcoded_bind_all_interfaces.html",
       "test_id": "B104",
       "test_name": "hardcoded_bind_all_interfaces"
     },
     {
-      "code": "51     import string\n52     import subprocess\n53     import sys\n",
+      "code": "52     import string\n53     import subprocess\n54     import sys\n",
       "col_offset": 4,
       "end_col_offset": 21,
       "filename": "./depot.py",
@@ -2406,16 +2406,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 52,
+      "line_number": 53,
       "line_range": [
-        52
+        53
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "96 # The default host/port(s) to serve data from.\n97 HOST_DEFAULT = \"0.0.0.0\"\n98 PORT_DEFAULT = 80\n",
+      "code": "97 # The default host/port(s) to serve data from.\n98 HOST_DEFAULT = \"0.0.0.0\"\n99 PORT_DEFAULT = 80\n",
       "col_offset": 15,
       "end_col_offset": 24,
       "filename": "./depot.py",
@@ -2426,16 +2426,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Possible binding to all interfaces.",
-      "line_number": 97,
+      "line_number": 98,
       "line_range": [
-        97
+        98
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b104_hardcoded_bind_all_interfaces.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b104_hardcoded_bind_all_interfaces.html",
       "test_id": "B104",
       "test_name": "hardcoded_bind_all_interfaces"
     },
     {
-      "code": "693                     cmdargs = []\n694                 p = subprocess.Popen(cmdargs,\n695                         stdout=subprocess.PIPE,\n696                         stderr=None)\n697                 p.wait()\n",
+      "code": "694                     cmdargs = []\n695                 p = subprocess.Popen(cmdargs,\n696                         stdout=subprocess.PIPE,\n697                         stderr=None)\n698                 p.wait()\n",
       "col_offset": 20,
       "end_col_offset": 36,
       "filename": "./depot.py",
@@ -2446,18 +2446,18 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 694,
+      "line_number": 695,
       "line_range": [
-        694,
         695,
-        696
+        696,
+        697
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "827             else:\n828                 h = logging.StreamHandler(eval(\"sys.{0}\".format(\n829                     dest)))\n830 \n",
+      "code": "838             else:\n839                 h = logging.StreamHandler(eval(\"sys.{0}\".format(\n840                     dest)))\n841 \n",
       "col_offset": 42,
       "end_col_offset": 26,
       "filename": "./depot.py",
@@ -2468,17 +2468,17 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Use of possibly insecure function - consider using safer ast.literal_eval.",
-      "line_number": 828,
+      "line_number": 839,
       "line_range": [
-        828,
-        829
+        839,
+        840
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b307-eval",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b307-eval",
       "test_id": "B307",
       "test_name": "blacklist"
     },
     {
-      "code": "832             h.setFormatter(cherrypy._cplogging.logfmt)\n833             log_obj = eval(\"cherrypy.log.{0}\".format(\n834                 log_type_map[log_type][\"attr\"]))\n835             log_obj.addHandler(h)\n",
+      "code": "843             h.setFormatter(cherrypy._cplogging.logfmt)\n844             log_obj = eval(\"cherrypy.log.{0}\".format(\n845                 log_type_map[log_type][\"attr\"]))\n846             log_obj.addHandler(h)\n",
       "col_offset": 22,
       "end_col_offset": 48,
       "filename": "./depot.py",
@@ -2489,12 +2489,12 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Use of possibly insecure function - consider using safer ast.literal_eval.",
-      "line_number": 833,
+      "line_number": 844,
       "line_range": [
-        833,
-        834
+        844,
+        845
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b307-eval",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b307-eval",
       "test_id": "B307",
       "test_name": "blacklist"
     },
@@ -2514,7 +2514,7 @@
       "line_range": [
         34
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
@@ -2535,12 +2535,12 @@
         120,
         121
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "839                     os.chmod(pdir, pmode)\n840                 except Exception as e:\n841                     # Ignore failure to reset parent mode.\n842                     pass\n843 \n",
+      "code": "838                     os.chmod(pdir, pmode)\n839                 except Exception as e:\n840                     # Ignore failure to reset parent mode.\n841                     pass\n842 \n",
       "col_offset": 16,
       "end_col_offset": 24,
       "filename": "./modules/actions/file.py",
@@ -2551,13 +2551,13 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 840,
+      "line_number": 839,
       "line_range": [
+        839,
         840,
-        841,
-        842
+        841
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -2578,12 +2578,12 @@
         112,
         113
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "78                 # Only needed if not writing to __fileobj.\n79                 self.__sha_1 = hashlib.sha1()\n80             self.__sha_1_value = None\n",
+      "code": "77                 # Only needed if not writing to __fileobj.\n78                 self.__sha_1 = hashlib.sha1()\n79             self.__sha_1_value = None\n",
       "col_offset": 31,
       "end_col_offset": 45,
       "filename": "./modules/catalog.py",
@@ -2594,16 +2594,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 79,
+      "line_number": 78,
       "line_range": [
-        79
+        78
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "256         if \"password\" in copy:\n257             copy[\"password\"] = \"\"\n258         self.password_file.updatevalue(copy)\n",
+      "code": "277         if \"password\" in copy:\n278             copy[\"password\"] = \"\"\n279         self.password_file.updatevalue(copy)\n",
       "col_offset": 17,
       "end_col_offset": 27,
       "filename": "./modules/cfgfiles.py",
@@ -2614,16 +2614,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: ''",
-      "line_number": 257,
+      "line_number": 278,
       "line_range": [
-        257
+        278
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b105_hardcoded_password_string.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "264         if \"password\" in copy:\n265             copy[\"password\"] = \"x\"\n266         self.password_file.setvalue(copy)\n",
+      "code": "285         if \"password\" in copy:\n286             copy[\"password\"] = \"x\"\n287         self.password_file.setvalue(copy)\n",
       "col_offset": 17,
       "end_col_offset": 27,
       "filename": "./modules/cfgfiles.py",
@@ -2634,11 +2634,11 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: 'x'",
-      "line_number": 265,
+      "line_number": 286,
       "line_range": [
-        265
+        286
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b105_hardcoded_password_string.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
@@ -2659,7 +2659,7 @@
         760,
         761
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -2680,12 +2680,12 @@
         5414,
         5415
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b112_try_except_continue.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b112_try_except_continue.html",
       "test_id": "B112",
       "test_name": "try_except_continue"
     },
     {
-      "code": "27 import shutil\n28 import subprocess\n29 import tempfile\n",
+      "code": "26 import shutil\n27 import subprocess\n28 import tempfile\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "./modules/client/bootenv.py",
@@ -2696,16 +2696,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 28,
+      "line_number": 27,
       "line_range": [
-        28
+        27
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "142         try:\n143             ret = subprocess.call(cmd,\n144                 stdout = open(os.devnull), stderr=subprocess.STDOUT)\n145         except OSError as e:\n",
+      "code": "141         try:\n142             ret = subprocess.call(cmd,\n143                 stdout = open(os.devnull), stderr=subprocess.STDOUT)\n144         except OSError as e:\n",
       "col_offset": 18,
       "end_col_offset": 68,
       "filename": "./modules/client/bootenv.py",
@@ -2716,17 +2716,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 143,
+      "line_number": 142,
       "line_range": [
-        143,
-        144
+        142,
+        143
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "290                     ignore_errors=True)\n291         except Exception as e:\n292             pass\n293 \n",
+      "code": "289                     ignore_errors=True)\n290         except Exception as e:\n291             pass\n292 \n",
       "col_offset": 8,
       "end_col_offset": 16,
       "filename": "./modules/client/bootenv.py",
@@ -2737,17 +2737,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 291,
+      "line_number": 290,
       "line_range": [
-        291,
-        292
+        290,
+        291
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "889                         be_name)\n890                 except Exception as e:\n891                     pass\n892                 break\n",
+      "code": "888                         be_name)\n889                 except Exception as e:\n890                     pass\n891                 break\n",
       "col_offset": 16,
       "end_col_offset": 24,
       "filename": "./modules/client/bootenv.py",
@@ -2758,17 +2758,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 890,
+      "line_number": 889,
       "line_range": [
-        890,
-        891
+        889,
+        890
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1097         try:\n1098             ret = subprocess.call(cmd,\n1099                 stdout = open(os.devnull), stderr=subprocess.STDOUT)\n1100         except OSError as e:\n",
+      "code": "1096         try:\n1097             ret = subprocess.call(cmd,\n1098                 stdout = open(os.devnull), stderr=subprocess.STDOUT)\n1099         except OSError as e:\n",
       "col_offset": 18,
       "end_col_offset": 68,
       "filename": "./modules/client/bootenv.py",
@@ -2779,17 +2779,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 1098,
+      "line_number": 1097,
       "line_range": [
-        1098,
-        1099
+        1097,
+        1098
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "684 \n685         except:\n686             # Ignore the above error and just use what\n687             # already exists.\n688             pass\n689 \n",
+      "code": "681 \n682         except:\n683             # Ignore the above error and just use what\n684             # already exists.\n685             pass\n686 \n",
       "col_offset": 8,
       "end_col_offset": 16,
       "filename": "./modules/client/client_api.py",
@@ -2800,19 +2800,19 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 685,
+      "line_number": 682,
       "line_range": [
-        685,
-        686,
-        687,
-        688
+        682,
+        683,
+        684,
+        685
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "27 import os.path\n28 import subprocess\n29 import sys\n",
+      "code": "27 import os.path\n28 import subprocess\n29 \n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "./modules/client/firmware.py",
@@ -2827,12 +2827,12 @@
       "line_range": [
         28
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "72             try:\n73                 proc = subprocess.Popen(\n74                     args,\n75                     stdout=subprocess.PIPE,\n76                     stderr=subprocess.STDOUT)\n77                 # output from proc is bytes\n",
+      "code": "77             try:\n78                 proc = subprocess.Popen(\n79                     args,\n80                     stdout=subprocess.PIPE,\n81                     stderr=subprocess.STDOUT)\n82                 # output from proc is bytes\n",
       "col_offset": 23,
       "end_col_offset": 45,
       "filename": "./modules/client/firmware.py",
@@ -2843,14 +2843,14 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 73,
+      "line_number": 78,
       "line_range": [
-        73,
-        74,
-        75,
-        76
+        78,
+        79,
+        80,
+        81
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -2870,7 +2870,7 @@
       "line_range": [
         33
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b408-import-xml-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b408-import-xml-minidom",
       "test_id": "B408",
       "test_name": "blacklist"
     },
@@ -2890,12 +2890,12 @@
       "line_range": [
         556
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
     {
-      "code": "38 import stat\n39 import subprocess\n40 import sys\n",
+      "code": "37 import rapidjson as json\n38 import subprocess\n39 import tempfile\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "./modules/client/image.py",
@@ -2906,16 +2906,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 39,
+      "line_number": 38,
       "line_range": [
-        39
+        38
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "997                 cmdargs = [\"/usr/bin/rm\", \"-rf\", orig_root]\n998                 subprocess.Popen(cmdargs, stdout=nullf,\n999                     stderr=nullf)\n1000             nullf.close()\n",
+      "code": "993                 cmdargs = [\"/usr/bin/rm\", \"-rf\", orig_root]\n994                 subprocess.Popen(cmdargs, stdout=nullf,\n995                     stderr=nullf)\n996             nullf.close()\n",
       "col_offset": 16,
       "end_col_offset": 33,
       "filename": "./modules/client/image.py",
@@ -2926,17 +2926,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 998,
+      "line_number": 994,
       "line_range": [
-        998,
-        999
+        994,
+        995
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "2203                 os.rmdir(os.path.dirname(mcdir))\n2204             except:\n2205                 pass\n2206 \n",
+      "code": "2199                 os.rmdir(os.path.dirname(mcdir))\n2200             except:\n2201                 pass\n2202 \n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/client/image.py",
@@ -2947,17 +2947,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 2204,
+      "line_number": 2200,
       "line_range": [
-        2204,
-        2205
+        2200,
+        2201
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "2217                 os.rmdir(os.path.dirname(mpath))\n2218             except:\n2219                 pass\n2220             progtrack.job_add_progress(progtrack.JOB_PKG_CACHE)\n",
+      "code": "2213                 os.rmdir(os.path.dirname(mpath))\n2214             except:\n2215                 pass\n2216             progtrack.job_add_progress(progtrack.JOB_PKG_CACHE)\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/client/image.py",
@@ -2968,17 +2968,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 2218,
+      "line_number": 2214,
       "line_range": [
-        2218,
-        2219
+        2214,
+        2215
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "3247                 os.unlink(bp)\n3248             except:\n3249                 pass\n3250             raise\n",
+      "code": "3243                 os.unlink(bp)\n3244             except:\n3245                 pass\n3246             raise\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/client/image.py",
@@ -2989,17 +2989,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 3248,
+      "line_number": 3244,
       "line_range": [
-        3248,
-        3249
+        3244,
+        3245
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "3279                     os.unlink(conflicting_keys_path)\n3280                 except:\n3281                     pass\n3282                 raise err\n",
+      "code": "3275                     os.unlink(conflicting_keys_path)\n3276                 except:\n3277                     pass\n3278                 raise err\n",
       "col_offset": 16,
       "end_col_offset": 24,
       "filename": "./modules/client/image.py",
@@ -3010,17 +3010,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 3280,
+      "line_number": 3276,
       "line_range": [
-        3280,
-        3281
+        3276,
+        3277
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "97 # Token used for default values.\n98 DEF_TOKEN = \"DEFAULT\"\n99 _val_map_none = { \"None\": None }\n",
+      "code": "96 # Token used for default values.\n97 DEF_TOKEN = \"DEFAULT\"\n98 _val_map_none = { \"None\": None }\n",
       "col_offset": 12,
       "end_col_offset": 21,
       "filename": "./modules/client/imageconfig.py",
@@ -3031,16 +3031,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: 'DEFAULT'",
-      "line_number": 98,
+      "line_number": 97,
       "line_range": [
-        98
+        97
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b105_hardcoded_password_string.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "5538                     self.image)\n5539             except:\n5540                 # Ensure the real cause of failure is raised.\n5541                 pass\n5542             raise api_errors.InvalidPackageErrors([exc_value])\n",
+      "code": "5537                     self.image)\n5538             except:\n5539                 # Ensure the real cause of failure is raised.\n5540                 pass\n5541             raise api_errors.InvalidPackageErrors([exc_value])\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/client/imageplan.py",
@@ -3051,13 +3051,13 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 5539,
+      "line_number": 5538,
       "line_range": [
+        5538,
         5539,
-        5540,
-        5541
+        5540
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -3077,7 +3077,7 @@
       "line_range": [
         37
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
@@ -3097,7 +3097,7 @@
       "line_range": [
         398
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -3117,7 +3117,7 @@
       "line_range": [
         479
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -3138,7 +3138,7 @@
         1457,
         1458
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -3158,7 +3158,7 @@
       "line_range": [
         36
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
@@ -3181,7 +3181,7 @@
         141,
         142
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -3201,7 +3201,7 @@
       "line_range": [
         3300
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -3221,7 +3221,7 @@
       "line_range": [
         3344
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -3241,7 +3241,7 @@
       "line_range": [
         3348
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -3261,12 +3261,12 @@
       "line_range": [
         3424
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
     {
-      "code": "1723         return os.path.join(self.__origin_root,\n1724             hashlib.sha1(misc.force_bytes(origin.uri)).hexdigest())\n1725 \n",
+      "code": "1720         return os.path.join(self.__origin_root,\n1721             hashlib.sha1(misc.force_bytes(origin.uri)).hexdigest())\n1722 \n",
       "col_offset": 12,
       "end_col_offset": 54,
       "filename": "./modules/client/publisher.py",
@@ -3277,16 +3277,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 1724,
+      "line_number": 1721,
       "line_range": [
-        1724
+        1721
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "1741         ohashes = [\n1742             hashlib.sha1(misc.force_bytes(o.uri)).hexdigest()\n1743             for o in self.repository.origins\n",
+      "code": "1738         ohashes = [\n1739             hashlib.sha1(misc.force_bytes(o.uri)).hexdigest()\n1740             for o in self.repository.origins\n",
       "col_offset": 12,
       "end_col_offset": 49,
       "filename": "./modules/client/publisher.py",
@@ -3297,16 +3297,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 1742,
+      "line_number": 1739,
       "line_range": [
-        1742
+        1739
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "1752                     continue\n1753             except Exception:\n1754                 # Discard anything that isn't an origin.\n1755                 pass\n1756 \n",
+      "code": "1749                     continue\n1750             except Exception:\n1751                 # Discard anything that isn't an origin.\n1752                 pass\n1753 \n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/client/publisher.py",
@@ -3317,18 +3317,18 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 1753,
+      "line_number": 1750,
       "line_range": [
-        1753,
-        1754,
-        1755
+        1750,
+        1751,
+        1752
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "2316         # here.\n2317         return hashlib.sha1(\n2318             c.public_bytes(serialization.Encoding.PEM)).hexdigest()\n2319 \n",
+      "code": "2313         # here.\n2314         return hashlib.sha1(\n2315             c.public_bytes(serialization.Encoding.PEM)).hexdigest()\n2316 \n",
       "col_offset": 15,
       "end_col_offset": 55,
       "filename": "./modules/client/publisher.py",
@@ -3339,17 +3339,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2317,
+      "line_number": 2314,
       "line_range": [
-        2317,
-        2318
+        2314,
+        2315
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2359         # inconsistent with OpenSSL.\n2360         subj_hsh = hashlib.sha1(misc.force_bytes(\n2361             cert.subject)).hexdigest()\n2362         c = 0\n",
+      "code": "2356         # inconsistent with OpenSSL.\n2357         subj_hsh = hashlib.sha1(misc.force_bytes(\n2358             cert.subject)).hexdigest()\n2359         c = 0\n",
       "col_offset": 19,
       "end_col_offset": 26,
       "filename": "./modules/client/publisher.py",
@@ -3360,17 +3360,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2360,
+      "line_number": 2357,
       "line_range": [
-        2360,
-        2361
+        2357,
+        2358
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2451         count = 0\n2452         name_hsh = hashlib.sha1(misc.force_bytes(name)).hexdigest()\n2453 \n",
+      "code": "2448         count = 0\n2449         name_hsh = hashlib.sha1(misc.force_bytes(name)).hexdigest()\n2450 \n",
       "col_offset": 19,
       "end_col_offset": 55,
       "filename": "./modules/client/publisher.py",
@@ -3381,16 +3381,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2452,
+      "line_number": 2449,
       "line_range": [
-        2452
+        2449
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2496             c = self.get_cert_by_hash(h, verify_hash=True)\n2497             s = hashlib.sha1(misc.force_bytes(\n2498                 c.subject)).hexdigest()\n2499             self.ca_dict.setdefault(s, [])\n",
+      "code": "2493             c = self.get_cert_by_hash(h, verify_hash=True)\n2494             s = hashlib.sha1(misc.force_bytes(\n2495                 c.subject)).hexdigest()\n2496             self.ca_dict.setdefault(s, [])\n",
       "col_offset": 16,
       "end_col_offset": 27,
       "filename": "./modules/client/publisher.py",
@@ -3401,17 +3401,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2497,
+      "line_number": 2494,
       "line_range": [
-        2497,
-        2498
+        2494,
+        2495
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2611         crl_issuer = crl.issuer\n2612         tas = ca_dict.get(hashlib.sha1(misc.force_bytes(\n2613             crl_issuer)).hexdigest(), [])\n2614         for t in tas:\n",
+      "code": "2608         crl_issuer = crl.issuer\n2609         tas = ca_dict.get(hashlib.sha1(misc.force_bytes(\n2610             crl_issuer)).hexdigest(), [])\n2611         for t in tas:\n",
       "col_offset": 26,
       "end_col_offset": 24,
       "filename": "./modules/client/publisher.py",
@@ -3422,17 +3422,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2612,
+      "line_number": 2609,
       "line_range": [
-        2612,
-        2613
+        2609,
+        2610
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2838             issuer = cert.issuer\n2839             issuer_hash = hashlib.sha1(misc.force_bytes(\n2840                 issuer)).hexdigest()\n2841 \n",
+      "code": "2835             issuer = cert.issuer\n2836             issuer_hash = hashlib.sha1(misc.force_bytes(\n2837                 issuer)).hexdigest()\n2838 \n",
       "col_offset": 26,
       "end_col_offset": 24,
       "filename": "./modules/client/publisher.py",
@@ -3443,17 +3443,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2839,
+      "line_number": 2836,
       "line_range": [
-        2839,
-        2840
+        2836,
+        2837
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2861             # be rejected.\n2862             if hashlib.sha1(misc.force_bytes(\n2863                 cert.subject)).hexdigest() == issuer_hash:\n2864                 if not verified:\n",
+      "code": "2858             # be rejected.\n2859             if hashlib.sha1(misc.force_bytes(\n2860                 cert.subject)).hexdigest() == issuer_hash:\n2861                 if not verified:\n",
       "col_offset": 15,
       "end_col_offset": 30,
       "filename": "./modules/client/publisher.py",
@@ -3464,12 +3464,12 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 2862,
+      "line_number": 2859,
       "line_range": [
-        2862,
-        2863
+        2859,
+        2860
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
@@ -3489,12 +3489,12 @@
       "line_range": [
         29
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "383 \n384             p = subprocess.Popen(args, env=os.environ,\n385                 stdout=subprocess.PIPE)\n386             actualret = None\n",
+      "code": "382 \n383             p = subprocess.Popen(args, env=os.environ,\n384                 stdout=subprocess.PIPE)\n385             actualret = None\n",
       "col_offset": 16,
       "end_col_offset": 39,
       "filename": "./modules/client/rad_pkg.py",
@@ -3505,17 +3505,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 384,
+      "line_number": 383,
       "line_range": [
-        384,
-        385
+        383,
+        384
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "272 \n273         from xml.dom.minidom import Document, parse\n274         dom = parse(io.StringIO(content))\n",
+      "code": "271 \n272         from xml.dom.minidom import Document, parse\n273         dom = parse(io.StringIO(content))\n",
       "col_offset": 8,
       "end_col_offset": 51,
       "filename": "./modules/client/transport/repo.py",
@@ -3526,16 +3526,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Using Document to parse untrusted XML data is known to be vulnerable to XML attacks. Replace Document with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.",
-      "line_number": 273,
+      "line_number": 272,
       "line_range": [
-        273
+        272
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b408-import-xml-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b408-import-xml-minidom",
       "test_id": "B408",
       "test_name": "blacklist"
     },
     {
-      "code": "273         from xml.dom.minidom import Document, parse\n274         dom = parse(io.StringIO(content))\n275         msg = \"\"\n",
+      "code": "272         from xml.dom.minidom import Document, parse\n273         dom = parse(io.StringIO(content))\n274         msg = \"\"\n",
       "col_offset": 14,
       "end_col_offset": 41,
       "filename": "./modules/client/transport/repo.py",
@@ -3546,11 +3546,11 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Using xml.dom.minidom.parse to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.dom.minidom.parse with its defusedxml equivalent function or make sure defusedxml.defuse_stdlib() is called",
-      "line_number": 274,
+      "line_number": 273,
       "line_range": [
-        274
+        273
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
@@ -3570,7 +3570,7 @@
       "line_range": [
         58
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
@@ -3591,7 +3591,7 @@
         1778,
         1779
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b602_subprocess_popen_with_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b602_subprocess_popen_with_shell_equals_true.html",
       "test_id": "B602",
       "test_name": "subprocess_popen_with_shell_equals_true"
     },
@@ -3611,7 +3611,7 @@
       "line_range": [
         42
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
@@ -3634,7 +3634,7 @@
         777,
         778
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -3654,7 +3654,7 @@
       "line_range": [
         30
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
@@ -3674,7 +3674,7 @@
       "line_range": [
         65
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b108_hardcoded_tmp_directory.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b108_hardcoded_tmp_directory.html",
       "test_id": "B108",
       "test_name": "hardcoded_tmp_directory"
     },
@@ -3694,7 +3694,7 @@
       "line_range": [
         262
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
@@ -3715,7 +3715,7 @@
         290,
         291
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
@@ -3735,7 +3735,7 @@
       "line_range": [
         291
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b323-unverified-context",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b323-unverified-context",
       "test_id": "B323",
       "test_name": "blacklist"
     },
@@ -3759,7 +3759,7 @@
         426,
         427
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -3779,7 +3779,7 @@
       "line_range": [
         593
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b108_hardcoded_tmp_directory.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b108_hardcoded_tmp_directory.html",
       "test_id": "B108",
       "test_name": "hardcoded_tmp_directory"
     },
@@ -3799,7 +3799,7 @@
       "line_range": [
         603
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b108_hardcoded_tmp_directory.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b108_hardcoded_tmp_directory.html",
       "test_id": "B108",
       "test_name": "hardcoded_tmp_directory"
     },
@@ -3819,7 +3819,7 @@
       "line_range": [
         608
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b605_start_process_with_a_shell.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b605_start_process_with_a_shell.html",
       "test_id": "B605",
       "test_name": "start_process_with_a_shell"
     },
@@ -3839,7 +3839,7 @@
       "line_range": [
         29
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
@@ -3860,7 +3860,7 @@
         307,
         308
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -3880,7 +3880,7 @@
       "line_range": [
         322
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b307-eval",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b307-eval",
       "test_id": "B307",
       "test_name": "blacklist"
     },
@@ -3900,7 +3900,7 @@
       "line_range": [
         28
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b408-import-xml-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b408-import-xml-minidom",
       "test_id": "B408",
       "test_name": "blacklist"
     },
@@ -3920,7 +3920,7 @@
       "line_range": [
         372
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
@@ -3940,12 +3940,12 @@
       "line_range": [
         408
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
     {
-      "code": "555             old_min_token = min_token\n556             if min_token != \"\":\n557                 yield min_token, res\n",
+      "code": "553             old_min_token = min_token\n554             if min_token != \"\":\n555                 yield min_token, res\n",
       "col_offset": 28,
       "end_col_offset": 30,
       "filename": "./modules/indexer.py",
@@ -3956,16 +3956,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: ''",
-      "line_number": 556,
+      "line_number": 554,
       "line_range": [
-        556
+        554
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b105_hardcoded_password_string.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "987                 raise\n988             except Exception:\n989                 pass\n990 \n",
+      "code": "985                 raise\n986             except Exception:\n987                 pass\n988 \n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/indexer.py",
@@ -3976,12 +3976,12 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 988,
+      "line_number": 986,
       "line_range": [
-        988,
-        989
+        986,
+        987
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -4004,7 +4004,7 @@
         654,
         655
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
@@ -4026,7 +4026,7 @@
         696,
         697
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
@@ -4046,7 +4046,7 @@
       "line_range": [
         1349
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
@@ -4067,7 +4067,7 @@
         1753,
         1754
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -4090,12 +4090,12 @@
         1793,
         1794
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "84 # Default path where the temporary directories will be created.\n85 DEFAULT_TEMP_PATH = \"/var/tmp\"\n86 \n",
+      "code": "82 # Default path where the temporary directories will be created.\n83 DEFAULT_TEMP_PATH = \"/var/tmp\"\n84 \n",
       "col_offset": 20,
       "end_col_offset": 30,
       "filename": "./modules/misc.py",
@@ -4106,16 +4106,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Probable insecure usage of temp file/directory.",
-      "line_number": 85,
+      "line_number": 83,
       "line_range": [
-        85
+        83
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b108_hardcoded_tmp_directory.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b108_hardcoded_tmp_directory.html",
       "test_id": "B108",
       "test_name": "hardcoded_tmp_directory"
     },
     {
-      "code": "1323             for trusted_ca in ca_list:\n1324                 s = hashlib.sha1(force_bytes(\n1325                     trusted_ca.subject)).hexdigest()\n1326                 trust_anchors.setdefault(s, [])\n",
+      "code": "1321             for trusted_ca in ca_list:\n1322                 s = hashlib.sha1(force_bytes(\n1323                     trusted_ca.subject)).hexdigest()\n1324                 trust_anchors.setdefault(s, [])\n",
       "col_offset": 20,
       "end_col_offset": 40,
       "filename": "./modules/misc.py",
@@ -4126,17 +4126,17 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak SHA1 hash for security. Consider usedforsecurity=False",
-      "line_number": 1324,
+      "line_number": 1322,
       "line_range": [
-        1324,
-        1325
+        1322,
+        1323
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "2712                 self.e.tb = traceback.format_exc()\n2713             except Exception:\n2714                 pass\n2715 \n",
+      "code": "2710                 self.e.tb = traceback.format_exc()\n2711             except Exception:\n2712                 pass\n2713 \n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/misc.py",
@@ -4147,12 +4147,12 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 2713,
+      "line_number": 2711,
       "line_range": [
-        2713,
-        2714
+        2711,
+        2712
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -4172,12 +4172,32 @@
       "line_range": [
         75
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
     {
-      "code": "291     try:\n292         exec('from pkg.portable.{0} import *'.format(modname))\n293         break\n",
+      "code": "99 \n100 from xmlrpc.client import ProtocolError as ProtocolError2\n101 # Unused import; pylint: enable=W0611\n",
+      "col_offset": 0,
+      "end_col_offset": 57,
+      "filename": "./modules/pipeutils.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "HIGH",
+      "issue_text": "Using ProtocolError to parse untrusted XML data is known to be vulnerable to XML attacks. Use defusedxml.xmlrpc.monkey_patch() function to monkey-patch xmlrpclib and mitigate XML vulnerabilities.",
+      "line_number": 100,
+      "line_range": [
+        100
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b411-import-xmlrpclib",
+      "test_id": "B411",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "290     try:\n291         exec('from pkg.portable.{0} import *'.format(modname))\n292         break\n",
       "col_offset": 8,
       "end_col_offset": 62,
       "filename": "./modules/portable/__init__.py",
@@ -4188,11 +4208,11 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Use of exec detected.",
-      "line_number": 292,
+      "line_number": 291,
       "line_range": [
-        292
+        291
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b102_exec_used.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b102_exec_used.html",
       "test_id": "B102",
       "test_name": "exec_used"
     },
@@ -4212,12 +4232,12 @@
       "line_range": [
         32
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "63     t_fh.close()\n64     res = subprocess.Popen([\"/usr/bin/file\", \"-f\", t_path],\n65         stdout=subprocess.PIPE).communicate()[0].splitlines()\n66     remove(t_path)\n",
+      "code": "66     t_fh.close()\n67     res = subprocess.Popen([\"/usr/bin/file\", \"-f\", t_path],\n68         stdout=subprocess.PIPE).communicate()[0].splitlines()\n69     remove(t_path)\n",
       "col_offset": 10,
       "end_col_offset": 31,
       "filename": "./modules/portable/os_sunos.py",
@@ -4228,12 +4248,12 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 64,
+      "line_number": 67,
       "line_range": [
-        64,
-        65
+        67,
+        68
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -4253,7 +4273,7 @@
       "line_range": [
         272
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b105_hardcoded_password_string.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
@@ -4273,7 +4293,7 @@
       "line_range": [
         286
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b105_hardcoded_password_string.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
@@ -4293,7 +4313,7 @@
       "line_range": [
         287
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b105_hardcoded_password_string.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
@@ -4313,7 +4333,7 @@
       "line_range": [
         622
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
@@ -4333,7 +4353,7 @@
       "line_range": [
         634
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b324_hashlib.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
@@ -4355,7 +4375,7 @@
         348,
         349
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -4375,7 +4395,7 @@
       "line_range": [
         1494
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4395,7 +4415,7 @@
       "line_range": [
         1497
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4418,7 +4438,7 @@
         1507,
         1508
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4438,7 +4458,7 @@
       "line_range": [
         1623
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4458,7 +4478,7 @@
       "line_range": [
         1642
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4479,7 +4499,7 @@
         1679,
         1680
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4499,7 +4519,7 @@
       "line_range": [
         1704
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4519,7 +4539,7 @@
       "line_range": [
         1790
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4539,7 +4559,7 @@
       "line_range": [
         1844
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4559,7 +4579,7 @@
       "line_range": [
         1890
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4579,7 +4599,7 @@
       "line_range": [
         1906
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4599,7 +4619,7 @@
       "line_range": [
         1931
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4619,7 +4639,7 @@
       "line_range": [
         1942
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4639,7 +4659,7 @@
       "line_range": [
         1966
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -4659,7 +4679,7 @@
       "line_range": [
         40
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b408-import-xml-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b408-import-xml-minidom",
       "test_id": "B408",
       "test_name": "blacklist"
     },
@@ -4679,12 +4699,12 @@
       "line_range": [
         348
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b313-b320-xml-bad-minidom",
       "test_id": "B318",
       "test_name": "blacklist"
     },
     {
-      "code": "32 import stat\n33 import subprocess\n34 import sys\n",
+      "code": "30 import stat\n31 import subprocess\n32 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "./modules/server/repository.py",
@@ -4695,16 +4715,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 33,
+      "line_number": 31,
       "line_range": [
-        33
+        31
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "601             storage_locked = True\n602         except:\n603             pass\n604         else:\n",
+      "code": "598             storage_locked = True\n599         except:\n600             pass\n601         else:\n",
       "col_offset": 8,
       "end_col_offset": 16,
       "filename": "./modules/server/repository.py",
@@ -4715,17 +4735,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 602,
+      "line_number": 599,
       "line_range": [
-        602,
-        603
+        599,
+        600
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "617                 index_locked = True\n618             except:\n619                 pass\n620             finally:\n",
+      "code": "614                 index_locked = True\n615             except:\n616                 pass\n617             finally:\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "./modules/server/repository.py",
@@ -4736,17 +4756,17 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 618,
+      "line_number": 615,
       "line_range": [
-        618,
-        619
+        615,
+        616
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
     {
-      "code": "1621                         pname = unquote(name)\n1622                     except Exception:\n1623                         # Assume error is result of\n1624                         # unexpected file in directory;\n1625                         # just skip it and drive on.\n1626                         continue\n1627 \n",
+      "code": "1618                         pname = unquote(name)\n1619                     except Exception:\n1620                         # Assume error is result of\n1621                         # unexpected file in directory;\n1622                         # just skip it and drive on.\n1623                         continue\n1624 \n",
       "col_offset": 20,
       "end_col_offset": 32,
       "filename": "./modules/server/repository.py",
@@ -4757,20 +4777,20 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Continue detected.",
-      "line_number": 1622,
+      "line_number": 1619,
       "line_range": [
+        1619,
+        1620,
+        1621,
         1622,
-        1623,
-        1624,
-        1625,
-        1626
+        1623
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b112_try_except_continue.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b112_try_except_continue.html",
       "test_id": "B112",
       "test_name": "try_except_continue"
     },
     {
-      "code": "3025             args = [\"/usr/bin/nohup\"] + args\n3026         subp = subprocess.Popen(args, stdout=nullf, stderr=nullf)\n3027 \n",
+      "code": "3022             args = [\"/usr/bin/nohup\"] + args\n3023         subp = subprocess.Popen(args, stdout=nullf, stderr=nullf)\n3024 \n",
       "col_offset": 15,
       "end_col_offset": 65,
       "filename": "./modules/server/repository.py",
@@ -4781,11 +4801,11 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 3026,
+      "line_number": 3023,
       "line_range": [
-        3026
+        3023
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -4805,12 +4825,12 @@
       "line_range": [
         32
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "92     try:\n93         proc = subprocess.Popen(args, stdout=subprocess.PIPE,\n94             stderr=subprocess.STDOUT)\n95         buf = [misc.force_str(l, encoding=encoding)\n",
+      "code": "91     try:\n92         proc = subprocess.Popen(args, stdout=subprocess.PIPE,\n93             stderr=subprocess.STDOUT)\n94         buf = [misc.force_str(l, encoding=encoding)\n",
       "col_offset": 15,
       "end_col_offset": 37,
       "filename": "./modules/smf.py",
@@ -4821,12 +4841,12 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 93,
+      "line_number": 92,
       "line_range": [
-        93,
-        94
+        92,
+        93
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -4846,7 +4866,7 @@
       "line_range": [
         36
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
@@ -4866,7 +4886,7 @@
       "line_range": [
         1295
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b603_subprocess_without_shell_equals_true.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
     },
@@ -4888,7 +4908,7 @@
         1654,
         1655
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -4909,7 +4929,7 @@
         1843,
         1844
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -4930,7 +4950,7 @@
         684,
         685
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b702_use_of_mako_templates.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b702_use_of_mako_templates.html",
       "test_id": "B702",
       "test_name": "use_of_mako_templates"
     },
@@ -4950,7 +4970,7 @@
       "line_range": [
         771
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b702_use_of_mako_templates.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b702_use_of_mako_templates.html",
       "test_id": "B702",
       "test_name": "use_of_mako_templates"
     },
@@ -4970,7 +4990,7 @@
       "line_range": [
         197
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
@@ -4991,7 +5011,7 @@
         657,
         658
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -5011,7 +5031,7 @@
       "line_range": [
         28
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b403-import-pickle",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b403-import-pickle",
       "test_id": "B403",
       "test_name": "blacklist"
     },
@@ -5031,7 +5051,7 @@
       "line_range": [
         88
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b301-pickle",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b301-pickle",
       "test_id": "B301",
       "test_name": "blacklist"
     },
@@ -5051,7 +5071,7 @@
       "line_range": [
         33
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b403-import-pickle",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b403-import-pickle",
       "test_id": "B403",
       "test_name": "blacklist"
     },
@@ -5071,7 +5091,7 @@
       "line_range": [
         27
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_imports.html#b403-import-pickle",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b403-import-pickle",
       "test_id": "B403",
       "test_name": "blacklist"
     },
@@ -5091,7 +5111,7 @@
       "line_range": [
         123
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b310-urllib-urlopen",
       "test_id": "B310",
       "test_name": "blacklist"
     },
@@ -5112,7 +5132,7 @@
         93,
         94
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -5134,7 +5154,7 @@
         550,
         551
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/plugins/b110_try_except_pass.html",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
     },
@@ -5154,7 +5174,7 @@
       "line_range": [
         166
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -5174,7 +5194,7 @@
       "line_range": [
         179
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -5194,7 +5214,7 @@
       "line_range": [
         186
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
@@ -5214,7 +5234,7 @@
       "line_range": [
         192
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.7.5/blacklists/blacklist_calls.html#b311-random",
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     }
