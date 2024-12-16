@@ -5,7 +5,7 @@
 ]>
 
 <refentry id="pkg-1">
-<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">17 Aug 2021</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2021, Oracle and/or its affiliates.</refmiscinfo>
+<refmeta><refentrytitle>pkg</refentrytitle><manvolnum>1</manvolnum> <refmiscinfo class="date">17 Aug 2021</refmiscinfo> <refmiscinfo class="sectdesc">&man1;</refmiscinfo> <refmiscinfo class="software">&release;</refmiscinfo> <refmiscinfo class="arch">generic</refmiscinfo> <refmiscinfo class="copyright">Copyright (c) 2007, 2024, Oracle and/or its affiliates.</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>pkg</refname><refpurpose>Image Packaging System 取得クライアント</refpurpose>
@@ -1290,7 +1290,7 @@ the boot environment will be left mounted and not activated.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>ca-path</literal></term>
-<listitem><para>(文字列) SSL 操作用の CA 証明書が格納されたディレクトリを指すパス名。このディレクトリの形式は、ベースとなる SSL 実装に固有です。信頼できる CA 証明書のために別の場所を使用するには、別のディレクトリを指すようにこの値を変更します。See the <literal>CApath</literal> portions of <olink targetdoc="refman" targetptr="ssl-ctx-load-verify-locations-3openssl"><citerefentry><refentrytitle>SSL_CTX_load_verify_locations</refentrytitle><manvolnum>3openssl</manvolnum></citerefentry></olink> for requirements for the CA directory.</para>
+<listitem><para>(文字列) SSL 操作用の CA 証明書が格納されたディレクトリを指すパス名。このディレクトリの形式は、ベースとなる SSL 実装に固有です。信頼できる CA 証明書のために別の場所を使用するには、別のディレクトリを指すようにこの値を変更します。See the <literal>CApath</literal> portions of <olink targetdoc="REFMAN3D" targetptr="ssl-ctx-load-verify-locations-3openssl"><citerefentry><refentrytitle>SSL_CTX_load_verify_locations</refentrytitle><manvolnum>3openssl</manvolnum></citerefentry></olink> for requirements for the CA directory.</para>
 <para>デフォルト値: <literal>/etc/openssl/certs</literal></para>
 </listitem>
 </varlistentry>
