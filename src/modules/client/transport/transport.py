@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 import copy
@@ -2017,8 +2017,8 @@ class Transport:
             except EnvironmentError:
                 pass
             else:
-                nu = crl.next_update
-                cur_time = dt.datetime.utcnow()
+                nu = crl.next_update_utc
+                cur_time = dt.datetime.now(dt.timezone.utc)
 
                 if cur_time < nu:
                     self.__tmp_crls[uri] = crl
