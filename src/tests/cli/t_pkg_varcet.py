@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -819,7 +819,7 @@ class TestPkgVarcetErrors(pkg5unittest.Pkg5TestCase):
         self.assertRaises(TypeError, facets.allow_action, Action(1, 0), None)
 
         # value encoding failure handling
-        self.assertEquals(facets.allow_action(Action(0, 1), None), False)
+        self.assertEqual(facets.allow_action(Action(0, 1), None), False)
         self.assertRaises(
             KeyboardInterrupt, facets.allow_action, Action(0, 2), None
         )
@@ -844,7 +844,7 @@ class TestPkgVarcetErrors(pkg5unittest.Pkg5TestCase):
 
         # attr and value encoding failure handling
         self.assertRaises(TypeError, variants.allow_action, Action(1), None)
-        self.assertEquals(variants.allow_action(Action(2), None), False)
+        self.assertEqual(variants.allow_action(Action(2), None), False)
 
         # variant value encoding failure handling
         variants = variant.Variants({"variant.icecream": b"strawberry"})
