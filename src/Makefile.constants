@@ -1,0 +1,73 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright (c) 2025, Oracle and/or its affiliates.
+#
+
+# Default version used for single-version targets
+PYVERSION = 3.11
+
+# Common programs and commands
+PYTHON39 = /usr/bin/python3.9
+PYTHON311 = /usr/bin/python3.11
+PYTHON = /usr/bin/python$(PYVERSION)
+
+PYCODESTYLE = /usr/bin/pycodestyle
+
+MKDIR =		/usr/bin/mkdir -p
+FIND =	/usr/bin/find
+GSED =	/usr/gnu/bin/sed
+
+MACH:sh =	uname -p
+TOP:sh =	hg root
+STASH =	/opt/onbld/bin/$(MACH)/stash
+
+INS.file =		$(STASH) file -v $^ $@
+INS.file.strip =	$(STASH) file -v -C $^ $@
+INS.file.pstrip =	$(STASH) file -v -Cp $^ $@
+
+INS.emptyfile =		$(STASH) empty-file -v $@
+INS.dir =		$(STASH) dir -v $@
+INS.symlink =		$(STASH) symlink -v
+
+# Commonly used proto area locations
+ROOT =	$(TOP)/proto/root_$(MACH)
+
+ROOTUSRSHARE =	$(ROOT)/usr/share
+ROOTUSRSHARELIBPKG =	$(ROOTUSRSHARE)/lib/pkg
+
+ROOTLIBSVC =	$(ROOT)/lib/svc
+ROOTETCSVC =	$(ROOT)/etc/svc
+
+ROOTPY39PKG =	$(ROOT)/usr/lib/python3.9/vendor-packages/pkg
+ROOTPY311PKG =	$(ROOT)/usr/lib/python3.11/vendor-packages/pkg
+ROOTPYPKG =	$(ROOT)/usr/lib/python$(PYVERSION)/vendor-packages/pkg
+
+
+# Allow for CLINT variable being set from the environment.
+$(LINT)CLINT = lint
+CLINT = $(LINT)
+
+CLINT_FLAGS = -m64 -u -axms -erroff=E_NAME_DEF_NOT_USED2
+CLINT_INCLUDES = -I/usr/include/python$(PYVERSION)
+
+LINT.c = $(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES)

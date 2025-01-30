@@ -20,14 +20,15 @@
 #
 
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2025, Oracle and/or its affiliates.
 #
 akfork
 coverity
 fortify
 hdrchk
-jstyle
 jsstyle
+jstyle
+keywords
+makefilechk
 mapfilechk
 parfait
-keywords

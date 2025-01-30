@@ -20,16 +20,10 @@
 #
 
 #
-# Copyright (c) 2024, Oracle and/or its affiliates.
+# Copyright (c) 2024, 2025, Oracle and/or its affiliates.
 #
 
-PYTHON39 = /usr/bin/python3.9
-PYTHON311 = /usr/bin/python3.11
-INSTALL:sh =	echo /opt/onbld/bin/$(uname -p)/stash file -v
-
-PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
-PY39DIRVP= $(PROTO_AREA)/usr/lib/python3.9/vendor-packages/pkg
-PY311DIRVP= $(PROTO_AREA)/usr/lib/python3.11/vendor-packages/pkg
+include ../Makefile.constants
 
 EXTENSIONS = _arch _sha512_t _sysattr _syscallat
 
@@ -50,28 +44,24 @@ _sysattr.cpython-%.so: build_sysattr.py
 _syscallat.cpython-%.so: build_syscallat.py
 	$(PYTHON) $^
 
-install: all
-	@for extension in $(EXTENSIONS:=.cpython-39.so); do \
-		$(INSTALL) $$extension $(PY39DIRVP)/$$extension; \
-	done;
-	@for extension in $(EXTENSIONS:=.cpython-311.so); do \
-		$(INSTALL) $$extension $(PY311DIRVP)/$$extension; \
-	done;
+ROOT39EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY39PKG)/%.cpython-39.so)
+ROOT311EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY311PKG)/%.cpython-311.so)
+
+install: $(ROOT39EXTENSIONS) $(ROOT311EXTENSIONS)
+
+$(ROOTPY39PKG)/%.so: %.so
+	$(INS.file)
+
+$(ROOTPY311PKG)/%.so: %.so
+	$(INS.file)
 
 check:
 
-# Allow for CLINT variable being set from the environment.
-$(LINT)CLINT = lint
-CLINT = $(LINT)
-
-CLINT_FLAGS = -m64 -u -axms -erroff=E_NAME_DEF_NOT_USED2
-CLINT_INCLUDES = -I/usr/include/python3.11
-
 clint: all
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) _arch.c
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) _syscallat.c
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) -lnvpair _sysattr.c
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) -lmd _sha512_t.c
+	$(LINT.c) _arch.c
+	$(LINT.c) _syscallat.c
+	$(LINT.c) -lnvpair _sysattr.c
+	$(LINT.c) -lmd _sha512_t.c
 
 lint: clint
 
