@@ -20,48 +20,48 @@
 #
 
 #
-# Copyright (c) 2024, Oracle and/or its affiliates.
+# Copyright (c) 2024, 2025, Oracle and/or its affiliates.
 #
 
-INSTALL:sh =	echo /opt/onbld/bin/$(uname -p)/stash file -v
+include ../Makefile.constants
 
-PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
-WEB_DIR = $(PROTO_AREA)/usr/share/lib/pkg/web
+ROOTPKGWEB = $(ROOTUSRSHARELIBPKG)/web
 
-WEB_FILES = \
-	*.shtml \
-	_themes/*.png \
-	_themes/default/en/* \
-	_themes/default/feed-icon-14x14.png \
-	_themes/opensolaris.com/en/* \
-	_themes/opensolaris.org/en/* \
-	_themes/opensolaris.org/feed-icon-14x14.png \
-	_themes/oracle.com/*.png \
-	_themes/oracle.com/en/* \
-	_themes/pkg-block-logo.svg \
-	_themes/sun.com/en/* \
-	_themes/yui-reset-font-grids_base-min.css \
-	en/* \
+WEBFILES:sh = find en/ _themes/ -type f
+WEBFILES += \
+	config.shtml \
+	index.shtml \
+	repos.shtml \
+	shared.shtml \
 	robots.txt
 
 # install same set of files in "en/" in "__LOCALE__/" as well
 # for localizable file package (regarding themes, install
 # theme "oracle.com" only)
-LOCALIZABLE_WEB_FILES = \
-	en/* \
-	_themes/oracle.com/en/*
+WEBLOCALEFILES1:sh = find en/ -type f
+WEBLOCALEFILES2:sh = find _themes/oracle.com/en/ -type f
 
 all:
 
-install:
-	@for file in $(WEB_FILES); do \
-		$(INSTALL) -C $$file $(WEB_DIR)/$$file; \
-	done; \
-	for file in $(LOCALIZABLE_WEB_FILES); do \
-		$(INSTALL) -C $$file $(WEB_DIR)/$${file/en/__LOCALE__}; \
-	done; \
-	# The apache-based depot includes an shtml file we add to the web dir \
-	$(INSTALL) -C ../util/apache2/depot/repos.shtml $(WEB_DIR)/repos.shtml
+ROOTPKGWEBFILES = $(WEBFILES:%=$(ROOTPKGWEB)/%)
+ROOTPKGWEBLOCALEFILES = \
+	$(WEBLOCALEFILES1:en/%=$(ROOTPKGWEB)/__LOCALE__/%) \
+	$(WEBLOCALEFILES2:_themes/oracle.com/en/%=$(ROOTPKGWEB)/_themes/oracle.com/__LOCALE__/%)
+
+install: $(ROOTPKGWEBFILES) $(ROOTPKGWEBLOCALEFILES)
+
+$(ROOTPKGWEB)/%: %
+	$(INS.file.strip)
+
+$(ROOTPKGWEB)/__LOCALE__/%: en/%
+	$(INS.file.strip)
+
+$(ROOTPKGWEB)/_themes/oracle.com/__LOCALE__%: _themes/oracle.com/en/%
+	$(INS.file.strip)
+
+# The depot-related repos.shtml is installed from a different location
+$(ROOTPKGWEB)/repos.shtml: ../util/apache2/depot/repos.shtml
+	$(INS.file.strip)
 
 check lint:
 

@@ -20,20 +20,18 @@
 #
 
 #
-# Copyright (c) 2024, Oracle and/or its affiliates.
+# Copyright (c) 2024, 2025, Oracle and/or its affiliates.
 #
+
+include ../Makefile.constants
 
 XGETTEXT =	/usr/gnu/bin/xgettext
 MSGFMT =	/usr/bin/msgfmt
-MKDIR = 	mkdir -p
-INSTALL:sh =	echo /opt/onbld/bin/$(uname -p)/stash file -v
 
-PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
-LOCALE_DIR =	$(PROTO_AREA)/usr/share/locale
+ROOTLOCALE =	$(ROOTUSRSHARE)/locale
 
 LOCALES:sh =	grep -v "^\#" LINGUAS
 CATALOGS =	$(LOCALES:=.mo)
-
 
 all: $(CATALOGS) pkg.pot
 
@@ -43,13 +41,16 @@ all: $(CATALOGS) pkg.pot
 pkg.pot: POTFILES.in
 	$(XGETTEXT) --add-comments --keyword=N_ --from-code=UTF-8 -f POTFILES.in -D .. -o pkg.pot
 
-install: all
-	@for locale in $(LOCALES); do \
-		dir=$(LOCALE_DIR)/$$locale/LC_MESSAGES; \
-		$(INSTALL) $$locale.mo $$dir/pkg.mo; \
-	done; \
-	dir=$(LOCALE_DIR)/__LOCALE__/LC_MESSAGES; \
-	$(INSTALL) pkg.pot $$dir/pkg.pot;
+ROOTPOTFILE =	$(ROOTLOCALE)/__LOCALE__/LC_MESSAGES/pkg.pot
+ROOTMOFILES =	$(LOCALES:%=$(ROOTLOCALE)/%/LC_MESSAGES/pkg.mo)
+
+install: $(ROOTPOTFILE) $(ROOTMOFILES)
+
+$(ROOTLOCALE)/__LOCALE__/LC_MESSAGES/pkg.pot: pkg.pot
+	$(INS.file)
+
+$(ROOTLOCALE)/%/LC_MESSAGES/pkg.mo: %.mo
+	$(INS.file)
 
 check:
 	$(XGETTEXT) --keyword=N_ --from-code=UTF-8 -f POTFILES.in -D .. -o /dev/null 2>i18n_errs.txt

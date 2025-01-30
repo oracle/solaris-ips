@@ -20,18 +20,17 @@
 #
 
 #
-# Copyright (c) 2024, Oracle and/or its affiliates.
+# Copyright (c) 2024, 2025, Oracle and/or its affiliates.
 #
 
-INSTALL:sh =	echo /opt/onbld/bin/$(uname -p)/stash file -v
-MKDIR = 	mkdir -p
+include ../Makefile.constants
+
 SVCCFG =	/usr/sbin/svccfg
 
-PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
-SMF_APP_DIR =	$(PROTO_AREA)/lib/svc/manifest/application/pkg
-SMF_PROFILE_DIR =	$(PROTO_AREA)/etc/svc/profile/system
-SVC_METHOD_DIR =	$(PROTO_AREA)/lib/svc/method
-SVC_SHARE_DIR =		$(PROTO_AREA)/lib/svc/share
+ROOTSMFAPP =		$(ROOTLIBSVC)/manifest/application/pkg
+ROOTSMFPROFILE =	$(ROOTETCSVC)/profile/system
+ROOTSVCMETHOD =		$(ROOTLIBSVC)/method
+ROOTSVCSHARE =		$(ROOTLIBSVC)/share
 
 SMF_MANIFESTS = \
 	pkg-auto-update.xml \
@@ -62,7 +61,6 @@ SVC_METHOD_SCRIPTS = \
 SVC_SHARE_SCRIPT = \
 	pkg5_include.sh
 
-
 all:
 
 # Validate SMF manifests
@@ -72,17 +70,25 @@ lint:
 		$(SVCCFG) validate $$manifest; \
 	done
 
-install:
-	@for manifest in $(SMF_MANIFESTS); do \
-		$(INSTALL) -C $$manifest $(SMF_APP_DIR)/$$manifest; \
-	done; \
-	# install English .pot file to put into localizable file package \
-	$(INSTALL) -C $(SMF_PROFILE) $(SMF_PROFILE_DIR)/$(SMF_PROFILE);
+ROOTSMFMANIFESTS = $(SMF_MANIFESTS:%=$(ROOTSMFAPP)/%)
+ROOTSMFPROFILES = $(SMF_PROFILE:%=$(ROOTSMFPROFILE)/%)
+ROOTSVCMETHODSCRIPTS = $(SVC_METHOD_SCRIPTS:%=$(ROOTSVCMETHOD)/%)
+ROOTSVCSHARESCRIPTS = $(SVC_SHARE_SCRIPT:%=$(ROOTSVCSHARE)/%)
 
-	@for script in $(SVC_METHOD_SCRIPTS); do \
-		$(INSTALL) -C $$script $(SVC_METHOD_DIR)/$$script; \
-	done; \
-	$(INSTALL) -C $(SVC_SHARE_SCRIPT) $(SVC_SHARE_DIR)/$(SVC_SHARE_SCRIPT);
+install: $(ROOTSMFMANIFESTS) $(ROOTSMFPROFILES) \
+	$(ROOTSVCMETHODSCRIPTS) $(ROOTSVCSHARESCRIPTS)
+
+$(ROOTSMFAPP)/%: %
+	$(INS.file.strip)
+
+$(ROOTSMFPROFILE)/%: %
+	$(INS.file.strip)
+
+$(ROOTSVCMETHOD)/%: %
+	$(INS.file.strip)
+
+$(ROOTSVCSHARE)/%: %
+	$(INS.file.strip)
 
 check:
 

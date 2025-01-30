@@ -20,34 +20,14 @@
 #
 
 #
-# Copyright (c) 2024, Oracle and/or its affiliates.
+# Copyright (c) 2024, 2025, Oracle and/or its affiliates.
 #
 
-PYTHON39 = /usr/bin/python3.9
-PYTHON311 = /usr/bin/python3.11
-INSTALL:sh =   echo /opt/onbld/bin/$(uname -p)/stash file -v
-GSED =	/usr/gnu/bin/sed
-
-PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
-PY39DIRVP= $(PROTO_AREA)/usr/lib/python3.9/vendor-packages/pkg
-PY311DIRVP= $(PROTO_AREA)/usr/lib/python3.11/vendor-packages/pkg
+include ../Makefile.constants
 
 EXTENSIONS = actions/_actions actions/_common _varcet _misc solver elf
 
-PYFILES = \
-	*.py \
-	actions/*.py \
-	bundle/*.py \
-	client/*.py \
-	client/linkedimage/*.py \
-	client/transport/*.py \
-	file_layout/*.py \
-	flavor/*.py \
-	lint/*.py \
-	no_site_packages/*.py \
-	portable/*.py \
-	publish/*.py \
-	server/*.py
+PYFILES:sh = find . -type f -name '*.py'
 
 all: $(EXTENSIONS:=.cpython-39.so) $(EXTENSIONS:=.cpython-311.so)
 
@@ -83,48 +63,47 @@ solver.cpython-%.so: solver/solver.c solver/py_solver.c
 
 # PRIVATE_BUILD set in the environment tells us to not strip
 # the prefix of proto area paths recorded in the .pyc files.
-$(PRIVATE_BUILD)PYCOMPILE_FLAGS = -s $(PROTO_AREA)
+$(PRIVATE_BUILD)PYCOMPILE_FLAGS = -s $(ROOT)
 
-install: all
-	@for file in $(PYFILES); do \
-		$(INSTALL) -Cp $$file $(PY39DIRVP)/$$file; \
-	done
-	@for file in $(PYFILES); do \
-		$(INSTALL) -Cp $$file $(PY311DIRVP)/$$file; \
-	done
 
+$(ROOTPY39PKG)/%.so: %.so
+	$(INS.file)
+
+$(ROOTPY311PKG)/%.so: %.so
+	$(INS.file)
+
+$(ROOTPY39PKG)/%.py: %.py
+	$(INS.file.pstrip)
+
+$(ROOTPY311PKG)/%.py: %.py
+	$(INS.file.pstrip)
+
+
+ROOT39FILES = $(PYFILES:%=$(ROOTPY39PKG)/%)
+ROOT311FILES = $(PYFILES:%=$(ROOTPY311PKG)/%)
+ROOT39EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY39PKG)/%.cpython-39.so)
+ROOT311EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY311PKG)/%.cpython-311.so)
+
+install: $(ROOT39FILES) $(ROOT311FILES) $(ROOT39EXTENSIONS) $(ROOT311EXTENSIONS)
 	@# substitute VERSION with mercurial revision in pkg/__init__.py
 	@hg_revision=`hg id -i`; \
 	echo "doing version substitution: $$hg_revision"; \
-	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(PY39DIRVP)/__init__.py; \
-	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(PY311DIRVP)/__init__.py
+	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(ROOTPY39PKG)/__init__.py; \
+	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(ROOTPY311PKG)/__init__.py
 
-	$(PYTHON39) -m compileall $(PYCOMPILE_FLAGS) -j8 --invalidation-mode=checked-hash $(PY39DIRVP)
-	$(PYTHON311) -m compileall $(PYCOMPILE_FLAGS) -j8 --invalidation-mode=checked-hash $(PY311DIRVP)
-
-	@for extension in $(EXTENSIONS:=.cpython-39.so); do \
-		$(INSTALL) $$extension $(PY39DIRVP)/$$extension; \
-	done;
-	@for extension in $(EXTENSIONS:=.cpython-311.so); do \
-		$(INSTALL) $$extension $(PY311DIRVP)/$$extension; \
-	done;
+	@# compile all sources to bytecode
+	$(PYTHON39) -m compileall $(PYCOMPILE_FLAGS) -j8 --invalidation-mode=checked-hash $(ROOTPY39PKG)
+	$(PYTHON311) -m compileall $(PYCOMPILE_FLAGS) -j8 --invalidation-mode=checked-hash $(ROOTPY311PKG)
 
 check:
 
-# Allow for CLINT variable being set from the environment.
-$(LINT)CLINT = lint
-CLINT = $(LINT)
-
-CLINT_FLAGS = -m64 -u -axms -erroff=E_NAME_DEF_NOT_USED2
-CLINT_INCLUDES = -I/usr/include/python3.11 -I.
-
 clint: all
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) -lelf -lmd elf.c elfextract.c liblist.c
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) actions/_actions.c
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) actions/_common.c
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) _varcet.c
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) _misc.c
-	$(CLINT) $(CLINT_FLAGS) $(CLINT_INCLUDES) solver/solver.c solver/py_solver.c
+	$(LINT.c) -I. -lelf -lmd elf.c elfextract.c liblist.c
+	$(LINT.c) actions/_actions.c
+	$(LINT.c) actions/_common.c
+	$(LINT.c) _varcet.c
+	$(LINT.c) _misc.c
+	$(LINT.c) solver/solver.c solver/py_solver.c
 
 lint: clint
 

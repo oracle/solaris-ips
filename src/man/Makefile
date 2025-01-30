@@ -20,15 +20,14 @@
 #
 
 #
-# Copyright (c) 2020, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2020, 2025, Oracle and/or its affiliates.
 #
 
-INSTALL:sh =	echo /opt/onbld/bin/$(uname -p)/stash file -v
-MKDIR = 	mkdir -p
+include ../Makefile.constants
+
 XML2ROFF =	/usr/share/xml/xsolbook/python/xml2roff.py --logfile nroff/xml2roff.log
 
-PROTO_AREA:sh =	echo $(dirname $(dirname $(pwd)))/proto/root_$(uname -p)
-MAN_DIR =	$(PROTO_AREA)/usr/share/man
+ROOTMAN =	$(ROOTUSRSHARE)/man
 
 MAN1 = \
 	pkg.1 \
@@ -73,24 +72,44 @@ nroff/ja_JP.UTF-8/man1/% nroff/ja_JP.UTF-8/man7/% nroff/ja_JP.UTF-8/man8/%: ja_J
 nroff/zh_CN.UTF-8/man1/% nroff/zh_CN.UTF-8/man7/% nroff/zh_CN.UTF-8/man8/%: zh_CN/%
 	$(XML2ROFF) -o nroff/zh_CN.UTF-8 $^
 
-install: all
-	@for lang in "" /ja_JP.UTF-8 /zh_CN.UTF-8; do \
-		dir=$(MAN_DIR)$$lang; \
-		for man in $(MAN1:%=man1/%) $(MAN7:%=man7/%) $(MAN8:%=man8/%); do \
-			$(INSTALL) nroff$$lang/$$man $$dir/$$man; \
-		done; \
-	done; \
-	# install English manpage sources to put into localizable file package \
-	dir=$(MAN_DIR)/__LOCALE__; \
-	for man in $(MAN1); do \
-		$(INSTALL) $$man $$dir/man1/$$man; \
-	done; \
-	for man in $(MAN7); do \
-		$(INSTALL) $$man $$dir/man7/$$man; \
-	done; \
-	for man in $(MAN8); do \
-		$(INSTALL) $$man $$dir/man8/$$man; \
-	done
+ROOTMANFILES =	\
+	$(MAN1:%=$(ROOTMAN)/man1/%) \
+	$(MAN7:%=$(ROOTMAN)/man7/%) \
+	$(MAN8:%=$(ROOTMAN)/man8/%)
+
+ROOTMANJPFILES =	\
+	$(MAN1:%=$(ROOTMAN)/ja_JP.UTF-8/man1/%) \
+	$(MAN7:%=$(ROOTMAN)/ja_JP.UTF-8/man7/%) \
+	$(MAN8:%=$(ROOTMAN)/ja_JP.UTF-8/man8/%)
+
+ROOTMANCNFILES =	\
+	$(MAN1:%=$(ROOTMAN)/zh_CN.UTF-8/man1/%) \
+	$(MAN7:%=$(ROOTMAN)/zh_CN.UTF-8/man7/%) \
+	$(MAN8:%=$(ROOTMAN)/zh_CN.UTF-8/man8/%)
+
+# install English manpage sources to put into localizable file package
+ROOTMANLOCALEFILES =	\
+	$(MAN1:%=$(ROOTMAN)/__LOCALE__/man1/%) \
+	$(MAN7:%=$(ROOTMAN)/__LOCALE__/man7/%) \
+	$(MAN8:%=$(ROOTMAN)/__LOCALE__/man8/%)
+
+install: \
+	$(ROOTMANFILES) \
+	$(ROOTMANJPFILES) \
+	$(ROOTMANCNFILES) \
+	$(ROOTMANLOCALEFILES)
+
+$(ROOTMAN)/%: nroff/%
+	$(INS.file)
+
+$(ROOTMAN)/__LOCALE__/man1/%: %
+	$(INS.file)
+
+$(ROOTMAN)/__LOCALE__/man7/%: %
+	$(INS.file)
+
+$(ROOTMAN)/__LOCALE__/man8/%: %
+	$(INS.file)
 
 check lint:
 
