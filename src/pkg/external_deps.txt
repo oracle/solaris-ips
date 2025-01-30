@@ -50,6 +50,9 @@
     pkg:/library/python/rapidjson
     pkg:/library/python/rapidjson-39
     pkg:/library/python/rapidjson-311
+    pkg:/library/python/requests
+    pkg:/library/python/requests-39
+    pkg:/library/python/requests-311
     pkg:/library/python/rpdb
     pkg:/package/svr4
     pkg:/runtime/python-39
