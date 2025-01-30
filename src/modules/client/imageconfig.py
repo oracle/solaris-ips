@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 import errno
@@ -194,6 +194,11 @@ class ImageConfig(cfg.FileConfig):
                 cfg.PropList("dehydrated"),
                 cfg.PropBool(BE_USE_SUGGESTED_NAME,
                     default=default_policies[BE_USE_SUGGESTED_NAME]),
+            ]),
+            cfg.PropertySection("oci", properties=[
+                cfg.Property('image', value_map=_val_map_none),
+                cfg.Property('id', value_map=_val_map_none),
+                cfg.Property('tenantId', value_map=_val_map_none),
             ]),
             cfg.PropertySection("facet", properties=[
                 cfg.PropertyTemplate(r"^facet\..*", prop_type=cfg.PropBool),

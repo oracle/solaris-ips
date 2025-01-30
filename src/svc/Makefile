@@ -37,6 +37,7 @@ SMF_MANIFESTS = \
 	pkg-depot.xml \
 	pkg-mdns.xml \
 	pkg-mirror.xml \
+	pkg-oci-config.xml \
 	pkg-repositories-setup.xml \
 	pkg-server.xml \
 	pkg-system-repository.xml \
@@ -53,6 +54,7 @@ SVC_METHOD_SCRIPTS = \
 	svc-pkg-depot \
 	svc-pkg-mdns \
 	svc-pkg-mirror \
+	svc-pkg-oci-config \
 	svc-pkg-repositories-setup \
 	svc-pkg-server \
 	svc-pkg-sysrepo \

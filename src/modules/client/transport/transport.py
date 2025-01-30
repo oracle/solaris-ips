@@ -361,6 +361,11 @@ class ImageTransportCfg(TransportCfg):
             return False
         return self.__img.cfg.get_policy(policy_name)
 
+    def get_img_cfg_property(self, section, name):
+        if not self.__img.cfg:
+            return None
+        return self.__img.cfg.get_property(section, name)
+
     def get_pkg_dir(self, pfmri):
         """Returns the absolute path of the directory that should be
         used to store and load manifest data.
@@ -647,7 +652,7 @@ class Transport:
         header = None
 
         if isinstance(pub, publisher.Publisher):
-            header = self.__build_header(uuid=self.__get_uuid(pub))
+            header = self.__build_header(pub=pub)
 
         # Call setup if the transport isn't configured or was shutdown.
         if not self.__engine:
@@ -823,7 +828,7 @@ class Transport:
 
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
         failures = []
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         if progtrack and ccancel:
             progtrack.check_cancelation = ccancel
@@ -986,7 +991,7 @@ class Transport:
         header = None
 
         if isinstance(pub, publisher.Publisher):
-            header = self.__build_header(uuid=self.__get_uuid(pub))
+            header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, operation="publisher", versions=[0],
@@ -1063,7 +1068,7 @@ class Transport:
     def get_datastream(self, pub, fhash, ccancel=None):
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
         failures = tx.TransportFailures()
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             operation="file", versions=[0, 1]):
@@ -1107,7 +1112,7 @@ class Transport:
 
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
         failures = tx.TransportFailures()
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         alt_repo = None
         if not fmri and self.cfg.alt_pubs:
@@ -1195,7 +1200,7 @@ class Transport:
         header = None
 
         if isinstance(pub, publisher.Publisher):
-            header = self.__build_header(uuid=self.__get_uuid(pub))
+            header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, operation="status", versions=[0],
@@ -1249,8 +1254,7 @@ class Transport:
         pub = self.cfg.get_publisher(pub_prefix)
         mfst = fmri.get_url_path()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(intent=intent,
-            uuid=self.__get_uuid(pub))
+        header = self.__build_header(intent=intent, pub=pub)
 
         if not alt_repo:
             alt_repo = self.cfg.get_pkg_alt_repo(fmri)
@@ -1296,7 +1300,7 @@ class Transport:
         # correctness issue, and it could be the repository simply
         # doesn't have the file, so don't try more than once.
         retry_count = 1
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True):
@@ -1325,8 +1329,7 @@ class Transport:
                 raise apx.NoPublisherRepositories(pub_prefix)
 
         if isinstance(pub, publisher.Publisher):
-            header = self.__build_header(intent=intent,
-                uuid=self.__get_uuid(pub))
+            header = self.__build_header(intent=intent, pub=pub)
 
         # Call setup if the transport isn't configured or was shutdown.
         if not self.__engine:
@@ -1485,8 +1488,7 @@ class Transport:
                 raise apx.NoPublisherRepositories(
                     fmri.publisher)
 
-            header = self.__build_header(intent=intent,
-                uuid=self.__get_uuid(pub))
+            header = self.__build_header(intent=intent, pub=pub)
 
             if eid not in mx_pub:
                 mx_pub[eid] = MultiXfr(pub,
@@ -1726,34 +1728,37 @@ class Transport:
                 fmri, chash, newhash), size=sz)
         return True
 
-    @staticmethod
-    def __build_header(intent=None, uuid=None):
+    def __build_header(self, intent=None, pub=None):
         """Return a dictionary that contains various
         header fields, depending upon what arguments
         were passed to the function.  Supply intent header in intent
-        argument, uuid information in uuid argument."""
+        argument, optional publisher is used for uuid."""
 
         header = {}
 
         if intent:
             header["X-IPkg-Intent"] = intent
 
-        if uuid:
-            header["X-IPkg-UUID"] = uuid
+        if self.cfg.get_policy(imageconfig.SEND_UUID):
+            if pub:
+               if pub.client_uuid in (None, ""):
+                   raise apx.InvalidPropertyValue(
+                       f"uuid not found for publisher {pub.prefix}")
+               header["X-IPkg-UUID"] = pub.client_uuid
+
+            try:
+                ocids = {}
+                for ocid in ["id", "image", "tenantId"]:
+                    ocids[ocid] = self.cfg.get_img_cfg_property("oci", ocid)
+                if ocids:
+                    header["X-IPkg-OCI"] = ocids
+            except (KeyError, self.cfg.UnknownPropertyError):
+                 pass
 
         if not header:
             return None
 
         return header
-
-    def __get_uuid(self, pub):
-        if not self.cfg.get_policy(imageconfig.SEND_UUID):
-            return None
-
-        try:
-            return pub.client_uuid
-        except KeyError:
-            return None
 
     @staticmethod
     def _makedirs(newdir):
@@ -1788,7 +1793,7 @@ class Transport:
         header = None
 
         if isinstance(pub, publisher.Publisher):
-            header = self.__build_header(uuid=self.__get_uuid(pub))
+            header = self.__build_header(pub=pub)
 
         # download_dir is temporary download path.
         download_dir = self.cfg.incoming_root
@@ -2135,7 +2140,7 @@ class Transport:
 
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
         failures = tx.TransportFailures()
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         # Call setup if the transport isn't configured or was shutdown.
         if not self.__engine:
@@ -2806,7 +2811,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         if progtrack and ccancel:
             progtrack.check_cancelation = ccancel
@@ -2840,7 +2845,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         # Call setup if the transport isn't configured or was shutdown.
         if not self.__engine:
@@ -2875,7 +2880,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         # Call setup if the transport isn't configured or was shutdown.
         if not self.__engine:
@@ -2909,7 +2914,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True,
@@ -2943,7 +2948,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True, operation="close",
@@ -2975,7 +2980,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True, operation="open",
@@ -3004,7 +3009,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True, operation="admin",
@@ -3034,7 +3039,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         # Call setup if transport isn't configured, or was shutdown.
         if not self.__engine:
@@ -3068,7 +3073,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True, operation="admin",
@@ -3097,7 +3102,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True, operation="admin",
@@ -3126,7 +3131,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True, operation="admin",
@@ -3154,7 +3159,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         # In this case, the operation and versions keywords are
         # purposefully avoided as the underlying repo function
@@ -3186,7 +3191,7 @@ class Transport:
 
         failures = tx.TransportFailures()
         retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
-        header = self.__build_header(uuid=self.__get_uuid(pub))
+        header = self.__build_header(pub=pub)
 
         for d, retries, v in self.__gen_repo(pub, retry_count,
             origin_only=True, single_repository=True, operation="admin",
