@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 """module describing a user packaging object
@@ -263,7 +263,7 @@ class GroupAction(generic.Action):
         """Arrange for group actions to be installed in gid order.  This
         will only hold true for actions installed at one time, but that's
         generally what we need on initial install."""
-        # put unspecifed gids at the end
+        # put unspecified gids at the end
         a = int(self.attrs.get("gid", 1024))
         b = int(other.attrs.get("gid", 1024))
         return (a > b) - (a < b)

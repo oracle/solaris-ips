@@ -20,7 +20,7 @@ A new packaging system must:
 * support the installation of packages to a directory for diskless and Xen
   configs.
 
-* be repository based to faciltate efficient software distribution.
+* be repository based to facilitate efficient software distribution.
 
 * support the user's connection to multiple repositories to provide
   different types of software, newer software, different vendors/suppliers,
@@ -82,7 +82,7 @@ A new packaging system must:
 A new packaging system must not:
 
 * require changing the build system of consolidations contributing to 
-  software respository.  Different parts of OpenSolaris build in many different
+  software repository.  Different parts of OpenSolaris build in many different
   ways; forcing them all to be the same is unacceptable.
 
 * require the use of non-local resources for clients; security conscious 

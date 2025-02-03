@@ -72,7 +72,7 @@ is broken down:
 
             * 0.175: Trunk identifier
             * 0: Which Oracle Solaris Update this package is part of
-            * 0: The SRU (suppport repository update) number
+            * 0: The SRU (support repository update) number
             * 0: The platform number, unused at present, but reserved for future use
             * 2: The build ID, used to indicate the build or respin
             * 1: The nightly ID

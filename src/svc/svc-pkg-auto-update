@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2025, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -114,7 +114,7 @@ def start():
     # Finally add the list of packages. This is a no-op if the list is empty.
     cmd.extend(packages)
 
-    # Attempt the update 3 times, incase the image is locked,
+    # Attempt the update 3 times, in case the image is locked,
     # backing off longer each time.
     for wait_secs in [60, 120, 300]:
         print('Running:', ' '.join(cmd), flush=True)

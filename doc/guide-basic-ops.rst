@@ -54,7 +54,7 @@ Installing a package
 --------------------
 
 To install a package, we first need to know the name of the package.
-Package names are part of a larger set of named entites, called
+Package names are part of a larger set of named entities, called
 *fault-managed resources*, and referred to using Fault-Managed Resource
 Identifiers (FMRIs).  A package FMRI contains the name of the package's
 publisher, a common label for the package, and a version specifier.  For

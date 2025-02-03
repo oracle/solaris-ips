@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2012, 2025, Oracle and/or its affiliates.
  */
 
 /*
@@ -69,7 +69,7 @@ set_invalid_action_error(const char *name, PyObject *action,
 
 /*
  * These routines are expected to return NULL in an exception case per CPython
- * calling conventions.  Whenver NULL is returned, an exception should already
+ * calling conventions.  Whenever NULL is returned, an exception should already
  * be set, either by the function that was just called and failed, or by the
  * routine.  If the routine is successful, it is expected to return a PyObject
  * of some kind even if the return value is ignored by consumers.  The expected

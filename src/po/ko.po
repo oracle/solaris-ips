@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2016-10-12 22:04-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nLanguage: \nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1630,7 +1630,7 @@ msgstr "\n{err}{stacktrace}"
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the operation has completed successfuly."
+"Despite the error while indexing, the operation has completed successfully."
 msgstr "\n\n색인화 도중 오류가 발생했지만 작업이 성공적으로 완료되었습니다."
 
 #: ../depot-config.py:138
@@ -3432,7 +3432,7 @@ msgstr "알 수 없는 저장소 원본 '{0}'입니다."
 
 #: ../modules/client/api_errors.py:2158
 msgid ""
-"The follwing URIs use unsupported schemes.  Supported schemes are file://, "
+"The following URIs use unsupported schemes.  Supported schemes are file://, "
 "http://, and https://."
 msgstr "다음 URI에서 지원되지 않는 체계가 사용됩니다. 지원되는 체계는 file://, http:// 및 https://입니다."
 
@@ -4823,7 +4823,7 @@ msgstr "오버레이 패키지를 확인하거나 수정하십시오. {0}"
 #: ../modules/client/imageplan.py:1668
 msgid ""
 "Cannot create or mount a copy of current be. Reporting unpackaged content "
-"aganist current live image."
+"against current live image."
 msgstr "현재 BE의 복사본을 만들거나 마운트할 수 없습니다. 현재 라이브 이미지와 비교하여 패키지화되지 않은 컨텐츠를 보고하는 중입니다."
 
 #: ../modules/client/imageplan.py:1749

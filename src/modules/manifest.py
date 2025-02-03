@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 from collections import namedtuple, defaultdict
@@ -403,7 +403,7 @@ class Manifest:
         return out
 
     def _gen_dirs_to_str(self):
-        """Generate contents of dircache file containing all dirctories
+        """Generate contents of dircache file containing all directories
         referenced explicitly or implicitly from self.actions.  Include
         variants as values; collapse variants where possible."""
 
@@ -1562,7 +1562,7 @@ class FactoredManifest(Manifest):
     that need efficient access to package data on a per-action type basis.
     It achieves this by partitioning the manifest into multiple files (one
     per action type) and then storing an on-disk cache of the directories
-    explictly and implicitly referenced by the manifest each tagged with
+    explicitly and implicitly referenced by the manifest each tagged with
     the appropriate variants/facets."""
 
     def __init__(self, fmri, cache_root, contents=None, excludes=EmptyI,
@@ -1639,7 +1639,7 @@ class FactoredManifest(Manifest):
         self.__finiload()
 
     def __unload(self):
-        """Unload manifest; used to reduce peak memory comsumption
+        """Unload manifest; used to reduce peak memory consumption
         when downloading new manifests"""
         self.actions = []
         self.actions_bytype = {}

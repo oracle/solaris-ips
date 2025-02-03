@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2016-10-12 22:04-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nLanguage: \nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1630,7 +1630,7 @@ msgstr "\n{err}{stacktrace}"
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the operation has completed successfuly."
+"Despite the error while indexing, the operation has completed successfully."
 msgstr "\n\nインデックス作成中にエラーが発生しましたが、操作は正常に終了しました。"
 
 #: ../depot-config.py:138
@@ -3432,7 +3432,7 @@ msgstr "不明なリポジトリの起点 '{0}'"
 
 #: ../modules/client/api_errors.py:2158
 msgid ""
-"The follwing URIs use unsupported schemes.  Supported schemes are file://, "
+"The following URIs use unsupported schemes.  Supported schemes are file://, "
 "http://, and https://."
 msgstr "次の URI はサポートされていないスキームを使用しています。サポートされているスキームは file://、http://、および https:// です。"
 
@@ -4823,7 +4823,7 @@ msgstr "オーバーレイパッケージの検証または修正: {0}"
 #: ../modules/client/imageplan.py:1668
 msgid ""
 "Cannot create or mount a copy of current be. Reporting unpackaged content "
-"aganist current live image."
+"against current live image."
 msgstr "現在の BE のコピーを作成またはマウントできません。現在のライブイメージに対してパッケージ解除された内容を報告しています。"
 
 #: ../modules/client/imageplan.py:1749

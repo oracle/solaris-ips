@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 import errno
@@ -181,7 +181,7 @@ class ImageFormatUpdateNeeded(ApiException):
 
 
 class ImageInsufficentSpace(ApiException):
-    """Used when insuffcient space exists for proposed operation"""
+    """Used when insufficient space exists for proposed operation"""
 
     def __init__(self, needed, avail, use):
         self.needed = needed
@@ -2216,7 +2216,7 @@ class UnsupportedRepositoryURI(PublisherError):
             illegals.append((u, scheme))
 
         if len(illegals) > 1:
-            msg = _("The follwing URIs use unsupported "
+            msg = _("The following URIs use unsupported "
                 "schemes.  Supported schemes are "
                 "file://, http://, and https://.")
             for i, s in illegals:

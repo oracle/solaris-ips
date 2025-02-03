@@ -311,7 +311,7 @@ class ImageConfig(cfg.FileConfig):
         after):
         """Change the publisher search order by moving the publisher
         'being_moved' relative to the publisher 'staying put.'  The
-        boolean 'after' determins whether 'being_moved' is placed before
+        boolean 'after' determines whether 'being_moved' is placed before
         or after 'staying_put'."""
 
         so = self.get_property("property", "publisher-search-order")

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 import errno
@@ -1365,7 +1365,7 @@ class _FilesystemRepo(TransportRepo):
         elements in 'header'.  If a conditional get is
         to be performed, 'ts' should contain a floating point
         value of seconds since the epoch.  This protocol
-        doesn't implment revalidate and redownload.  The options
+        doesn't implement revalidate and redownload.  The options
         are ignored."""
 
         urllist = []
@@ -2061,7 +2061,7 @@ class _ArchiveRepo(TransportRepo):
         elements in 'header'.  If a conditional get is
         to be performed, 'ts' should contain a floating point
         value of seconds since the epoch.  This protocol
-        doesn't implment revalidate and redownload.  The options
+        doesn't implement revalidate and redownload.  The options
         are ignored."""
 
         pub_prefix = getattr(pub, "prefix", None)
@@ -2429,7 +2429,7 @@ class FileProgress(ProgressCallback):
     and updates the tracker accordingly.  If the handle fails,
     it will correctly remove the bytes from the file.  The curl
     callback reports bytes even when it doesn't make progress.
-    It's necessary to keep additonal state here, since the client's
+    It's necessary to keep additional state here, since the client's
     ProgressTracker has global counts of the bytes.  If we're
     unable to keep a per-file count, the numbers will get
     lost quickly."""

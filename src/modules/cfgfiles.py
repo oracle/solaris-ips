@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
@@ -105,7 +105,7 @@ class CfgFile:
 
     def getfilelines(self):
         """ given self, return list of lines to be printed.
-            default impl preserves orignal + insertion order"""
+            default impl preserves original + insertion order"""
         lines = [[self.index[l][2], self.index[l][0]] for l in self.index]
         lines.sort()
         return [l[1] for l in lines]

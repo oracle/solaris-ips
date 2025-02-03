@@ -101,7 +101,7 @@ of the change.
 Because of the need to select the appropriate variant types prior to
 installation or parsing manifests, only variant.debug.* variants can
 used with pkg(5) without making explicit changes to the source
-code. Developers are encourged to design their components not to
+code. Developers are encouraged to design their components not to
 intersect in the filesystem so that facets may be used rather than
 variants.
 

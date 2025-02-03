@@ -25,7 +25,7 @@ until no more are found.  Expressions of macro
 form w/o a value are passed through w/o modification.
 
 Eliding lines from a manifest is done by using a
-macro at the begining of the line that has a '#'
+macro at the beginning of the line that has a '#'
 value, which is the manifest comment character.
 As a practical matter, the macro names are assigned
 in the importer Makefile to facilitate understanding;
@@ -45,8 +45,8 @@ or action line) syntax such as:
 <include "path">
 
 The specified path is searched w/o substitution for 
-if it starts w/ "/"; otherwise any parameters specifed
-via -I are preprended and then searched for in order.
+if it starts w/ "/"; otherwise any parameters specified
+via -I are prepended and then searched for in order.
 
 Any files specified w/ -A would be searched for and appended
 to the manifest as if they had be specified w/ <include "path">

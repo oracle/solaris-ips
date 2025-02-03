@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 import copy
@@ -460,7 +460,7 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
 
         bypass = __makelist(
             a.attrs.get(portable.PD_BYPASS_GENERATE, mf_bypass))
-        # If we're bypassing all depdendency generation, we can avoid
+        # If we're bypassing all dependency generation, we can avoid
         # calling our dispatch_dict function altogether.
         if (".*" in bypass or "^.*$" in bypass) and not ignore_bypass:
             pkg_attrs[bypassed_prefix] = "{0}:.*".format(
@@ -741,7 +741,7 @@ def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
 
     'path_vars' is the set of variants under which 'path' exists.
 
-    'file_dep_attrs' is the dictonary of attributes for the file dependency
+    'file_dep_attrs' is the dictionary of attributes for the file dependency
     for 'path'.
 
     'index' indicates how much of 'path' should be checked against the file
@@ -753,8 +753,8 @@ def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
     # If the current path is a known file, then we might be done resolving
     # the path.
     if path in files_dict:
-        # Copy the variants so that marking the variants as satisified
-        # doesn't change the sate of 'path_vars.'
+        # Copy the variants so that marking the variants as satisfied
+        # doesn't change the state of 'path_vars.'
         tmp_vars = copy.copy(path_vars)
         # If tmp_vars has been satisfied, then this function should
         # never have been called.
@@ -923,7 +923,7 @@ def find_package_using_delivered_files(files_dict, links, file_dep, dep_vars,
         dep_vars.mark_as_satisfied(vc)
         attrs = file_dep.attrs.copy()
         dep_type = "require-any"
-        # Find the packages which satisify this file dependency.  Using
+        # Find the packages which satisfy this file dependency.  Using
         # the short fmri is appropriate for these purposes because
         # dependencies can never be inferred on different versions of
         # the same package during a single run of resolve.
@@ -1586,7 +1586,7 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
         errs.append(NeedConditionalRequireAny(conflicts, pkg_vars))
 
     # For each group of dependencies (g) for a particular fmri (k) merge
-    # together depedencies on the same fmri with different variants.
+    # together dependencies on the same fmri with different variants.
     new_res = []
     for k, group in itertools.groupby(sorted(res, key=action_group_key),
         action_group_key):

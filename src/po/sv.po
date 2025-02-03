@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 #
 msgid ""
@@ -1415,7 +1415,7 @@ msgid ""
 "\n"
 "\n"
 "Despite the error while indexing, the update, install, or uninstall\n"
-"has completed successfuly."
+"has completed successfully."
 msgstr ""
        "\n"
        "\n"
@@ -2407,7 +2407,7 @@ msgid ""
 "\n"
 "\n"
 "Despite the error while indexing, the update, install, or uninstall "
-"has completed successfuly."
+"has completed successfully."
 msgstr ""
        "\n"
        "\n"

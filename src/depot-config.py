@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2025, Oracle and/or its affiliates.
 #
 
 try:
@@ -363,7 +363,7 @@ def _write_publisher_response(pubs, htdocs_path, repo_prefix):
         # convert our list of strings to a list of Publishers
         pub_objs = [pkg.client.publisher.Publisher(pub) for pub in pubs]
 
-        # write individual reponses for the publishers
+        # write individual responses for the publishers
         for pub in pub_objs:
             pub_path = os.path.join(htdocs_path,
                 os.path.sep.join(
@@ -857,7 +857,7 @@ def main_func():
                 usage(_("server CA certificate and key files "
                     "must be presented at the same time."))
             # If fmri is specified for pkg/depot instance, we need
-            # record the proporty values for updating.
+            # record the property values for updating.
             if smf_fmri:
                 orig = (ssl_ca_cert_file, ssl_ca_key_file,
                     ssl_cert_file, ssl_key_file)

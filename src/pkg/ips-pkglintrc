@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 
 [pkglint]
 
@@ -35,7 +35,7 @@ log_level = WARNING
 do_pub_checks = True
 
 # pkglint.ext.* keys indicate python modules that should be
-# automatically loaded and check methods exectuted during
+# automatically loaded and check methods executed during
 # each lint run.
 
 # key = python package implementing those checks

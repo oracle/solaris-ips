@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 # We should be using pkg.no_site_packages here but doing so stops us being
@@ -112,7 +112,7 @@ Environment:
 
 
 def generate(args):
-    """Produce a list of file dependencies from a manfiest and a proto
+    """Produce a list of file dependencies from a manifest and a proto
     area."""
     try:
         opts, pargs = getopt.getopt(args, "d:D:Ik:Mm?",
@@ -316,7 +316,7 @@ def resolve(args, img_dir):
     elif use_system_to_resolve:
         system_patterns = ["*"]
 
-    # Becuase building an ImageInterface permanently changes the cwd for
+    # Because building an ImageInterface permanently changes the cwd for
     # python, it's necessary to do this step after resolving the paths to
     # the manifests.
     try:

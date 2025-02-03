@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2025, Oracle and/or its affiliates.
  */
 
 /*
@@ -365,7 +365,7 @@ free_proxy_pair(struct proxy_pair *pair)
 
 /*
  * Once a pair has been connected, dup the file descriptors, switching read and
- * write, so that both pair can be seperately queued for events.
+ * write, so that both pair can be separately queued for events.
  */
 static int
 clone_and_register(struct proxy_pair *pair)
@@ -416,7 +416,7 @@ clone_and_register(struct proxy_pair *pair)
 	/*
 	 * Increment the proxy count by two, since there are two proxy-pair
 	 * objects per connection, each representing one direction of the flow.
-	 * The objects are shutdown separately, so each will decrment the
+	 * The objects are shutdown separately, so each will decrement the
 	 * count by one in its shutdown method.
 	 */
 	atomic_add_int(&g_proxy_pair_count, 2);
@@ -1118,7 +1118,7 @@ do_fattach(int door, char *path, boolean_t detach_only)
 	(void) unlink(path);
 	if (detach_only)
 		return (0);
-	/* Only priviliged processes should open this file */
+	/* Only privileged processes should open this file */
 	fd = open(path, O_CREAT|O_RDWR, 0600);
 	if (fd < 0)
 		return (2);

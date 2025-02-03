@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2025, Oracle and/or its affiliates.
 #
 
 #
@@ -660,7 +660,7 @@ def do_reversion(pub, ref_pub, target_repo, ref_xport, changes, ignores,
                 continue
             pfmri = latest_ref_pkgs[p]
             # Retrieve manifest from ref repo and replace the one in
-            # the target repo. We don't have to adjust depndencies
+            # the target repo. We don't have to adjust dependencies
             # for these packages because they will not depend on
             # anything we'll reversion.
             rmani = ref_xport.get_manifest(pfmri)

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 import errno
@@ -66,7 +66,7 @@ class LockFile:
         invocations will provide kwargs.
 
         provide_mutex - By default, the LockFile object
-        will use a mutex to sychronize access for threads in
+        will use a mutex to synchronize access for threads in
         the current process.  If the caller is already providing
         mutual exclusion to the LockFile object, this should
         be set to False."""

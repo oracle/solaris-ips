@@ -178,7 +178,7 @@ This information is Copyright 2008 Sun Microsystems
         The project defines a client-server publication mechanism.  The
         publication client offers up transactions on packages.  The
         server evaluates transactions from the publication client.
-        Transations that are deemed to be complete and/or safe by the
+        Transactions that are deemed to be complete and/or safe by the
         server are then made available to the retrieval client.
 
         The initial transport will be HTTP and HTTPS, protocols around
@@ -317,7 +317,7 @@ This information is Copyright 2008 Sun Microsystems
 
     4.9. I18N/L10N Impact:
 
-        Commands will require localization, as will any publically
+        Commands will require localization, as will any publicly
         committed library or equivalent APIs.
 
     4.10. Packaging & Delivery:

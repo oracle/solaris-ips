@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 """centralized object for insert, lookup, and removal of files.
 
@@ -35,7 +35,7 @@ according to the first layout.  When a file is retrieved, each layout is
 checked in turn to determine whether the file is present.  If the file is
 present but not located according to where it should be located according to
 the first layout and the FileManager has permission to move the file, it
-wil be moved to that location.  When a file is removed, the layouts are
+will be moved to that location.  When a file is removed, the layouts are
 checked in turn until a file is found and removed.  The FileManager also
 provides a way to generate all hashes stored by the FileManager."""
 
@@ -298,7 +298,7 @@ class FileManager:
                             and e.filename == p_dir):
                             raise
 
-                    # Parent directory created successsfully
+                    # Parent directory created successfully
                     # so loop again to retry place.
                 elif e.errno == errno.ENOENT and \
                     not os.path.exists(src_path):

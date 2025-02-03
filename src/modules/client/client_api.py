@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2015, 2025, Oracle and/or its affiliates.
 #
 
 
@@ -797,7 +797,7 @@ def _list_inventory(op, api_inst, pargs,
                 errors_json=errors_json,
                 errorType="inventory_extra")
         elif pkg_list == api.ImageInterface.LIST_UPGRADABLE:
-            # Creating a list of packages that are uptodate
+            # Creating a list of packages that are up-to-date
             # and that are not installed on the system.
             no_updates = []
             not_installed = []
@@ -3202,7 +3202,7 @@ def __handle_errors_json(func, non_wrap_print=True, subcommand=None,
             err=__e, stacktrace=traceback_str)
 
         s += _("\n\nDespite the error while indexing, the operation "
-            "has completed successfuly.")
+            "has completed successfully.")
         _error_json(s, errors_json=errors_json)
         if "errors" in ret_json:
             ret_json["errors"].extend(errors_json)

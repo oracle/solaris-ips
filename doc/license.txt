@@ -337,7 +337,7 @@ LICENSE ACTIONS ACCEPTANCE PROPOSAL
 
 
     * A mechanism to temporarily override client behaviour, provide
-      intial policy values during image-creation, or to provide
+      initial policy values during image-creation, or to provide
       explicit user intent (such as license acceptance).
 
         A new command-line option as shown below will be added to the

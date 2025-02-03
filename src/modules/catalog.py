@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -3044,7 +3044,7 @@ class Catalog:
                     pkg_matching_pats.add(pat)
 
             if omit_package:
-                # Package didn't match critera; skip it.
+                # Package didn't match criteria; skip it.
                 continue
 
             # Collect attribute data if requested.

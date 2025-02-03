@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -143,7 +143,7 @@ class _LockedGenerator:
     """This is a private class and should not be used by API consumers.
 
     This decorator class wraps API generator functions, managing the
-    activity and cancelation locks.  Due to implementation differences
+    activity and cancellation locks.  Due to implementation differences
     in the decorator protocol, the decorator must be used with
     parenthesis in order for this to function correctly.  Always
     decorate functions @_LockedGenerator()."""
@@ -191,7 +191,7 @@ class _LockedCancelable:
     """This is a private class and should not be used by API consumers.
 
     This decorator class wraps non-generator cancelable API functions,
-    managing the activity and cancelation locks.  Due to implementation
+    managing the activity and cancellation locks.  Due to implementation
     differences in the decorator protocol, the decorator must be used with
     parenthesis in order for this to function correctly.  Always
     decorate functions @_LockedCancelable()."""
@@ -355,7 +355,7 @@ class ImageInterface:
             cmdpath = misc.api_cmdpath()
         self.cmdpath = cmdpath
 
-        # prevent brokeness in the test suite
+        # prevent brokenness in the test suite
         if self.cmdpath and \
             "PKG_NO_RUNPY_CMDPATH" in os.environ and \
             self.cmdpath.endswith(os.sep + "run.py"):
@@ -634,7 +634,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 "before a refresh can occur.").format(self._img.root))
 
     def _acquire_activity_lock(self):
-        """Private helper method to aqcuire activity lock."""
+        """Private helper method to acquire activity lock."""
 
         rc = self._activity_lock.acquire(
             blocking=self.__blocking_locks)
@@ -744,7 +744,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     self._img.imageplan.reboot_advised()
 
             if self.__new_be and self.__backup_be:
-                # No policy or CLI arg combiation should result in
+                # No policy or CLI arg combination should result in
                 # a new BE and an extra backup be.
                 self.__backup_be = False
 
@@ -1341,7 +1341,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         _li_erecurse=None, _li_md_only=False, _li_parent_sync=True,
         _new_be=False, _noexecute=False, _pubcheck=True,
         _refresh_catalogs=True, _repos=None, _update_index=True, **kwargs):
-        """Contructs a plan to change the package or linked image
+        """Constructs a plan to change the package or linked image
         state of an image.
 
         We can raise PermissionsException, PlanCreationException,
@@ -1661,7 +1661,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         todo."""
 
         if not self._img.imageplan:
-            # if theres no plan there nothing to do
+            # if there's no plan there nothing to do
             return True
         if not self._img.imageplan.nothingtodo():
             return False
@@ -2197,7 +2197,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         else:
             op = API_OP_CHANGE_FACET
             for facet in facets:
-                # Explict check for not None so that we can fix
+                # Explicit check for not None so that we can fix
                 # a broken system from the past by clearing
                 # the facet. Neither True of False should be
                 # allowed for this special facet.
@@ -3105,7 +3105,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         'installed' is an optional boolean value indicating whether
         only the categories used by currently installed packages
         should be returned.  If False, the categories used by the
-        latest vesion of every known package will be returned
+        latest version of every known package will be returned
         instead.
 
         'pubs' is an optional list of publisher prefixes to restrict
@@ -3906,7 +3906,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 if tgt in inc_vers:
                     # Package is incorporated under a
                     # different name, so allow this
-                    # to fallthrough to the incoporation
+                    # to fallthrough to the incorporation
                     # evaluation.
                     break
                 elif tgt in inst_stems:
@@ -4108,7 +4108,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                     pkg_matching_pats.add(pat)
 
             if omit_package:
-                # Package didn't match critera; skip it.
+                # Package didn't match criteria; skip it.
                 if (filter_cb is not None or (newest and
                     pat_versioned)) and omit_ver and \
                     nlist[pkg_stem] == 1:
@@ -4676,7 +4676,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         self.__cancel_lock.release()
 
     def cancel(self):
-        """Used for asynchronous cancelation. It returns the API
+        """Used for asynchronous cancellation. It returns the API
         to the state it was in prior to the current method being
         invoked.  Canceling during a plan phase returns the API to
         its initial state. Canceling during prepare puts the API
@@ -5021,7 +5021,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
     def get_manifest(self, pfmri, all_variants=True, repos=None):
         """Returns the Manifest object for the given package FMRI.
 
-        'all_variants' is an optional boolean value indicating whther
+        'all_variants' is an optional boolean value indicating whether
         the manifest should include metadata for all variants and
         facets.
 
@@ -5430,7 +5430,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
     def log_operation_error(self, error):
         """Adds an error to the list of errors to be recorded in image
-        history for the current opreation."""
+        history for the current operation."""
         self._img.history.log_operation_error(error)
 
     def log_operation_start(self, name):

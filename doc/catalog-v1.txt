@@ -228,7 +228,7 @@ CATALOG FORMAT AND CACHING PROPOSAL
         following attributes:
 
         _SIGNATURE:
-            An optional dict of digest and/or cryptograhic values which
+            An optional dict of digest and/or cryptographic values which
             can be used by clients to verify the integrity of the
             catalog.attrs data.  Each key should represent the name of
             the signature or digest used, and each value the signature
@@ -890,7 +890,7 @@ CATALOG FORMAT AND CACHING PROPOSAL
         By changing the structure to a list of lists, a decrease om
         write times of 20-30 seconds was realised.  However, this was
         less than desirable as it meant the resulting data structure
-        would have to be significantly tranformed after load for use
+        would have to be significantly transformed after load for use
         by the package system.
 
     [['pkg://opensolaris.org/SUNWstc@0.5.11,5.11-0.111:20090508T163711Z'],
@@ -984,7 +984,7 @@ CATALOG FORMAT AND CACHING PROPOSAL
 
     While a performance analysis was done for each variation during the
     evaluation process, only the results for the chosen variation are
-    shown here.  Analyis was performed using a dump of the /dev repo
+    shown here.  Analysis was performed using a dump of the /dev repo
     for builds 118 and prior consisting of 42,565 unique FMRIs.
 
     Each format that was evaluated presented unique challenges.  While
@@ -999,7 +999,7 @@ CATALOG FORMAT AND CACHING PROPOSAL
     The uncompressed and gzip-compressed (provided because both Apache
     and cherrypy are capable of gzip compressing requests) are shown
     below for comparison.  Of special note is the 'all' catalog shown
-    below which was created to evaluate the feasbility of having a
+    below which was created to evaluate the feasibility of having a
     single catalog that provided access to all commonly needed metadata
     by combining the base, dependency, and summary catalogs proposed in
     section 2.1.2.
@@ -1144,7 +1144,7 @@ CATALOG FORMAT AND CACHING PROPOSAL
 
     - when weighing read performance vs. write performance,
       read performance was considered more important as updates
-      to the catalog will happen far less freqeuntly than loads
+      to the catalog will happen far less frequently than loads
       of package data (loads took 3.01s on average for manifest-
       style compared to 0.73s on average for JSON or about 75.75%
       longer)

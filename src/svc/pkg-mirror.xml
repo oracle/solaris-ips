@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2013, 2016, Oracle and/or its affiliates. All rights reserved.
+	Copyright (c) 2013, 2025, Oracle and/or its affiliates.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -193,7 +193,7 @@
         </property_group>
 
         <!-- To work around an SMF bug, we create a default instance
-	containing the 'config' property group, specifiying the
+	containing the 'config' property group, specifying the
 	authorizations we need to allow clients to modify values in it.
 	User-created instances should create this pg with the same
 	'value_authorization' property.

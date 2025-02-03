@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2025, Oracle and/or its affiliates.
 #
 
 """
@@ -145,7 +145,7 @@ class PkgRemote:
             # Access to protected member; pylint: disable=W0212
             raise apx._convert_error(e)
 
-        # initalization successful, update RPC server state
+        # initialization successful, update RPC server state
         self.__rpc_server_proc = p
         self.__rpc_server_fstdout = fstdout
         self.__rpc_server_fstderr = fstderr
@@ -178,7 +178,7 @@ class PkgRemote:
         # of the pipe.)
         os.close(server_cmd_pipe)
 
-        # initalization successful, update RPC client state
+        # initialization successful, update RPC client state
         self.__rpc_client = rpc_client
         self.__rpc_client_prog_pipe_fobj = client_prog_pipe_fobj
 
