@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -116,7 +116,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
 
         self.image_create(self.rurl,
             variants={ "variant.mumble": "false" })
-        self.pkg("install \*")
+        self.pkg(r"install \*")
         self.pkg("info mumble-true", exit=1)
         self.pkg("info mumble-false")
 

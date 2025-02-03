@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -2533,7 +2533,7 @@ DocumentRoot "/"
 # The following lines prevent .htaccess and .htpasswd files from being
 # viewed by Web clients.
 #
-<FilesMatch "^\.ht">
+<FilesMatch "^\\.ht">
     Require all denied
 </FilesMatch>
 

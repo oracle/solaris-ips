@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 import os
@@ -88,7 +88,7 @@ class PythonSyntaxError(base.DependencyAnalysisError):
             # Error text is after the last ']'
             self.txt = msg[msg.index(']') + 2:]
             # Extract the lineno and column from the [lineno:column]
-            values = re.search("\[(.+):(.+)\]", msg)
+            values = re.search(r"\[(.+):(.+)\]", msg)
             self.line = values.group(1)
             self.col = values.group(2)
 

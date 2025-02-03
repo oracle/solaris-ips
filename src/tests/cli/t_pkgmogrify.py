@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -476,7 +476,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
         source_file = os.path.join(self.test_root, "source_file2")
 
-        expect = "^test of \"{0}\" ... or is it\?$"
+        expect = "^test of \"{0}\" ... or is it\\?$"
         fmri = "wombat/heaven@1.0,5.11-0.101"
 
         # Simple %() replacement

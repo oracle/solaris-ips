@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -647,8 +647,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         """Test that invalid facet names are handled appropriately"""
 
         self.image_create(self.rurl)
-        self.pkg("change-facet --no-refresh "
-            "facet.foo\ bar=false", exit=1)
+        self.pkg(r"change-facet --no-refresh facet.foo\ bar=false", exit=1)
         self.assertTrue("facet.foo bar" in self.errout)
 
 

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2016, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2016, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -84,7 +84,7 @@ class TestPkgModified(pkg5unittest.SingleDepotTestCase):
             ("contents", 1),
             ("history", 0),
             ("info", 1),
-            ("info -r \*", 0),
+            (r"info -r \*", 0),
             ("list", 1),
             ("mediator", 0),
             ("property", 0),
