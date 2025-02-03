@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2014, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2014, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -357,7 +357,7 @@ class TestPkgHydrate(pkg5unittest.ManyDepotTestCase):
 """PROPERTY   VALUE\ndehydrated ['test1', 'test2']\n"""
         self.assertEqual(expected, self.output)
         self.pkg("rehydrate")
-        # The dehydrated proerty should has no value after
+        # The dehydrated property should has no value after
         # fully rehydrate.
         self.pkg("property dehydrated")
         expected = \

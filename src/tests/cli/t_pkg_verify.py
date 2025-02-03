@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -321,7 +321,7 @@ sys::3:root,bin,adm
         fd.write("Bobcats are here")
         fd.close()
 
-        # When verify multilple paths in a package, should output
+        # When verify multiple paths in a package, should output
         # ok for one package, error for the other.
         self.pkg_verify("-v -p /etc/driver_aliases \
                     -p /usr/bin/bobcat", exit=1)
@@ -599,15 +599,15 @@ user1:x:10001:111111:& User:/export/home/user1:/bin/sh""")
 
         self.pkg("change-variant rel=prod")
 
-        # Ensure package verify runs wihtout error
+        # Ensure package verify runs without error
         self.pkg_verify("multivar")
 
-        # Ensure group changes as per controlled by varaint
+        # Ensure group changes as per controlled by variant
         self.pkg("change-variant rel=test")
         self.assertTrue("group11" == \
             portable.get_name_by_gid(5555522, self.get_img_path(), True))
 
-        # Ensure package verify runs wihtout error
+        # Ensure package verify runs without error
         self.pkg_verify("multivar")
 
         # Remove Group manually and then verify package

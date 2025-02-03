@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -597,7 +597,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
         self.assertEqualDiff(entries, expected)
 
         # Next, verify that a refresh without --full but that is
-        # implicity a full because the catalog hasn't already been
+        # implicitly a full because the catalog hasn't already been
         # retrieved is handled gracefully and the expected log
         # entries are present.
         dc.stop()

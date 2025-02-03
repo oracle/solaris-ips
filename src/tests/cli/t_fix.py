@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -998,7 +998,7 @@ adm:NP:6445::::::
         self.__do_alter_verify(pfmri_krb, verbose=True)
 
         # Test that verify / fix on system wide could report / fix the
-        # error on the overlaid and overlaying packges.
+        # error on the overlaid and overlaying packages.
         self.file_remove(file_path)
         self.pkg("verify", exit=1)
         self.assertTrue("(from " in self.output)

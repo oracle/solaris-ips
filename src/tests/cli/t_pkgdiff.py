@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -112,7 +112,7 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
     # bin/false: additional pkg.content-hash attributes are added in the
     # newer version
     # they are considered as different in the case of CMP_ALL, the same in
-    # the case of CMP_UNSIGNED because the preferred unsinged hash match.
+    # the case of CMP_UNSIGNED because the preferred unsigned hash match.
     #
     hashed10 = """
             set name=pkg.fmri value=hashed@1.0:20130804T203459Z

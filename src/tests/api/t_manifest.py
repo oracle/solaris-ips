@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 
 import unittest
 import tempfile
@@ -454,7 +454,7 @@ dir owner=root path=fm group=bin mode=0755 facet.multi=true \\
         self.assertEqual(len(list(m1.gen_actions_by_type("dir"))), 1)
 
     def test_store_to_disk(self):
-        """Verfies that a FactoredManifest gets force-loaded before it
+        """Verifies that a FactoredManifest gets force-loaded before it
         gets stored to disk."""
 
         m1 = manifest.FactoredManifest("foo-content@1.0", self.cache_dir,

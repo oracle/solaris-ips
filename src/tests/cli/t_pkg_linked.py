@@ -3244,7 +3244,7 @@ class TestFacetInheritance(TestPkgLinked):
                 for i in [1, 2]
         ]
 
-        # isntall foo into each image
+        # install foo into each image
         self._pkg([0], "install -v {0}".format(self.p_fmri["foo@1"]))
 
         # install synced incorporation and package
@@ -4612,7 +4612,7 @@ exit 0""".strip("\n")
 
         self.__create_images(base_path, img_dirs)
 
-        # can't link "./" and "1/11/" because "1/" is inbetween
+        # can't link "./" and "1/11/" because "1/" is in between
         self.__try_attach(base_path, "./", "1/11/")
 
         # can't link "1/" and "2/" because "./" is in between
@@ -4651,8 +4651,8 @@ exit 0""".strip("\n")
         """Test path handling code with staged operation.  Make sure
         that we correctly handle images moving around between stages.
         This simulates normal pkg updates where we plan an update for
-        "/", and then we clone "/", mount it at a  a temporarly
-        location, and then update the clone."""
+        "/", and then we clone "/", mount it at a temporary location,
+        and then update the clone."""
 
         tmp_path = os.path.join(self.img_path(0), "tmp")
         base_path = os.path.join(self.img_path(0), "images")
@@ -5022,7 +5022,7 @@ exit 0""".strip("\n")
         self.__ccmd("cd {0}; find . | cpio -pdm {1}".format(image1, image2))
 
         # Update the API object to point to the new location and
-        # execute the udpate.
+        # execute the update.
         api_inst._img.find_root(image2)
         api_inst.execute_plan()
 

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -2801,7 +2801,7 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/bar
 
         # Check that an inferred require-any dependency will not be
         # removed if the require dependencies in the package are at a
-        # lower version of the pacakge.
+        # lower version of the package.
 
         manf = """
 set name=pkg.fmri value=foo@1.0,5.11-1
@@ -2933,7 +2933,7 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/bar
         """Many of the tests for bug 19009 are similar.  This function
         takes a description of the combinations of packages which should
         satisfy a file dependency and generates a set of manifests to
-        match that desctiption, the dot encoding of the package
+        match that description, the dot encoding of the package
         dependency graph, and the set of expected dependencies of
         different types needed to represent the package dependencies."""
 
@@ -3608,7 +3608,7 @@ depend fmri=pkg:/D@2.0 type=require variant.num=one
             expected_conditionals, expected_require_any,
             expected_require, 5)
 
-        # Now check the the variants are set correctly on all the
+        # Now check the variants are set correctly on all the
         # dependencies.
         for d in deps:
             if d.attrs["type"] in ("conditional", "require-any"):
@@ -3668,7 +3668,7 @@ depend fmri=pkg:/F@2.0 type=require variant.num=one
             expected_conditionals, expected_require_any,
             expected_require, 8)
 
-        # Now check the the variants are set correctly on all the
+        # Now check the variants are set correctly on all the
         # dependencies.
         for d in deps:
             if d.attrs["type"] in ("conditional", "require-any"):
@@ -3734,7 +3734,7 @@ depend fmri=pkg:/G@2.0 type=require variant.num=two
             expected_conditionals, expected_require_any,
             expected_require, 6)
 
-        # Now check the the variants are set correctly on all the
+        # Now check the variants are set correctly on all the
         # dependencies.
         for d in deps:
             if d.attrs["fmri"] in \
@@ -3799,7 +3799,7 @@ depend fmri=pkg:/D@2.0 type=require variant.num=one
             expected_conditionals, expected_require_any,
             expected_require, 7)
 
-        # Now check the the variants are set correctly on all the
+        # Now check the variants are set correctly on all the
         # dependencies.
         for d in deps:
             if d.attrs["fmri"] in ("pkg:/C@1.0", "pkg:/E@1.0"):
@@ -3880,7 +3880,7 @@ depend fmri=pkg:/D@2.0 type=require
             expected_conditionals, expected_require_any,
             expected_require, 5)
 
-        # Now check the the variants are set correctly on all the
+        # Now check the variants are set correctly on all the
         # dependencies.
         for d in deps:
             if d.attrs["fmri"] in ("pkg:/C@1.0", "pkg:/E@1.0"):

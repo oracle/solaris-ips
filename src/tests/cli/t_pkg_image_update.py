@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -281,7 +281,7 @@ class NoTestImageUpdate(pkg5unittest.ManyDepotTestCase):
         # Next, verify that the preferred status of a publisher will
         # not cause an upgrade of a package if the newer version is
         # offered by the preferred publisher and the package publisher
-        # was not preferred at the time of isntall and was not used
+        # was not preferred at the time of install and was not used
         # to install the package.
         self.pkg("install baz@1.0")
         self.pkg("info baz@1.0 | grep test2")

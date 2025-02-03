@@ -1242,7 +1242,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
         """Testing related to bug 18990 where pkgdepend doesn't handle
         all types of elf dependencies correctly."""
 
-        # Other places test the basic NEEDED elf depedency.
+        # Other places test the basic NEEDED elf dependency.
 
         manf = """\
 file group=bin mode=0755 owner=sys path=usr/lib/foo.so.1
@@ -1812,7 +1812,7 @@ int main() { return 1; }
 
     def test_bug_14118(self):
         """Check that duplicate dependency actions are consolitdated
-        correctly, taking the variants into accout."""
+        correctly, taking the variants into account."""
 
         # In the comments below, v.f stands for variant.foo and v.n
         # stands for variant.num.
@@ -1864,7 +1864,7 @@ int main() { return 1; }
         m7_path = self.make_manifest(self.subset_prov)
 
         # This empty manifest will be published as hand-dep. This checks
-        # that manually added dependencies are propogated correctly.
+        # that manually added dependencies are propagated correctly.
         m8_path = self.make_manifest("\n\n")
 
         # Test that resolve handles multiline actions correctly when
@@ -2687,7 +2687,7 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d
 
     def test_bug_16013_two_d_internal(self):
         """Check that two dimensions of variants produce the expected
-        results when resolving dependends internally to a package."""
+        results when resolving dependents internally to a package."""
 
         internal_dep_manf = """\
 set name=pkg.fmri value=pkg:/internal@0.5.11,5.11-0.151

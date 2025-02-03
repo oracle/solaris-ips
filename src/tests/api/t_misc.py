@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -112,7 +112,7 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
         self.assertEqual(psinfo.pr_egid, os.getegid())
 
         # verify zoneid (it's near the end of the structure so if it
-        # is right then we likely got most the stuff inbetween decoded
+        # is right then we likely got most the stuff in between decoded
         # correctly).
         libc = ctypes.CDLL('libc.so')
         self.assertEqual(psinfo.pr_zoneid, libc.getzoneid())

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -133,7 +133,7 @@ broken_manifests["combo_variants_broken_links.mf"] = \
 #
 # We deliver prtdiag as a link on one platform, as a file on another
 # but have forgotten to set the variant properly on the file action.
-# The errors are similar to combo_variants_broken, but becase the user has
+# The errors are similar to combo_variants_broken, but because the user has
 # included links, we don't know whether they intended to use mediated links
 # or not, so we report additional errors.
 #
@@ -835,7 +835,7 @@ set name=pkg.summary value="Core Solaris Kernel"
 license license="Foo" path=usr/share/lib/legalese.txt
 """
 
-# We actually emit 10 messages here in testing, 3 for the legitmate errors,
+# We actually emit 10 messages here in testing, 3 for the legitimate errors,
 # 5 saying that we've found pkg.linted attributes in these actions, and 2
 # for the errors that would be thrown were they not marked as linted.
 #
@@ -1555,7 +1555,7 @@ expected_failures["overlay-invalid-no-overlay-preserve.mf"] = \
     ["pkglint.dupaction009.1", "pkglint.dupaction009.5"]
 broken_manifests["overlay-invalid-no-overlay-preserve.mf"] = \
 """
-# we don't delcare a 'preserve' attribute on our overlay=allow action
+# we don't declare a 'preserve' attribute on our overlay=allow action
 #
 set name=pkg.fmri value=bar
 set name=pkg.summary value="Image Packaging System"
@@ -2491,7 +2491,7 @@ depend fmri=system/more type=require
 # an assertion to be raised.
 #
 set name=variant.arch value=sparc value=i386
-set name=pkg.summary value="A packge with two variant values"
+set name=pkg.summary value="A package with two variant values"
 set name=pkg.description value="A package with two values for variant.arch."
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=org.opensolaris.consolidation value=osnet
@@ -3162,7 +3162,7 @@ dir group=sys mode=0755 owner=root path=etc
 
         # make sure we can deal with compatibility packages.  We include
         # the 'renamed_old' package as well as the 'compat_legacy'
-        # to ensure that pkglint is satisfied by the compatability
+        # to ensure that pkglint is satisfied by the compatibility
         # package, rather that trying to follow renames from the
         # 'renamed_old' package. (otherwise, if a package pointed to by
         # the legacy 'pkg' attribute doesn't exist, pkglint wouldn't
@@ -3609,7 +3609,7 @@ class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
             fail_newer_pubs.format(pair))
         self.assertTrue(is_successor(pair), fail_successor.format(pair))
 
-        # different publishers, missing timestmap, same version
+        # different publishers, missing timestamp, same version
         pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.121",
             "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
         self.assertTrue(commutative(pair), fail_newer.format(pair))
@@ -3617,7 +3617,7 @@ class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
             fail_newer_pubs.format(pair))
         self.assertTrue(not is_successor(pair), fail_successor.format(pair))
 
-        # different publishers, missing timestmap
+        # different publishers, missing timestamp
         pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.122",
             "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
         self.assertTrue(newer(pair), fail_newer.format(pair))

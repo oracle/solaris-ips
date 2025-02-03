@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -1590,7 +1590,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         self.pkg("set-property signature-policy require-signatures")
         api_obj = self.get_img_api_obj()
         # Check that when the check-certificate-revocation is False, its
-        # default value, that the install succeedes.
+        # default value, that the install succeeds.
         self._api_install(api_obj, ["example_pkg"])
         self.pkg("set-property check-certificate-revocation true")
         self.pkg("verify", su_wrap=True, exit=1)

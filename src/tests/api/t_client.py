@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -93,7 +93,7 @@ class TestSettings(pkg5unittest.Pkg5TestCase):
         self.assertEqual(info_out.getvalue(), "DEBUG\n")
 
         # Reset logging and verify info_out, error_out are no longer
-        # set to receive messagse.
+        # set to receive messages.
         global_settings.reset_logging()
         self.assertNotEqual(global_settings.info_log_handler, info_h)
         self.assertNotEqual(global_settings.error_log_handler, error_h)

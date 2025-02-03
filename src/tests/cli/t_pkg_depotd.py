@@ -817,8 +817,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
         The parent process is a ctrun process. It is the user's
         responsibility to call depot_daemon_stop to stop the process.
         ctrun is used to kill the depot daemon process after finishing
-        testing. It is needed because the double fork machanism of the
-        daemonizer make the daemonized depot server indenpendent from
+        testing. It is needed because the double fork mechanism of the
+        daemonizer make the daemonized depot server independent from
         its parent process.
 
         repopath: The repository path that a depot daemon will run on.
