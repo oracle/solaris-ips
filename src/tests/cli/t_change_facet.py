@@ -148,7 +148,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         self.assert_file_is_there("debug", negate=True)
 
         # Verify that effective value is shown for facets that are
-        # always implicity false such as debug / optional.
+        # always implicitly false such as debug / optional.
         self.pkg("facet -H -F tsv debug.top optional.doc")
         self.assertEqual(
             "facet.debug.top\tFalse\tsystem\n"
@@ -241,7 +241,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
             self.assert_file_is_there("{0:d}".format(i), negate=(i != 0))
 
         # Verify that effective value is shown for facets that are
-        # implicity false due to wildcards whether they're known to the
+        # implicitly false due to wildcards whether they're known to the
         # system through packages or not.
         self.pkg("facet -H -F tsv facet.locale.fr facet.locale.nl_ZA")
         self.assertEqual(

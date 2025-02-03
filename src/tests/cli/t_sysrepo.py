@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -673,7 +673,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ApacheDepotTestCase):
     def test_15_unicode(self):
         """Tests the system repository with some unicode paths to p5p
         files."""
-        # Running test on remote machines, the locale is usally "C",
+        # Running test on remote machines, the locale is usually "C",
         # then the file system encoding will be "ascii" and os.mkdir
         # will fail with some unicode characters in Python 3 because
         # os.mkdir uses the file system encoding. We don't have a way

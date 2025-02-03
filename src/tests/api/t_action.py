@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -548,7 +548,7 @@ Incorrect attribute list.
             "depend type=unknown fmri=foo@1.0",
             # Multiple values never allowed for depend action 'type' attribute.
             "depend type=require type=require-any fmri=foo",
-            # Mutiple fmri values only allowed for require-any deps.
+            # Multiple fmri values only allowed for require-any deps.
             "depend type=require fmri=foo fmri=bar",
             # Predicate is missing for conditional dependency.
             "depend type=conditional fmri=foo",

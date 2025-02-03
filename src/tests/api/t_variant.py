@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 import copy
@@ -148,7 +148,7 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
         self.assertEqual(intersect.sat_set, vct3_set_combo)
         self.assertEqual(intersect.not_sat_set, set())
 
-        # Test that modifing the original does not modify the copy.
+        # Test that modifying the original does not modify the copy.
         vc3_ns_copy = copy.copy(vc3_ns)
         vc3_ns.mark_all_as_satisfied()
         self.assertEqual(vc3_ns_copy.not_sat_set, vct3_set_combo)

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -880,7 +880,7 @@ Packaging Date: {pkg_date}
         self.pkg(("info bronze | grep 'Last Update Time: "
             "{0}'").format(last_update))
 
-        # Perfrom a full refresh and ensure the last-update/install
+        # Perform a full refresh and ensure the last-update/install
         # have been preserved.
         self.pkg("refresh --full")
         last_install = catalog.basic_ts_to_datetime(

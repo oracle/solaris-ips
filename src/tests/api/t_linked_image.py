@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -81,7 +81,7 @@ Got a {1} exception:
     if getattr(e, e_member, None) is None:
         raise RuntimeError("""
 Expected {0} exception of type "{1}".
-Got a {2} exception with a differnt type:
+Got a {2} exception with a different type:
 
 {3}
 """.format(str(e_type), e_member, str(type(e)), traceback.format_exc()))

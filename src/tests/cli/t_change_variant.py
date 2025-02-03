@@ -210,7 +210,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         don't exist in the target image.
 
         This routine has hard coded knowledge of the test package
-        names, variants, and dependancies.  So any updates made
+        names, variants, and dependencies.  So any updates made
         to the test package will also likely required updates to
         this function."""
 
@@ -268,7 +268,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         image doesn't contain any other unexpected packages.
 
         This routine has hard coded knowledge of the test package
-        names, variants, and dependancies.  So any updates made
+        names, variants, and dependencies.  So any updates made
         to the test package will also likely required updates to
         this function."""
 
@@ -294,7 +294,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         if ic.variants["variant.opensolaris.zone"] != v_zone:
             self.assertTrue(False, "unexpected zone variant")
 
-        # adjust the package list based on known dependancies.
+        # adjust the package list based on known dependencies.
         if 'pkg_cluster' in pl and 'pkg_shared' not in pl:
             pl.append('pkg_shared')
         if v_arch == 'i386':

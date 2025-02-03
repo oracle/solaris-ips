@@ -373,7 +373,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
         # file not found XXX this fails because of a bad transform
         self.pkgmogrify([self.transforms["include 9"]], exit=1)
 
-        # nested tranform error XXX this fails because of a bad transform
+        # nested transform error XXX this fails because of a bad transform
         self.pkgmogrify([self.transforms["include 9"]],
             args="-I {0}".format(self.test_root), exit=1)
 

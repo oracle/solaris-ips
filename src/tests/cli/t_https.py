@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -166,7 +166,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
     def test_correct_cert_validation(self):
         """ Test that an expired cert for one publisher doesn't prevent
-        making changes to other publishers due to certifcate checks on
+        making changes to other publishers due to certificate checks on
         all configured publishers. (Bug 17018362)"""
 
         bad_cert_path = os.path.join(self.cs_dir,
@@ -258,7 +258,7 @@ class TestHTTPS(pkg5unittest.HTTPSTestClass):
 
         tmp_dir = tempfile.mkdtemp(dir=self.test_root)
 
-        # Retrive the correct CA and use it to generate a new cert.
+        # Retrieve the correct CA and use it to generate a new cert.
         test_ca = self.get_pub_ta("test")
         test_cs = "cs1_{0}".format(test_ca)
 

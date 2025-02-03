@@ -1172,7 +1172,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
         self.pkgrepo("-s {0} list -H -p test2".format(self.dpath2))
         self.assertEqualDiff("", self.output)
 
-        # Test that clone works fine with mulitple publishers
+        # Test that clone works fine with multiple publishers
         amber = self.amber10.replace("open ", "open pkg://test2/")
         self.pkgsend_bulk(self.durl1, amber)
 

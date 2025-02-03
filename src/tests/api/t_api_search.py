@@ -359,7 +359,7 @@ close
     ])
 
     # This is a copy of the 3.81%2C5.11-0.89%3A20080527T163123Z version of
-    # SUNWgmake from ipkg with the file and liscense actions changed so
+    # SUNWgmake from ipkg with the file and license actions changed so
     # that they all take /tmp/example file when sending.
     bug_983_manifest = """
 open SUNWgmake@3.81,5.11-0.89
