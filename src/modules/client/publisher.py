@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 #
@@ -172,7 +172,7 @@ class RepositoryURI:
         self.ssl_key = ssl_key
         self.disabled = disabled
         # The proxy parameter is deprecated and remains for backwards
-        # compatibity, for now.  If we get given both, then we must
+        # compatibility, for now.  If we get given both, then we must
         # complain - this error is for internal use only.
         if proxy and proxies:
             raise api_errors.PublisherError("Both 'proxies' and "
@@ -1364,7 +1364,7 @@ class Publisher:
             raise api_errors.ModifyingSyspubException(
                 "Cannot set the alias of a system publisher")
         # Aliases must comply with the same restrictions that prefixes
-        # have as they are intended to be useable in any case where
+        # have as they are intended to be usable in any case where
         # a prefix may be used.
         if value is not None and value != "" and \
             not misc.valid_pub_prefix(value):

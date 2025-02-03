@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 #
@@ -1060,7 +1060,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
         for rem, add in plan.get_changes():
             assert rem is not None or add is not None
             if rem is not None and add is not None:
-                # Lists of lists are used here becuase json will
+                # Lists of lists are used here because json will
                 # convert lists of tuples into lists of lists
                 # anyway.
                 if rem.fmri == add.fmri:
@@ -1089,7 +1089,7 @@ def __display_parsable_plan(api_inst, parsable_version, child_images=None):
             plan.get_editable_changes()
 
         # Lists of lists are used here to ensure a consistent ordering
-        # and because tuples will be convereted to lists anyway; a
+        # and because tuples will be converted to lists anyway; a
         # dictionary would be more logical for the top level entries,
         # but would make testing more difficult and this is a small,
         # known set anyway.
@@ -1966,7 +1966,7 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
 
 class RemoteDispatch:
     """RPC Server Class which invoked by the PipedRPCServer when a RPC
-    request is recieved."""
+    request is received."""
 
     def __dispatch(self, op, pwargs):
 
@@ -3033,7 +3033,7 @@ def search(api_inst, args):
             page_again = False
             # Indexless search raises a slow search exception. In
             # that case, catch the exception, finish processing the
-            # results, then propogate the error.
+            # results, then propagate the error.
             try:
                 for raw_value in itertools.chain(*searches):
                     if not st:
@@ -3050,7 +3050,7 @@ def search(api_inst, args):
                         bad_res = True
                         continue
                     # This check is necessary since a
-                    # a pacakge search can be specified
+                    # a package search can be specified
                     # using the <> operator.
                     if action_attr and \
                         return_type != \
@@ -3346,7 +3346,7 @@ def display_contents_results(actionlist, attrs, sort_attrs, display_headers):
         else:
             # typecast all the list elements to string else
             # the sorted function fails if there are any
-            # string and list comparision.
+            # string and list comparison.
             key_extract = lambda x: str(x[sortidx])
         line_gen = sorted(lines, key=key_extract)
     else:
@@ -5291,7 +5291,7 @@ opts_mapping = {
     # are specified in li_erecurse_excl, recurse into all children except for
     # those.
     # Explicit recursion means we run the same operation in the child as we run
-    # in the parent. Children we do not explicitely recurse into are still
+    # in the parent. Children we do not explicitly recurse into are still
     # getting synced.
     "li_erecurse_all" :    ("r", "recurse"),
     "li_erecurse_list" :   ("z", ""),
@@ -5916,7 +5916,7 @@ to perform the requested operation.  Details follow:\n\n{0}""").format(__e))
             err=__e, stacktrace=traceback_str)
 
         s += _("\n\nDespite the error while indexing, the operation "
-            "has completed successfuly.")
+            "has completed successfully.")
         error(s)
     except api_errors.ReadOnlyFileSystemException as __e:
         __ret = EXIT_OOPS

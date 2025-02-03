@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 import copy
@@ -150,7 +150,7 @@ Operation End State:
 {5}
 Operation User: {6} ({7})
 Operation Boot Env.: {8}
-Operation Boot Env. Currrent: {9}
+Operation Boot Env. Current: {9}
 Operation Boot Env. UUID: {10}
 Operation New Boot Env.: {11}
 Operation New Boot Env. Current: {12}
@@ -613,7 +613,7 @@ class History:
         root = d.documentElement
         op = d.createElement("operation")
         op.setAttribute("name", self.operation_name)
-        # Must explictly convert values to a string due to minidom bug
+        # Must explicitly convert values to a string due to minidom bug
         # that causes a fatal whenever using types other than str.
         op.setAttribute("username", str(self.operation_username))
         op.setAttribute("userid", str(self.operation_userid))
@@ -692,7 +692,7 @@ class History:
 
         # Repeatedly attempt to write the history (only if it's because
         # the file already exists).  This is necessary due to multiple
-        # operations possibly occuring within the same second (but not
+        # operations possibly occurring within the same second (but not
         # microsecond).
         pathname = self.pathname
         for i in range(1, 100):

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 """module describing a generic packaging object
@@ -811,7 +811,7 @@ class Action(metaclass=NSG):
         # directory, etc.).  By only requiring these attributes here,
         # it prevents publication of packages for which no default
         # currently exists, while permitting future changes to remove
-        # that limitaiton and use sane defaults.
+        # that limitation and use sane defaults.
         if not bad_mode:
             try:
                 mode = str(int(raw_mode, 8))

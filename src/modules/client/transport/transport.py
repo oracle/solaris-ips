@@ -1384,7 +1384,7 @@ class Transport:
                 mcontent = None
 
             except tx.InvalidContentException as e:
-                # We might be able to retrive uncorrupted
+                # We might be able to retrieve uncorrupted
                 # content. If this was the last retry, then
                 # we're out of luck.
                 failures.append(e)

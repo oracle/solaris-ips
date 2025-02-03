@@ -19,7 +19,7 @@
 
   CDDL HEADER END
 
-  Copyright (c) 2011, 2021, Oracle and/or its affiliates.
+  Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 
   NOTE:  This service manifest is not editable; its contents will
   be overwritten by package or patch operations, including
@@ -88,7 +88,7 @@
 		</exec_method>
 
 
-		<!-- basic,net_privaddr are suffient for 'stop' -->
+		<!-- basic,net_privaddr are sufficient for 'stop' -->
 		<exec_method
 			type='method'
 			name='stop'

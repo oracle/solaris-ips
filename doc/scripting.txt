@@ -24,7 +24,7 @@ was bpatch'd during install) into the /etc/hostid file.  The initial
 design for handling upgrade added code to both BFU and the installer,
 which decoded the hostid from the sysinit module and created the
 hostid file during upgrade.  Freshly installed systems had no hostid
-file, so the kernel generated one dyanmically and a SMF service
+file, so the kernel generated one dynamically and a SMF service
 created the /etc/hostid file after boot.  Since neither bfu nor
 install code runs during IPS update operations, this strategy
 did not work on OpenSolaris and the hostid was not preserved on

@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+## Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 ##
 <%!
         import html
@@ -94,7 +94,7 @@
                 # matching is only performed using build_release and branch.
                 mver = "*,{0}-{1}".format(mver.build_release, mver.branch)
 
-        # Determines whether all versions or only the latest vresion of a
+        # Determines whether all versions or only the latest version of a
         # package is shown.  This is ignored when the return_type is not
         # qp.Query.RETURN_PACKAGES.
         sav = criteria["sav"]

@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2016-10-12 22:04-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nLanguage: \nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1630,7 +1630,7 @@ msgstr "\n{err}{stacktrace}"
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the operation has completed successfuly."
+"Despite the error while indexing, the operation has completed successfully."
 msgstr "\n\n雖然建立索引時發生錯誤，但作業仍已順利完成。"
 
 #: ../depot-config.py:138
@@ -3432,7 +3432,7 @@ msgstr "不明的儲存庫來源 '{0}'"
 
 #: ../modules/client/api_errors.py:2158
 msgid ""
-"The follwing URIs use unsupported schemes.  Supported schemes are file://, "
+"The following URIs use unsupported schemes.  Supported schemes are file://, "
 "http://, and https://."
 msgstr "以下 URI 使用不支援的方案。支援的方案是 file://、http:// 以及 https://。"
 
@@ -4823,7 +4823,7 @@ msgstr "驗證或修復重疊的套裝軟體：{0}"
 #: ../modules/client/imageplan.py:1668
 msgid ""
 "Cannot create or mount a copy of current be. Reporting unpackaged content "
-"aganist current live image."
+"against current live image."
 msgstr "無法建立或掛載目前 BE 的複本。正在報告目前即時影像的未封裝內容。"
 
 #: ../modules/client/imageplan.py:1749

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 import atexit
@@ -139,7 +139,7 @@ class Image:
         if self.cmdpath is not None:
             self.__cmddir = os.path.dirname(cmdpath)
 
-        # prevent brokeness in the test suite
+        # prevent brokenness in the test suite
         if self.cmdpath and \
             "PKG_NO_RUNPY_CMDPATH" in os.environ and \
             self.cmdpath.endswith(os.sep + "run.py"):
@@ -336,7 +336,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
 
     @property
     def bad_trust_anchors(self):
-        """A list of strings decribing errors encountered while parsing
+        """A list of strings describing errors encountered while parsing
         trust anchors."""
 
         return [_("{path} is expected to be a certificate but could "
@@ -348,7 +348,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
     @property
     def write_cache_path(self):
         """The path to the filesystem that holds the write cache--used
-        to compute whether sufficent space is available for
+        to compute whether sufficient space is available for
         downloads."""
 
         return self.__user_cache_dir or \

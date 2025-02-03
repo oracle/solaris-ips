@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 """
@@ -93,7 +93,7 @@ zone_installed_states = [
 # 1) in a gz operating on /
 # 2) in a gz operating on a zone linked image via pkg -R
 # 3) in a ngz operating on /
-# 4) in a ngz operating on an alterate BE image via pkg -R
+# 4) in a ngz operating on an alternate BE image via pkg -R
 #    (not supported yet, but we'd like to support it).
 # 5) in a ngz operating on an linked image via pkg -R
 #    (this could be a default or user image linked to

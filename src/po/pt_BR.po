@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2016-10-12 22:04-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nLanguage: \nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1630,7 +1630,7 @@ msgstr "\n{err}{stacktrace}"
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the operation has completed successfuly."
+"Despite the error while indexing, the operation has completed successfully."
 msgstr "\n\nApesar do erro produzido ao indexar, a operação foi concluída com êxito."
 
 #: ../depot-config.py:138
@@ -3432,7 +3432,7 @@ msgstr "Origem de repositório desconhecida '{0}'"
 
 #: ../modules/client/api_errors.py:2158
 msgid ""
-"The follwing URIs use unsupported schemes.  Supported schemes are file://, "
+"The following URIs use unsupported schemes.  Supported schemes are file://, "
 "http://, and https://."
 msgstr "Os URIs a seguir usam esquemas não suportados. Os esquemas suportados são: arquivo://, http:// e https://."
 
@@ -4823,7 +4823,7 @@ msgstr "verificar ou corrigir a sobreposição de pacote: {0}"
 #: ../modules/client/imageplan.py:1668
 msgid ""
 "Cannot create or mount a copy of current be. Reporting unpackaged content "
-"aganist current live image."
+"against current live image."
 msgstr "Não é possível criar ou montar uma cópia do BE atual. Gerando relatório de conteúdo descompactado com base na imagem ativa atual."
 
 #: ../modules/client/imageplan.py:1749

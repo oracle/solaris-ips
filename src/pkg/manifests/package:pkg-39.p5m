@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2021, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2021, 2025, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg-39@$(PKGVERS)
@@ -79,7 +79,7 @@ file path=$(PY39DIRVP)/pkg/client/api_errors.py
 #
 # Don't worry about the libbe or bemgmt import; the python code is graceful
 # in the face of their absence. This allows us to deliver this package before
-# bemgmt is availabile, breaking the circular dependency.
+# bemgmt is available, breaking the circular dependency.
 #
 file path=$(PY39DIRVP)/pkg/client/bootenv.py \
     pkg.depend.bypass-generate=.*bemgmt.* pkg.depend.bypass-generate=.*libbe.*
@@ -140,7 +140,7 @@ file path=$(PY39DIRVP)/pkg/flavor/script.py
 #
 # Don't worry about the solaris.smf.manifests import; the python code is
 # graceful in the face of their absence. This allows us to deliver this package
-# before solaris-core is availabile, breaking the circular dependency.
+# before solaris-core is available, breaking the circular dependency.
 #
 file path=$(PY39DIRVP)/pkg/flavor/smf_manifest.py \
     pkg.depend.bypass-generate=.*solaris.*

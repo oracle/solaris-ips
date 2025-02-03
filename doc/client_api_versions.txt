@@ -681,7 +681,7 @@ Incompatible with clients using versions 0-42.
 
         * All plan_* functions now accept an additional boolean named
           'new_be' that indicates whether a new boot environment should
-          be created for the operation.  This overrides the deafult
+          be created for the operation.  This overrides the default
           behaviour that only creates one if needed.
 
     pkg.client.api.PlanDescription has changed as follows:
@@ -826,7 +826,7 @@ Incompatible with clients using versions 0-31.
 
     The pkg.client.api_errors module has changed as follows:
         * UnknownRepositoryPublishers, RepoPubConfigUnavailable, and
-          UnknownErrors expections have been added for use by the
+          UnknownErrors exceptions have been added for use by the
           pkg.client.api.  API consumers are reminded that they should
           catch all ApiException class exceptions, although catching
           specific exception subclasses for case-by-case handling in
@@ -1141,7 +1141,7 @@ Changes:
 
         def log_operation_error(self, error):
                 """Adds an error to the list of errors to be recorded in image
-                history for the current opreation."""
+                history for the current operation."""
 
         def log_operation_start(self, name):
                 """Marks the start of an operation to be recorded in image
@@ -1267,7 +1267,7 @@ Version 0:
 
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
             noexecute=False, verbose=False):
-                """Contructs a plan to install the packages provided in
+                """Constructs a plan to install the packages provided in
                 pkg_list. pkg_list is a list of packages to install. filters
                 is a list of filters to apply to the actions of the installed
                 packages. refresh_catalogs controls whether the catalogs will
@@ -1284,7 +1284,7 @@ Version 0:
 
         def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
             verbose=False):
-                """Contructs a plan to uninstall the packages provided in
+                """Constructs a plan to uninstall the packages provided in
                 pkg_list. pkg_list is a list of packages to install.
                 recursive_removal controls whether recursive removal is
                 allowed. noexecute determines whether the history will be
@@ -1365,7 +1365,7 @@ Version 0:
                 the prepare method."""
 
         def cancel(self):
-                """Used for asynchronous cancelation. It returns the API
+                """Used for asynchronous cancellation. It returns the API
                 to the state it was in prior to the current method being
                 invoked.  Canceling during a plan phase returns the API to
                 its initial state. Canceling during prepare puts the API

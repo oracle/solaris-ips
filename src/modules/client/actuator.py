@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 import pkg.smf as smf
@@ -268,7 +268,7 @@ class Actuator:
                 # can happen is that an actuator is not run
                 # (disable is always run with -t).
                 # Since we only test once if the zone is
-                # runnning, this could happen if someone shuts
+                # running, this could happen if someone shuts
                 # down the zone while we are in the process of
                 # executing.
                 pass

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 import os
@@ -103,7 +103,7 @@ class QueryLexer:
         # type, the action key, and the token that followed the last
         # unescaped colon.
         #
-        # The following regular expresion matches a string with a colon
+        # The following regular expression matches a string with a colon
         # in it, subject to certain other restrictions, such as not
         # beginning with a quote.  It consists of three parts: the
         # part before the colon, the colon, and the part after colon.
@@ -196,7 +196,7 @@ class QueryParser:
     # Use the same set of tokens as the lexer.
     tokens = QueryLexer.tokens
 
-    # Define the precendence and associativity of certain tokens to
+    # Define the precedence and associativity of certain tokens to
     # eliminate shift/reduce conflicts in the grammar.
     precedence = (
         ("right", "FTERM"),
@@ -255,7 +255,7 @@ class QueryParser:
         # 'foo:bar:baz:zap', foo, bar, and baz are part of the FTERM,
         # zap is split into a separate lexer TERM token.  zap flows
         # up from parsing the ftermarg.  A query like 'foo:bar:baz' has
-        # no ftermarg though.  In that case, an implict wildcard is
+        # no ftermarg though.  In that case, an implicit wildcard is
         # explicitly created.
         '''fterm : FTERM ftermarg
                  | FTERM fterm
@@ -834,7 +834,7 @@ class PhraseQuery:
 
     @staticmethod
     def combine(fs, fv, at, case_sensitive):
-        """Checks to see if the phrase being searched for is a subtring
+        """Checks to see if the phrase being searched for is a substring
         of the value which matched the token.  If it is, use the value
         returned, otherwise use the search phrase."""
 

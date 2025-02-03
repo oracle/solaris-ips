@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 import errno
@@ -244,7 +244,7 @@ class TransportFrameworkError(TransportException):
             s = "Framework error: code: {0} ({1:d})".format(
                 self.codename, self.code)
         else:
-            s = "Unkown Framework error code: {0:d}".format(
+            s = "Unknown Framework error code: {0:d}".format(
                 self.code)
         if self.reason:
             s += " reason: {0}".format(self.reason)

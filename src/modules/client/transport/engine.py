@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 import errno
@@ -125,7 +125,7 @@ class CurlTransportEngine(TransportEngine):
         runtime_proxy=None):
         """Add a URL to the transport engine.  Caller must supply
         either a filepath where the file should be downloaded,
-        or a callback to a function that will peform the write.
+        or a callback to a function that will perform the write.
         It may also optionally supply header information
         in a dictionary.  If the caller has a ProgressTracker,
         it should pass the tracker in progtrack.  The caller should
@@ -498,7 +498,7 @@ class CurlTransportEngine(TransportEngine):
             if hasattr(tf, "url") and tf.url in urllist
         ]
 
-        # remove failues in separate pass, or else for loop gets
+        # remove failures in separate pass, or else for loop gets
         # confused.
         for f in rf:
             self.__failures.remove(f)
@@ -672,7 +672,7 @@ class CurlTransportEngine(TransportEngine):
                     # If cleanup is interrupted, it's
                     # possible that a handle was removed but
                     # not placed in freelist.  In that case,
-                    # finish cleanup and appened to
+                    # finish cleanup and append to
                     # freehandles.
                     pass
                 self.__teardown_handle(h)
@@ -902,7 +902,7 @@ class CurlTransportEngine(TransportEngine):
             hdl.setopt(pycurl.PROGRESSFUNCTION,
                 hdl.fileprog.progress_callback)
         elif treq.progfunc:
-            # For light-weight progress tracking / cancelation.
+            # For light-weight progress tracking / cancellation.
             hdl.setopt(pycurl.NOPROGRESS, 0)
             hdl.setopt(pycurl.PROGRESSFUNCTION, treq.progfunc)
 

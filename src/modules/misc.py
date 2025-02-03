@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 
 """
 Misc utility functions used by the packaging system.
@@ -1503,7 +1503,7 @@ def opts_parse(op, args, opts_table, opts_mapping, usage_cb=None,
         (option, default_value, [valid values], [json schema])
     It is valid to have other entries in the list when they are required
     for additional option processing elsewhere. These are ignore here. If
-    the list entry is a tuple it must conform to the format oulined above.
+    the list entry is a tuple it must conform to the format outlined above.
 
     The default value not only represents the default value assigned to the
     option, but it also implicitly determines how the option is parsed.  If
@@ -3018,7 +3018,7 @@ def dict_cmp(a, b):
 
 
 def cmp(a, b):
-    """Implementaion for Python 2.7's built-in function cmp(), which is
+    """Implementation for Python 2.7's built-in function cmp(), which is
     removed in Python 3."""
 
     if isinstance(a, dict) and isinstance(b, dict):

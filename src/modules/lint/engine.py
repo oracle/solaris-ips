@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 import pkg.client.api
@@ -374,7 +374,7 @@ class LintEngine:
             # over the config file.
             sys.path.extend(self.extension_path)
 
-            # the fifth parameter is 'level', which defautls to -1
+            # the fifth parameter is 'level', which defaults to -1
             # in Python 2 and 0 in Python 3.
             __import__(name, None, None, [])
             (checkers, excluded) = \
@@ -1317,7 +1317,7 @@ def lint_fmri_successor(new, old, ignore_pubs=True, ignore_timestamps=True):
 
 
 def _manifest_sort_key(mf):
-    """The lint engine uses the FMRI of a package to deterine the order in
+    """The lint engine uses the FMRI of a package to determine the order in
     which to iterate over manifests.  This is done using the 'key' attribute
     to the Python sort() and sorted() methods."""
     if mf.fmri:

@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2016-10-12 22:04-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nLanguage: \nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1630,7 +1630,7 @@ msgstr "\n{err}{stacktrace}"
 msgid ""
 "\n"
 "\n"
-"Despite the error while indexing, the operation has completed successfuly."
+"Despite the error while indexing, the operation has completed successfully."
 msgstr "\n\nMalgré une erreur au cours de l'indexation, l'opération a été effectuée avec succès."
 
 #: ../depot-config.py:138
@@ -3432,7 +3432,7 @@ msgstr "Référentiel d'origine inconnu : {0}"
 
 #: ../modules/client/api_errors.py:2158
 msgid ""
-"The follwing URIs use unsupported schemes.  Supported schemes are file://, "
+"The following URIs use unsupported schemes.  Supported schemes are file://, "
 "http://, and https://."
 msgstr "Les URI suivants utilisent des schémas non pris en charge.  Les schémas pris en charge sont : file://, http://, et https://."
 
@@ -4823,7 +4823,7 @@ msgstr "vérifiez ou corrigez le package du dessus : {0}"
 #: ../modules/client/imageplan.py:1668
 msgid ""
 "Cannot create or mount a copy of current be. Reporting unpackaged content "
-"aganist current live image."
+"against current live image."
 msgstr "Impossible de créer ou le monter une copie du BE actuel. Signalement d'un contenu non packagé pour l'image live actuelle."
 
 #: ../modules/client/imageplan.py:1749

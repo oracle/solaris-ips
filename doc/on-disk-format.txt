@@ -331,7 +331,7 @@ ON-DISK FORMAT PROPOSAL
             etc. are now completely managed using SMF or a user-provided
             configuration file.  This change was made not only to sim-
             plify configuration, but to separate depot configuration
-            from repsitory configuration.
+            from repository configuration.
 
             An example version 4 repository might be structured as
             follows:
@@ -389,7 +389,7 @@ ON-DISK FORMAT PROPOSAL
 
             - support for efficient storage of hard links,
 
-            - support for pathnames sigificantly greater than > 255
+            - support for pathnames significantly greater than > 255
               characters in length,
 
             - core Python bindings exist or can be easily created using
@@ -438,7 +438,7 @@ ON-DISK FORMAT PROPOSAL
 
             - Although the 7z format supports compression methods other
               than LZMA, a primary motivator for using 7z would be the
-              ability to use LZMA natively as part of the conatiner
+              ability to use LZMA natively as part of the container
               format.  However, the tradeoffs in terms of CPU and memory
               footprint currently make LZMA unsuitable for pkg(5) when
               compared to other compression algorithms such as those

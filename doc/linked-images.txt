@@ -692,7 +692,7 @@ pkg(1) linked image common cli options: selecting children
     sync-linked [-a|-l <li-name>]
 
   If one the above commands is run without any arguments, then the
-  command will be preformed on the current image with the assumption
+  command will be performed on the current image with the assumption
   that the current image is a linked child image.  If the current image
   is not a child image an error will be generated.
 

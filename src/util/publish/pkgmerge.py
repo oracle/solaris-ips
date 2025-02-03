@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 try:
@@ -267,7 +267,7 @@ def main_func():
             vcombos[v].add((v, vval))
 
     # merge_fmris() expects this to be a list. Sort it to make sure
-    # combo is determinstic in the later construction.
+    # combo is deterministic in the later construction.
     variants = sorted(variants, reverse=True)
 
     # Require that the user specified the same variants for all sources.
@@ -476,7 +476,7 @@ def republish_packages(pub, target_pub, processdict, source_list, variant_list,
     pub             the publisher from source_list that we are republishing
     target_pub      the destination publisher
     processdict     a dict indexed by package name of the pkgs to merge
-    source_list     a list of source respositories
+    source_list     a list of source repositories
     variant_list    a list of dicts containing variant names/values
     variants        the unique set of variants across all sources.
     tracker         a progress tracker
