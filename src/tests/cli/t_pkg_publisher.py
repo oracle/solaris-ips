@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -810,11 +810,11 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         self.pkg("publisher | grep {0}.*{1}".format(etype, durl5))
         self.pkg("publisher | grep {0}.*{1}".format(etype, durl4), exit=1)
         self.pkg("set-publisher {0} {1} test1".format(remove_opt, durl5))
-        self.pkg("set-publisher {0} {1} {2} {3} {4} \* test1".format(add_opt,
+        self.pkg(r"set-publisher {0} {1} {2} {3} {4} \* test1".format(add_opt,
             durl4, add_opt, durl5, remove_opt))
         self.pkg("publisher | grep {0}.*{1}".format(etype, durl4))
         self.pkg("publisher | grep {0}.*{1}".format(etype, durl5))
-        self.pkg("set-publisher {0} \* test1".format(remove_opt))
+        self.pkg(r"set-publisher {0} \* test1".format(remove_opt))
         if etype == "origin":
             self.pkg("set-publisher {0} {1} test1".format(add_opt, durl1))
         self.pkg("publisher | grep {0}.*{1}".format(etype, durl4), exit=1)
@@ -1148,7 +1148,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
             "-g http://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]:80 "
             "--no-refresh testipv6")
         self.pkg("publisher | "
-            "grep 'http://\[::FFFF:129.144.52.38\]:80/'")
+            r"grep 'http://\[::FFFF:129.144.52.38\]:80/'")
         self.pkg("set-publisher -G http://[::1] "
             "-M http://[::FFFF:129.144.52.38]:80 "
             "-M http://[2010:836B:4179::836B:4179] "
@@ -1156,7 +1156,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
             "-g http://[::192.9.5.5]/dev "
             "--no-refresh testipv6")
         self.pkg("publisher | "
-            "grep 'http://\[::FFFF:129.144.52.38\]:80/'", exit=1)
+            r"grep 'http://\[::FFFF:129.144.52.38\]:80/'", exit=1)
         self.pkg("unset-publisher testipv6")
 
     def test_enable_disable(self):

@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2013, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -149,7 +149,7 @@ done
 """
 
     _svcprop_template = \
-"""#!/usr/bin/ksh93
+r"""#!/usr/bin/ksh93
 #
 # This script produces false svcprop(1) output, using
 # a list of space separated strings, with each string

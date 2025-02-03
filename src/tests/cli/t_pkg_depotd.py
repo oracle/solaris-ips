@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -1233,8 +1233,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 msgs = read_err.readlines()
             self.debug(durl)
             self.debug("".join(msgs))
-            self.assertRegexp(msgs[-1], "\[[\w:/]+\]  Request "
-                "failed")
+            self.assertRegexp(msgs[-1], r"\[[\w:/]+\]  Request failed")
         except:
             self.__depot_daemon_stop(depot_handle)
             raise

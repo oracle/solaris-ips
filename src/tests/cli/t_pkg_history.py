@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -150,7 +150,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         self.pkg("history -H")
         o = self.output
         self.assertTrue(
-            re.search("START\s+", o.splitlines()[0]) is None)
+            re.search(r"START\s+", o.splitlines()[0]) is None)
 
         # Only the operation is listed in short format.
         for op in operations:
@@ -285,7 +285,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         self.pkg("history -H")
         o = self.output
         self.assertTrue(
-            re.search("START\s+", o.splitlines()[0]) is None)
+            re.search(r"START\s+", o.splitlines()[0]) is None)
 
         # Only the operation is listed in short format.
         for op in operations:

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -57,7 +57,7 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                         str, msg))
 
         # Full list of subcommands, ensuring we exit 0
-        for option in ["-\?", "--help", "help"]:
+        for option in [r"-\?", "--help", "help"]:
             ret, out, err = self.pkg(option, out=True, stderr=True)
             verify_help(err,
                 ["pkg [options] command [cmd_options] [operands]",
@@ -73,9 +73,9 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                 "PKG_IMAGE", "Usage:"])
 
         # Invalid subcommands, ensuring we exit 2
-        for option in ["-\? bobcat", "--help bobcat", "help bobcat",
+        for option in [r"-\? bobcat", "--help bobcat", "help bobcat",
             "bobcat --help"]:
-            ret, out, err = self.pkg("-\? bobcat", exit=2, out=True,
+            ret, out, err = self.pkg(r"-\? bobcat", exit=2, out=True,
                 stderr=True)
             verify_help(err,
                 ["pkg: unknown subcommand",

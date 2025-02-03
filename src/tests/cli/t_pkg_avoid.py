@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -403,7 +403,7 @@ class TestPkgAvoid(pkg5unittest.SingleDepotTestCase):
         self.__assertAvoids(avoid=frozenset(["foo"]))
 
         # Remove all packages.
-        self.pkg("uninstall --parsable=0 \*")
+        self.pkg(r"uninstall --parsable=0 \*")
         self.assertEqualParsable(self.output,
             remove_packages=pfmris[0:1]
         )

@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -5096,7 +5096,7 @@ exit 0""".strip("\n")
         os.environ["PKG_GZR"] = gzpath.rstrip(os.sep)
 
         # fake zoneadm binary used for testing
-        zoneadm_sh = """
+        zoneadm_sh = r"""
 #!/bin/sh
 while getopts "R:" OPT ; do
 case $OPT in
@@ -5105,7 +5105,7 @@ case $OPT in
                 ;;
 esac
 done
-PKG_GZR=$(echo "$PKG_GZR" | sed 's-:-\\\:-g')
+PKG_GZR=$(echo "$PKG_GZR" | sed 's-:-\\:-g')
 cat <<-EOF
 0:global:running:$PKG_GZR::solaris:shared:-:none:
 -:z1:installed:$PKG_GZR/ngzzone_path_with_a\:colon::solaris:excl:-::

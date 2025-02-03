@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -573,7 +573,7 @@ variant.opensolaris.zone\t{1}
             "variant.foobar=false", exit=0)
         # Variant names contain space, should raise an exception
         self.pkg("change-variant --no-refresh "
-            "variant.foo\ bar=false variant.bar\ foo=false", exit=1)
+            r"variant.foo\ bar=false variant.bar\ foo=false", exit=1)
         self.assertTrue("variant.foo bar" and "variant.bar foo"
             in self.errout)
 

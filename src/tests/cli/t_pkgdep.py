@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -1446,7 +1446,7 @@ int main() { return 1; }
         self.pkgdepend_generate("-d {0} -z foo bar".format(proto), exit=2)
         self.pkgdepend_generate("-d {0} no_such_file_should_exist".format(
             proto), exit=2)
-        self.pkgdepend_generate("-\?")
+        self.pkgdepend_generate(r"-\?")
         self.pkgdepend_generate("--help")
         tp = self.make_manifest(self.test_manf_1)
         self.pkgdepend_generate("-d {0} {1}".format(proto, tp),
