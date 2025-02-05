@@ -44,22 +44,22 @@ PYTHON311LDFLAGS:sh =	python3.11-config --ldflags
 %-311.so := PYTHONLDFLAGS=$(PYTHON311LDFLAGS) -shared -zstrip-class=nonalloc
 
 _misc.cpython-%.so: _misc.c
-	gcc $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
+	$(GCC) $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
 
 _varcet.cpython-%.so: _varcet.c
-	gcc $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
+	$(GCC) $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
 
 actions/_actions.cpython-%.so: actions/_actions.c
-	gcc $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
+	$(GCC) $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
 
 actions/_common.cpython-%.so: actions/_common.c
-	gcc $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
+	$(GCC) $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
 
 elf.cpython-%.so: elf.c elfextract.c liblist.c
-	gcc $^ $(PYTHONCFLAGS) -I. -lelf -lmd $(PYTHONLDFLAGS) -o $@
+	$(GCC) $^ $(PYTHONCFLAGS) -I. -lelf -lmd $(PYTHONLDFLAGS) -o $@
 
 solver.cpython-%.so: solver/solver.c solver/py_solver.c
-	gcc $^ -D_FILE_OFFSET_BITS=64 -Wno-return-type -Wno-strict-aliasing -Wno-unused-function -Wno-unused-variable $(PYTHONCFLAGS) -ztext -lm -lc $(PYTHONLDFLAGS) -o $@
+	$(GCC) $^ -D_FILE_OFFSET_BITS=64 -Wno-return-type -Wno-strict-aliasing -Wno-unused-function -Wno-unused-variable $(PYTHONCFLAGS) -ztext -lm -lc $(PYTHONLDFLAGS) -o $@
 
 # PRIVATE_BUILD set in the environment tells us to not strip
 # the prefix of proto area paths recorded in the .pyc files.

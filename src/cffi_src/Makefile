@@ -33,16 +33,16 @@ all: $(EXTENSIONS:=.cpython-39.so) $(EXTENSIONS:=.cpython-311.so)
 %-311.so := PYTHON=$(PYTHON311)
 
 _arch.cpython-%.so: build_arch.py
-	$(PYTHON) $^
+	CC=$(GCC) $(PYTHON) $^
 
 _sha512_t.cpython-%.so: build_sha512_t.py
-	$(PYTHON) $^
+	CC=$(GCC) $(PYTHON) $^
 
 _sysattr.cpython-%.so: build_sysattr.py
-	$(PYTHON) $^
+	CC=$(GCC) $(PYTHON) $^
 
 _syscallat.cpython-%.so: build_syscallat.py
-	$(PYTHON) $^
+	CC=$(GCC) $(PYTHON) $^
 
 ROOT39EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY39PKG)/%.cpython-39.so)
 ROOT311EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY311PKG)/%.cpython-311.so)
