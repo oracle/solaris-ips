@@ -4,6 +4,7 @@
     pkg:/developer/build/make
     pkg:/developer/build/onbld
     pkg:/developer/documentation-tool/xml2roff
+    pkg:/developer/gcc-14
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
     pkg:/library/python/bandit

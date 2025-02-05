@@ -27,6 +27,7 @@
 PYVERSION = 3.11
 
 # Common programs and commands
+GCC = /usr/gcc/14/bin/gcc
 PYTHON39 = /usr/bin/python3.9
 PYTHON311 = /usr/bin/python3.11
 PYTHON = /usr/bin/python$(PYVERSION)
