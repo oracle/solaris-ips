@@ -112,6 +112,16 @@ OUTPUT_DOTS = 0         # Dots ...
 OUTPUT_VERBOSE = 1      # Verbose
 OUTPUT_PARSEABLE = 2    # Machine readable
 
+# String constants with currently running (*_CURRENT) and some other (*_OTHER)
+# python versions. PYV_* variants include the version without the dot (311).
+PYVER_CURRENT = f"{sys.version_info.major}.{sys.version_info.minor}"
+PYVER_OTHER = "3.11"
+if PYVER_CURRENT == PYVER_OTHER:
+    PYVER_OTHER = "3.9"
+
+PYV_CURRENT = PYVER_CURRENT.replace(".", "")
+PYV_OTHER = PYVER_OTHER.replace(".", "")
+
 
 class TestStopException(Exception):
     """An exception used to signal that all testing should cease.

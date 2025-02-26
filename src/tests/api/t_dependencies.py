@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -46,21 +46,20 @@ import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
-# Default python versions. When the default runtime version
-# of python changes then these variables will need to be
-# updated. py_ver_lib is the string associated with the
-# cpython library for the version of python (can be found
-# using from importlib.machinery import EXTENSION_SUFFIXES).
-py_ver_default = "3.9"
-py_ver_lib = "39"
-py_ver_other = "3.11"
-py_ver_lib_list = ["{0}.abi3.so",
-                   "{0}.cpython-{1}.so".format("{0}", py_ver_lib),
-                   "64/{0}.abi3.so",
-                   "64/{0}.cpython-{1}.so".format("{0}", py_ver_lib)]
+from pkg5unittest import PYVER_CURRENT, PYV_CURRENT, PYVER_OTHER
 
-mod_pats = ["{0}/__init__.py", "{0}.py", "{0}.pyc", "{0}.pyo",
-            "{0}.so", "64/{0}.so"] + py_ver_lib_list
+mod_pats = (
+    "{0}.abi3.so",
+    "{0}.py",
+    "{0}.pyc",
+    "{0}.pyo",
+    "{0}.so",
+    "{0}/__init__.py",
+    f"{{0}}.cpython-{PYV_CURRENT}.so",
+    "64/{0}.abi3.so",
+    "64/{0}.so",
+    f"64/{{0}}.cpython-{PYV_CURRENT}.so",
+)
 
 
 class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
@@ -69,22 +68,22 @@ class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
         "authlog_path": "var/log/authlog",
         "curses_path": "usr/xpg4/lib/libcurses.so.1",
         "indexer_path":
-            "usr/lib/python{0}/vendor-packages/pkg_test/client/indexer.py".format(py_ver_default),
+            f"usr/lib/python{PYVER_CURRENT}/vendor-packages/pkg_test/client/indexer.py",
         "ksh_path": "usr/bin/ksh",
         "libc_path": "lib/libc.so.1",
         "pkg_path":
-            "usr/lib/python{0}/vendor-packages/pkg_test/client/__init__.py".format(py_ver_default),
+            f"usr/lib/python{PYVER_CURRENT}/vendor-packages/pkg_test/client/__init__.py",
         "bypass_path": "pkgdep_test/file.py",
         "relative_dependee":
-            "usr/lib/python{0}/vendor-packages/pkg_test/client/bar.py".format(py_ver_default),
+            f"usr/lib/python{PYVER_CURRENT}/vendor-packages/pkg_test/client/bar.py",
         "relative_depender":
-            "usr/lib/python{0}/vendor-packages/pkg_test/client/foo.py".format(py_ver_default),
+            f"usr/lib/python{PYVER_CURRENT}/vendor-packages/pkg_test/client/foo.py",
         "runpath_mod_path": "opt/pkgdep_runpath/__init__.py",
         "runpath_mod_test_path": "opt/pkgdep_runpath/pdtest.py",
         "script_path": "lib/svc/method/svc-pkg-depot",
         "syslog_path": "var/log/syslog",
-        "py_mod_path": "usr/lib/python{0}/vendor-packages/cProfile.py".format(py_ver_default),
-        "py_mod_path_alt": "usr/lib/python{0}/vendor-packages/cProfile.py".format(py_ver_other)
+        "py_mod_path": f"usr/lib/python{PYVER_CURRENT}/vendor-packages/cProfile.py",
+        "py_mod_path_alt": f"usr/lib/python{PYVER_OTHER}/vendor-packages/cProfile.py"
     }
 
     smf_paths = {
@@ -988,7 +987,7 @@ file NOHASH group=sys mode=0644 owner=root path={service_unknown}
 # functionality. pdtest is installed in a non-standard location and generates
 # dependencies on multiple files (pdtest.py, pdtest.pyc, pdtest.pyo, etc.)
 import pkgdep_runpath.pdtest
-""".format(py_ver_default)
+""".format(PYVER_CURRENT)
 
     # standard use of a runpath attribute
     python_runpath_manf = """\
@@ -1031,7 +1030,7 @@ file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.runpath=opt:$PKGDEPEND_RUNPATH
 file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
 file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
-""".format(py_ver_default, py_ver_lib, **paths)
+""".format(PYVER_CURRENT, PYV_CURRENT, **paths)
 
     # a manifest that generates a single dependency, which we want to
     # bypass
@@ -1096,7 +1095,7 @@ file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:opt
 file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
 file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
-""".format(py_ver_lib, **paths)
+""".format(PYV_CURRENT, **paths)
 
     # a manifest which uses a combination of directory, file and normal
     # bypass entries
@@ -1108,7 +1107,7 @@ file NOHASH group=sys mode=0755 owner=root path={bypass_path} \
     pkg.depend.runpath=$PKGDEPEND_RUNPATH:opt
 file NOHASH group=sys mode=0755 owner=root path={runpath_mod_path}
 file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
-""".format(py_ver_default, py_ver_lib, **paths)
+""".format(PYVER_CURRENT, PYV_CURRENT, **paths)
 
     def setUp(self):
         pkg5unittest.Pkg5TestCase.setUp(self)
@@ -1136,9 +1135,9 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         self.make_proto_text_file(self.paths["bypass_path"],
             self.python_bypass_text)
         self.make_proto_text_file(self.paths["runpath_mod_path"],
-            "#!/usr/bin/python{0}".format(py_ver_default))
+            f"#!/usr/bin/python{PYVER_CURRENT}")
         self.make_proto_text_file(self.paths["runpath_mod_test_path"],
-            "#!/usr/bin/python{0}".format(py_ver_default))
+            f"#!/usr/bin/python{PYVER_CURRENT}")
 
     def make_broken_python_test_file(self, py_version):
         pdir = "usr/lib/python{0}/vendor-packages".format(py_version)
@@ -1419,7 +1418,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     [str(s) for s in sorted(expected_deps)]))
         self.__debug = True
         t_path = self.make_manifest(self.ext_python_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
         self.make_proto_text_file(self.paths["indexer_path"],
             self.python_text)
         _check_all_res(dependencies.list_implicit_deps(t_path,
@@ -1471,7 +1470,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     [str(s) for s in sorted(expected_deps)]))
         self.__debug = True
         t_path = self.make_manifest(self.ext_python_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
         # Check that absolute imports still work.
         self.make_proto_text_file(self.paths["indexer_path"],
             self.python_abs_text)
@@ -1545,7 +1544,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     [str(s) for s in sorted(expected_deps)]))
         self.__debug = True
         t_path = self.make_manifest(self.ext_python_pkg_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
         self.make_proto_text_file(self.paths["pkg_path"],
             self.python_text)
         _check_all_res(dependencies.list_implicit_deps(t_path,
@@ -1564,8 +1563,8 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         # has two code paths, one that uses the native module importer
         # and one that fires off a subprocess (depthlimited.py). So
         # there is a need to verify the output from both code paths.
-        self.make_python_test_files(py_ver_other)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_OTHER)
+        self.make_python_test_files(PYVER_CURRENT)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], convert=False)
@@ -1585,7 +1584,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
         t_path = self.make_manifest(
             self.relative_ext_depender_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], remove_internal_deps=True,
@@ -1661,8 +1660,8 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         # has two code paths, one that uses the native module importer
         # and one that fires off a subprocess (depthlimited.py). So
         # there is a need to verify the output from both code paths.
-        self.make_broken_python_test_file(py_ver_other)
-        self.make_broken_python_test_file(py_ver_default)
+        self.make_broken_python_test_file(PYVER_OTHER)
+        self.make_broken_python_test_file(PYVER_CURRENT)
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], convert=False)
         # One error for each python version.
@@ -1925,7 +1924,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         str(elf.UnsupportedDynamicToken("/proto_path", "/install",
             "run_path", "tok"))
         str(py.PythonModuleMissingPath("foo", "bar"))
-        str(py.PythonMismatchedVersion(py_ver_default, py_ver_other, "foo", "bar"))
+        str(py.PythonMismatchedVersion(PYVER_CURRENT, PYVER_OTHER, "foo", "bar"))
         str(py.PythonSubprocessError(2, "foo", "bar"))
         str(py.PythonSubprocessBadLine("cmd", ["l1", "l2"]))
         mi = dlmf.ModuleInfo("name", ["/d1", "/d2"])
@@ -2442,7 +2441,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         """Test basic functionality of runpaths."""
 
         t_path = self.make_manifest(self.python_runpath_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], remove_internal_deps=False,
@@ -2454,7 +2453,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
             if "pdtest.py" in dep.attrs["pkg.debug.depend.file"]:
                 self.assertTrue("opt/pkgdep_runpath" in
                     dep.attrs["pkg.debug.depend.path"])
-                self.assertTrue("usr/lib/python{0}/pkgdep_runpath".format(py_ver_default)
+                self.assertTrue(f"usr/lib/python{PYVER_CURRENT}/pkgdep_runpath"
                     in dep.attrs["pkg.debug.depend.path"])
                 # ensure this dependency was indeed generated
                 # as a result of our test file
@@ -2465,7 +2464,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
     def test_runpath_2(self):
         """Test invalid runpath attributes."""
 
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
 
         # test a runpath with multiple values
         t_path = self.make_manifest(self.python_invalid_runpath_manf)
@@ -2485,7 +2484,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         """Test setting an empty runpath attribute"""
 
         t_path = self.make_manifest(self.python_empty_runpath_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], remove_internal_deps=False,
@@ -2582,20 +2581,20 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         """
         # this manifest should result in multiple dependencies
         t_path = self.make_manifest(self.python_bypass_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], remove_internal_deps=False,
             convert=False)
         self.assertTrue(self.verify_bypass(ds, es, [
             "opt/pkgdep_runpath/pdtest.py",
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.cpython-{1}.so".format(py_ver_default, py_ver_lib)]),
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.cpython-{PYV_CURRENT}.so"]),
             "Python script was not bypassed")
         # now check we depend on some files which should not have been
         # bypassed
         self.assertTrue(self.verify_dep_generation(ds,
-            ["usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.so".format(py_ver_default),
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.py".format(py_ver_default),
+            [f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.so",
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.py",
             "opt/pkgdep_runpath/pdtest.pyc"]))
 
         # now run this again as a control, this time skipping bypass
@@ -2605,8 +2604,8 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         # the first two items in the list were previously bypassed
         self.assertTrue(self.verify_dep_generation(ds,
             ["opt/pkgdep_runpath/pdtest.py",
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.cpython-{1}.so".format(py_ver_default, py_ver_lib),
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.so".format(py_ver_default),
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.cpython-{PYV_CURRENT}.so",
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.so",
             "opt/pkgdep_runpath/pdtest.pyc"]),
             "Python script did not generate a dependency on bypassed")
 
@@ -2643,7 +2642,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
     def test_bypass_2(self):
         """Ensure that bypasses containing wildcards work"""
         t_path = self.make_manifest(self.python_wildcard_bypass_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], remove_internal_deps=False,
@@ -2664,12 +2663,12 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
             convert=False)
 
         self.assertTrue(self.verify_bypass(ds, es, [
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.pyo".format(py_ver_default),
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.cpython-{1}.so".format(py_ver_default, py_ver_lib)]),
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.pyo",
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.cpython-{PYV_CURRENT}.so"]),
             "Directory bypass wildcard failed")
         self.assertTrue(self.verify_dep_generation(ds, [
-            "usr/lib/python{0}/pkgdep_runpath/__init__.py".format(py_ver_default),
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/__init__.py".format(py_ver_default)]),
+            f"usr/lib/python{PYVER_CURRENT}/pkgdep_runpath/__init__.py",
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/__init__.py"]),
             "Failed to generate dependencies, despite dir-wildcards")
 
         t_path = self.make_manifest(
@@ -2680,12 +2679,12 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
             convert=False)
         self.assertTrue(self.verify_bypass(ds, es, [
             "opt/pkgdep_runpath/pdtest.pyo",
-            "opt/pkgdep_runpath/pdtest.cpython-{0}.so".format(py_ver_lib)]),
+            f"opt/pkgdep_runpath/pdtest.cpython-{PYV_CURRENT}.so"]),
             "Failed to bypass some paths despite use of file-wildcard")
         # we should still have dependencies on these
         self.assertTrue(self.verify_dep_generation(ds, [
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.pyo".format(py_ver_default),
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.cpython-{1}.so".format(py_ver_default, py_ver_lib)]),
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.pyo",
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.cpython-{PYV_CURRENT}.so"]),
             "Failed to generate dependencies, despite file-wildcards")
 
         # finally, test a combination of the above, we have:
@@ -2700,21 +2699,21 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
             convert=False)
         self.assertTrue(self.verify_bypass(ds, es, [
             "opt/pkgdep_runpath/pdtest.py",
-            "usr/lib/python{0}/vendor-packages/pkgdep_runpath/pdtest.py".format(py_ver_default),
-            "usr/lib/python{0}/site-packages/pkgdep_runpath/pdtest.py".format(py_ver_default),
-            "usr/lib/python{0}/site-packages/pkgdep_runpath/pdtest.cpython-{1}.so".format(py_ver_default, py_ver_lib)]),
+            f"usr/lib/python{PYVER_CURRENT}/vendor-packages/pkgdep_runpath/pdtest.py",
+            f"usr/lib/python{PYVER_CURRENT}/site-packages/pkgdep_runpath/pdtest.py",
+            f"usr/lib/python{PYVER_CURRENT}/site-packages/pkgdep_runpath/pdtest.cpython-{PYV_CURRENT}.so"]),
             "Failed to bypass some paths despite use of combo-wildcard")
         # we should still have dependencies on these
         self.assertTrue(self.verify_dep_generation(ds, [
-            "usr/lib/python{0}/site-packages/pkgdep_runpath/pdtest.pyc".format(py_ver_default),
-            "usr/lib/python{0}/lib-dynload/pkgdep_runpath/pdtest.cpython-{1}.so".format(py_ver_default, py_ver_lib)]),
+            f"usr/lib/python{PYVER_CURRENT}/site-packages/pkgdep_runpath/pdtest.pyc",
+            f"usr/lib/python{PYVER_CURRENT}/lib-dynload/pkgdep_runpath/pdtest.cpython-{PYV_CURRENT}.so"]),
             "Failed to generate dependencies, despite file-wildcards")
 
     def test_bypass_3(self):
         """Ensure that bypasses which don't match any dependencies have
         no effect on the computed dependencies."""
         t_path = self.make_manifest(self.python_bypass_nomatch_manf)
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], remove_internal_deps=False,
@@ -2769,7 +2768,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         self.make_proto_text_file(self.paths["script_path"],
             self.script_text)
         self.make_smf_test_files()
-        self.make_python_test_files(py_ver_default)
+        self.make_python_test_files(PYVER_CURRENT)
         self.make_elf(self.paths["curses_path"])
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
