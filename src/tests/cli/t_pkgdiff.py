@@ -286,15 +286,15 @@ file path=bin/ls elfarch=i386 elfbits=32 elfhash=abcd
 file path=bin/true elfarch=i386 elfbits=32 elfhash=efgh
  - pkg.content-hash=file:sha512t_256:ijkl
  + pkg.content-hash=file:sha512t_256:mnop
-file path=etc/hosts 
+file path=etc/hosts
  - abcd
  + efgh
-file path=etc/motd 
+file path=etc/motd
  - 4ab5de3107a63f5cf454485f720cac025f1b7002
  + 3aba408bd383553aa84bba4fefe8495239927763
  - chash=dc03afd488e3b3e4c4993d2403d7e15603b0a391
  + chash=f0c2aa47dce2ba0132efdace8d3b88b6589767f3
-file path=etc/passwd 
+file path=etc/passwd
  - pkg.content-hash=file:sha512t_256:abcd
  + pkg.content-hash=file:sha512t_256:efgh
 """
@@ -311,15 +311,15 @@ file path=bin/ls elfarch=i386 elfbits=32 elfhash=abcd
  + bar
  - pkg.content-hash=gelf.unsigned:sha512t_256:abcd pkg.content-hash=gelf:sha512t_256:abcd
  + pkg.content-hash=gelf.unsigned:sha512t_256:efgh pkg.content-hash=gelf:sha512t_256:efgh
-file path=etc/hosts 
+file path=etc/hosts
  - abcd
  + efgh
-file path=etc/motd 
+file path=etc/motd
  - 4ab5de3107a63f5cf454485f720cac025f1b7002
  + 3aba408bd383553aa84bba4fefe8495239927763
  - chash=dc03afd488e3b3e4c4993d2403d7e15603b0a391
  + chash=f0c2aa47dce2ba0132efdace8d3b88b6589767f3
-file path=etc/passwd 
+file path=etc/passwd
  - pkg.content-hash=file:sha512t_256:abcd
  + pkg.content-hash=file:sha512t_256:efgh
 """
@@ -336,10 +336,10 @@ file path=bin/cat elfarch=i386 elfbits=32 elfhash=abcd
 file path=bin/ls elfarch=i386 elfbits=32 elfhash=abcd
  - foo
  + bar
-file path=etc/hosts 
+file path=etc/hosts
  - abcd
  + efgh
-file path=etc/motd 
+file path=etc/motd
  - 4ab5de3107a63f5cf454485f720cac025f1b7002
  + 3aba408bd383553aa84bba4fefe8495239927763
 """
@@ -357,7 +357,7 @@ file path=etc/motd
         self.pkgdiff(" ".join(("-t license", self.hashed20_p5m,
             self.hashed10_p5m)), exit=1)
         expected = """\
-license license=lic_OTN 
+license license=lic_OTN
  - 7ab6de3107a63f5cf454485f720cac025f1b7001
  + 6aba708bd383553aa84bba4fefe8495239927767
  - chash=cc05afd488e3b3e4c4993d2403d7e15603b0a398
@@ -370,7 +370,7 @@ license license=lic_OTN
         self.pkgdiff(" ".join(("-t license -o hash", self.hashed20_p5m,
             self.hashed10_p5m)), exit=1)
         expected = """\
-license license=lic_OTN 
+license license=lic_OTN
  - 7ab6de3107a63f5cf454485f720cac025f1b7001
  + 6aba708bd383553aa84bba4fefe8495239927767
 """

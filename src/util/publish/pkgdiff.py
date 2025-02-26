@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 #
 
 try:
@@ -317,29 +317,28 @@ def main_func():
         elif not old:
             different |= conditional_print("+", new)
         else:
-            s = []
+            output = []
 
             if not onlyattrs:
-                if (hasattr(old, "hash") and
-                    "hash" not in ignoreattrs):
+                if hasattr(old, "hash") and "hash" not in ignoreattrs:
                     if old.hash != new.hash:
-                        s.append("  - {0}".format(old.hash))
-                        s.append("  + {0}".format(new.hash))
-                attrdiffs = (set(new.differences(old)) -
-                    ignoreattrs)
-                attrsames = sorted( list(set(list(old.attrs.keys()) +
-                    list(new.attrs.keys())) -
-                    set(new.differences(old))))
+                        output.append(f"  - {old.hash}")
+                        output.append(f"  + {new.hash}")
+                attrdiffs = set(new.differences(old)) - ignoreattrs
             else:
                 if hasattr(old, "hash") and "hash" in onlyattrs:
                     if old.hash != new.hash:
-                        s.append("  - {0}".format(old.hash))
-                        s.append("  + {0}".format(new.hash))
-                attrdiffs = (set(new.differences(old)) &
-                    onlyattrs)
-                attrsames = sorted(list(set(list(old.attrs.keys()) +
-                    list(new.attrs.keys())) -
-                    set(new.differences(old))))
+                        output.append(f"  - {old.hash}")
+                        output.append(f"  + {new.hash}")
+                attrdiffs = set(new.differences(old)) & onlyattrs
+
+            # sort attributes by name and put the key attribute first
+            attrsames = sorted(
+                set(old.attrs)
+                .union(new.attrs)
+                .difference(new.differences(old)),
+                key=lambda val: "" if val == old.key_attr else val
+            )
 
             for a in sorted(attrdiffs):
                 if a in old.attrs and a in new.attrs and \
@@ -350,25 +349,21 @@ def main_func():
                 else:
                     elide_set = set()
                 if a in old.attrs:
-                    diff_str = attrval(old.attrs, a,
-                        elide_iter=elide_set)
+                    diff_str = attrval(old.attrs, a, elide_iter=elide_set)
                     if diff_str:
-                        s.append("  - {0}".format(diff_str))
+                        output.append(f"  - {diff_str}")
                 if a in new.attrs:
-                    diff_str = attrval(new.attrs, a,
-                        elide_iter=elide_set)
+                    diff_str = attrval(new.attrs, a, elide_iter=elide_set)
                     if diff_str:
-                        s.append("  + {0}".format(diff_str))
-            # print out part of action that is the same
-            if s:
+                        output.append(f"  + {diff_str}")
+            if output:
                 different = True
-                print("{0} {1} {2}".format(old.name,
-                    attrval(old.attrs, old.key_attr),
-                    " ".join(("{0}".format(attrval(old.attrs, v))
-                    for v in attrsames if v != old.key_attr))))
 
-                for l in s:
-                    print(l)
+                # print out part of action that is the same
+                attrs = ' '.join(attrval(old.attrs, val) for val in attrsames)
+                print(f"{old.name} {attrs}")
+                # and then all the differences
+                print("\n".join(output))
 
     return int(different)
 
