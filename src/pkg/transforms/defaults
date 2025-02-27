@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 # Set some specific permissions
@@ -41,7 +41,6 @@
 <transform dir file path=lib/svc/manifest -> default group sys>
 <transform dir file path=lib/svc/method -> default group bin>
 <transform file path=(usr/bin|lib/svc/method) -> default mode 0755>
-<transform file path=$(PYDIR)/.*\.so -> default mode 0755>
 
 # For what's left, go with root:bin 0444, u+wx for directories
 <transform file dir -> default owner root>
