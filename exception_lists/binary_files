@@ -20,27 +20,9 @@
 #
 
 #
-# Copyright (c) 2019, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2025, Oracle and/or its affiliates.
 #
 
-# Files matched below are allowed to include the executable bit.
-syntax: glob
-
-src/cffi_src/build_*
-src/client.py
-src/depot-config.py
-src/depot.py
-src/modules/depotcontroller.py
-src/pkgdep.py
-src/pkgrepo.py
-src/publish.py
-src/pull.py
-src/sign.py
-src/sysrepo.py
-src/util/apache2/depot/depot_index.py
-src/util/publish/*.py
-src/svc/svc-pkg-*
-
-src/tests/interactive/*.py
-src/tests/ro_data/signing_certs/generate_certs.py
-src/tests/run.py
+syntax: regexp
+\.png$
+\.so(.\d)?$
