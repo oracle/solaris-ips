@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 import configparser
@@ -252,7 +252,7 @@ class ActionChecker(Checker):
                         action=action,
                         mf=manifest.fmri,
                         err=err), msgid="lint.error")
-                    engine.debug(traceback.format_exc(err),
+                    engine.debug(traceback.format_exc(),
                         msgid="lint.error")
 
 
@@ -335,7 +335,7 @@ class ManifestChecker(Checker):
                         "{err}".format(check=pkglint_id,
                         mf=manifest.fmri,
                         err=err), msgid="lint.error")
-                    engine.debug(traceback.format_exc(err),
+                    engine.debug(traceback.format_exc(),
                         msgid="lint.error")
 
 

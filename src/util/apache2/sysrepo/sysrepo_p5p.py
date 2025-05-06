@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2012, 2025, Oracle and/or its affiliates.
 
 import pkg.p5p
 
@@ -433,7 +433,7 @@ if __name__ == "__main__":
         """A dummy response function."""
         print("responding with {0}".format(status))
         if exc_info:
-            print(traceback.format_exc(exc_info))
+            print(traceback.format_exc())
 
     if len(sys.argv) != 3:
         query = \
