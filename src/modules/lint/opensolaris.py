@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 # Some opensolaris distribution specific lint checks
 
-import pkg.lint.base as base
+from pkg.lint import base
 
 
 class OpenSolarisActionChecker(base.ActionChecker):
@@ -37,7 +37,7 @@ class OpenSolarisActionChecker(base.ActionChecker):
     def __init__(self, config):
         self.description = _(
             "checks OpenSolaris packages for common action errors")
-        super(OpenSolarisActionChecker, self).__init__(config)
+        super().__init__(config)
 
     # opensolaris.action001 is obsolete and should not be reused.
 
@@ -50,13 +50,11 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
     def __init__(self, config):
         self.description = _(
             "checks OpenSolaris packages for common errors")
-        super(OpenSolarisManifestChecker, self).__init__(config)
+        super().__init__(config)
 
     def missing_attrs(self, manifest, engine, pkglint_id="001"):
-        """Warn when a package doesn't have an
-        org.opensolaris.consolidation attribute.
-        Warn when a package don't have an info.classification value
-        """
+        """Warn when manifest doesn't have org.opensolaris.consolidation
+        or info.classification attribute set."""
         if "pkg.renamed" in manifest:
             return
 
@@ -66,14 +64,27 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
         keys = ["org.opensolaris.consolidation", "info.classification"]
         for key in keys:
             if key not in manifest:
-                engine.warning(
-                    _("Missing attribute '{key}' in "
+                engine.warning(_(
+                    "Missing attribute '{key}' in "
                     "{pkg}").format(key=key, pkg=manifest.fmri),
-                    msgid="{0}{1}.1".format(self.name,
-                    pkglint_id))
+                    msgid=f"{self.name}{pkglint_id}.1")
 
     missing_attrs.pkglint_desc = _(
         "Standard package attributes should be present.")
+
+    def attrs_multiple_values(self, manifest, engine, pkglint_id="005"):
+        """Make sure that org.opensolaris.consolidation isn't set
+        to multiple values."""
+        if "org.opensolaris.consolidation" in manifest:
+            value = manifest["org.opensolaris.consolidation"]
+            if isinstance(value, list) and len(value) != 1:
+                engine.error(_(
+                    "Multiple 'org.opensolaris.consolidation' values {value} "
+                    "in {pkg}").format(value=value, pkg=manifest.fmri),
+                    msgid=f"{self.name}{pkglint_id}.1")
+
+    attrs_multiple_values.pkglint_desc = _(
+        "org.opensolaris.consolidation shouldn't have multiple values.")
 
     # opensolaris.manifest001.2 is obsolete and should not be reused.
     # opensolaris.manifest002 is obsolete and should not be reused.

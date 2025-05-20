@@ -2234,6 +2234,18 @@ set name=variant.arch value=i386 value=sparc
 user gcos-field="pkg(7) server UID" group=pkg5srv uid=97 username="pkg5s0v"
 """
 
+expected_failures["multiple_consolidation_values.mf"] = ["opensolaris.manifest005.1"]
+broken_manifests["multiple_consolidation_values.mf"] = \
+"""
+#
+# org.opensolaris.consolidation shouldn't have multiple values.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=org.opensolaris.consolidation value=osnet value=userland
+set name=pkg.summary value="Yet another test"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+"""
+
 
 class TestLogFormatter(log.LogFormatter):
     """Records log messages to a buffer"""
