@@ -2964,29 +2964,18 @@ def suggest_known_words(text, known_words):
     if not text:
         return candidates
 
-    # We are confident to suggest if the text is part of the known words.
-    for known in known_words:
-        if len(text) < 4:
-            # If the text's length is short, treat it as a prefix.
-            if known.startswith(text):
-                candidates.append(known)
-        elif text in known or known in text:
-            # Otherwise check if the text is part of the known
-            # words or vice verse.
-            candidates.append(known)
-
-    if candidates:
-        if len(candidates) < 4:
-            return candidates
-        else:
-            # Give up suggestions if there are too many candidates.
-            return
+    # We are confident to suggest if the text is a prefix of known word.
+    if len(text) < 4:
+        # If the text's length is short, treat it as a prefix.
+        candidates = [word for word in known_words if word.startswith(text)]
+        if candidates:
+            return sorted(candidates)
 
     # If there are no candidates from the "contains" check, use the edit
     # distance algorithm to seek further.
     for known in known_words:
         distance = _min_edit_distance(text, known)
-        if distance <= len(known) / 2.0:
+        if distance <= len(known) / 2.0 or text in known or known in text:
             candidates.append((known, distance))
 
     # Sort the candidates by their distance, and return the words only.
