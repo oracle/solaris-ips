@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 # pkg.depotd - package repository daemon
@@ -47,8 +47,8 @@ try:
     import os
     import os.path
     import OpenSSL.crypto as crypto
-    import OpenSSL.SSL as ssl
     import shlex
+    import ssl
     import string
     import subprocess
     import sys
@@ -750,11 +750,13 @@ if __name__ == "__main__":
 
     ssl_context = None
     if ssl_cert_file and ssl_key_file:
-        ssl_context = ssl.Context(ssl.TLS_SERVER_METHOD)
+        # Mirrors Context creation from cheroot.ssl.builtin.BuiltinSSLAdapter
+        ssl_context = ssl.create_default_context(
+            purpose=ssl.Purpose.CLIENT_AUTH,
+        )
+        ssl_context.load_cert_chain(ssl_cert_file, ssl_key_file)
         # Oracle security policies currently only allow TLSv1.2 and TLSv1.3.
-        ssl_context.set_min_proto_version(ssl.TLS1_2_VERSION)
-        ssl_context.use_privatekey_file(ssl_key_file)
-        ssl_context.use_certificate_file(ssl_cert_file)
+        ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
 
     # Setup our global configuration.
     gconf = {
@@ -766,7 +768,6 @@ if __name__ == "__main__":
         "server.socket_host": address,
         "server.socket_port": port,
         "server.socket_timeout": socket_timeout,
-        "server.ssl_module": "pyopenssl",
         "server.ssl_context": ssl_context,
         "server.ssl_certificate": ssl_cert_file,
         "server.ssl_private_key": ssl_key_file,
