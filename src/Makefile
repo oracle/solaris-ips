@@ -298,18 +298,13 @@ justpackages: install
 dist:
 	hg archive -r default -p pkg7-%h ../pkg7-%h.tar.bz2
 
-test-39:
-	$(PYTHON39) tests/run.py -j ${JOBS} -v
-
 test-311:
 	$(PYTHON311) tests/run.py -j ${JOBS} -v
 
 test:
-	$(MAKE) -k test-39 JOBS=${JOBS}
 	$(MAKE) -k test-311 JOBS=${JOBS}
 
 test-generate:
-	$(PYTHON39) tests/run.py test -g
 	$(PYTHON311) tests/run.py test -g
 
 FRC:

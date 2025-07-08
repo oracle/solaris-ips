@@ -27,9 +27,8 @@ include ../Makefile.constants
 
 EXTENSIONS = _arch _sha512_t _sysattr _syscallat
 
-all: $(EXTENSIONS:=.cpython-39.so) $(EXTENSIONS:=.cpython-311.so)
+all: $(EXTENSIONS:=.cpython-311.so)
 
-%-39.so := PYTHON=$(PYTHON39)
 %-311.so := PYTHON=$(PYTHON311)
 
 _arch.cpython-%.so: build_arch.py
@@ -44,13 +43,9 @@ _sysattr.cpython-%.so: build_sysattr.py
 _syscallat.cpython-%.so: build_syscallat.py
 	CC=$(GCC) $(PYTHON) $^
 
-ROOT39EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY39PKG)/%.cpython-39.so)
 ROOT311EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY311PKG)/%.cpython-311.so)
 
-install: $(ROOT39EXTENSIONS) $(ROOT311EXTENSIONS)
-
-$(ROOTPY39PKG)/%.so: %.so
-	$(INS.file)
+install: $(ROOT311EXTENSIONS)
 
 $(ROOTPY311PKG)/%.so: %.so
 	$(INS.file)

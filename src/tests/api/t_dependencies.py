@@ -1553,6 +1553,8 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
             [self.proto_dir], {}, [], remove_internal_deps=False,
             convert=False))
 
+    @unittest.skipUnless(PYVER_OTHER,
+                         "Alternative pkg version variant is not available.")
     def test_python_imp_main(self):
         """Ensure we can generate a dependency from a python module
         known to cause different behaviour in modulefinder, where
@@ -1651,6 +1653,8 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
                     "list of pkg.debug.depend.path attribute "
                     "values, but it wasn't seen.".format(ep))
 
+    @unittest.skipUnless(PYVER_OTHER,
+                         "Alternative pkg version variant is not available.")
     def test_bug_18031(self):
         """Test that an python file which python cannot import due to a
         syntax error doesn't cause a traceback."""
@@ -1916,6 +1920,8 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
             [self.proto_dir], {}, [], convert=False)
 
+    @unittest.skipUnless(PYVER_OTHER,
+                         "Alternative pkg version variant is not available.")
     def test_str_methods(self):
         """Test the str methods of objects in the flavor space."""
 
@@ -2689,8 +2695,8 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
 
         # finally, test a combination of the above, we have:
         # pkg.depend.bypass-generate=.*/pdtest.py \
-        # pkg.depend.bypass-generate=usr/lib/python3.9/vendor-packages/.* \
-        # pkg.depend.bypass-generate=usr/lib/python3.9/site-packages/pkgdep_runpath/pdtest.cpython-39.so
+        # pkg.depend.bypass-generate=usr/lib/python3.11/vendor-packages/.* \
+        # pkg.depend.bypass-generate=usr/lib/python3.11/site-packages/pkgdep_runpath/pdtest.cpython-311.so
         t_path = self.make_manifest(
             self.python_wildcard_combo_bypass_manf)
 

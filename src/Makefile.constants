@@ -28,7 +28,6 @@ PYVERSION = 3.11
 
 # Common programs and commands
 GCC = /usr/gcc/14/bin/gcc
-PYTHON39 = /usr/bin/python3.9
 PYTHON311 = /usr/bin/python3.11
 PYTHON = /usr/bin/python$(PYVERSION)
 
@@ -59,7 +58,6 @@ ROOTUSRSHARELIBPKG =	$(ROOTUSRSHARE)/lib/pkg
 ROOTLIBSVC =	$(ROOT)/lib/svc
 ROOTETCSVC =	$(ROOT)/etc/svc
 
-ROOTPY39PKG =	$(ROOT)/usr/lib/python3.9/vendor-packages/pkg
 ROOTPY311PKG =	$(ROOT)/usr/lib/python3.11/vendor-packages/pkg
 ROOTPYPKG =	$(ROOT)/usr/lib/python$(PYVERSION)/vendor-packages/pkg
 

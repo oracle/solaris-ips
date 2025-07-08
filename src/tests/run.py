@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 import rapidjson as json
@@ -30,7 +30,7 @@ import os
 import sys
 from functools import reduce
 
-assert sys.version_info.major == 3 and sys.version_info.minor in (9, 11)
+assert sys.version_info.major == 3 and sys.version_info.minor in (11,)
 
 # We need cwd to be the same dir as our program.
 cwd = os.getcwd()

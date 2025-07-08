@@ -117,10 +117,10 @@ OUTPUT_PARSEABLE = 2    # Machine readable
 PYVER_CURRENT = f"{sys.version_info.major}.{sys.version_info.minor}"
 PYVER_OTHER = "3.11"
 if PYVER_CURRENT == PYVER_OTHER:
-    PYVER_OTHER = "3.9"
+    PYVER_OTHER = None
 
 PYV_CURRENT = PYVER_CURRENT.replace(".", "")
-PYV_OTHER = PYVER_OTHER.replace(".", "")
+PYV_OTHER = None
 
 
 class TestStopException(Exception):
@@ -771,7 +771,7 @@ if __name__ == "__main__":
             except KeyboardInterrupt:
                 # Try hard to make sure we've done a teardown.
                 needtodie = True
-            except TestSkippedException as err:
+            except (TestSkippedException, unittest.SkipTest) as err:
                 result.addSkip(self, err)
             except:
                 error_added = True

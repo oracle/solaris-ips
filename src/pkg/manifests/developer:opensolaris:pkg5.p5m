@@ -54,7 +54,6 @@ depend type=require fmri=pkg:/library/python/rapidjson
 depend type=require fmri=pkg:/library/python/rpdb
 depend type=require fmri=pkg:/package/svr4
 depend type=require fmri=pkg:/runtime/python-311
-depend type=require fmri=pkg:/runtime/python-39
 depend type=require fmri=pkg:/system/header
 depend type=require fmri=pkg:/system/linker
 depend type=require fmri=pkg:/system/locale
