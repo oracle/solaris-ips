@@ -40,7 +40,7 @@ import pkg.misc as misc
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
-from pkg5unittest import PYVER_CURRENT, PYVER_OTHER, PYV_OTHER
+from pkg5unittest import PYVER_CURRENT, PYVER_OTHER, PYV_CURRENT, PYV_OTHER
 
 DDP = base.Dependency.DEPEND_DEBUG_PREFIX
 
@@ -536,10 +536,10 @@ from pkg.misc import EmptyI
 """
 
     python3_so_text = """\
-#!/usr/bin/python3.9
+#!/usr/bin/python{0}
 
 import zlib
-"""
+""".format(PYVER_CURRENT)
 
     python_amd_text = """\
 #!/usr/bin/amd64/python{0}
@@ -2907,6 +2907,8 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
         self.assertTrue(isinstance(es[0],
             actions.InvalidActionAttributesError))
 
+    @unittest.skipUnless(PYVER_OTHER,
+                         "Alternative pkg version variant is not available.")
     def test_python_combinations(self):
         """Test that each line in the following table is accounted for
         by a test case.
@@ -3035,6 +3037,8 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
         self.check_res("", self.output)
         self.check_res("", self.errout)
 
+    @unittest.skipUnless(PYVER_OTHER,
+                         "Alternative pkg version variant is not available.")
     def test_bug_13059(self):
         """Test that python modules written for a version of python
         other than the current system version are analyzed correctly."""
@@ -3107,15 +3111,14 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
         """Test that Python 3 modules importing native modules can find
         them in the right place, following PEP 3149.
 
-        On Solaris, this means 64-bit only, and with the "m" (pymalloc)
-        flag turned on.
+        On Solaris, this means 64-bit only.
         """
 
         # Create a python 3.x file that imports a native module.
         tp = self.make_manifest(
-            self.pyver_test_manf_1.format(py_ver="3.9"))
-        fp = "usr/lib/python{0}/vendor-packages/pkg/" \
-            "client/indexer.py".format("3.9")
+            self.pyver_test_manf_1.format(py_ver=PYVER_CURRENT))
+        fp = f"usr/lib/python{PYVER_CURRENT}/vendor-packages/pkg/" \
+            "client/indexer.py"
         self.make_proto_text_file(fp, self.python3_so_text)
 
         # Run generate
@@ -3133,7 +3136,7 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 for l in self.output.strip().splitlines()
             )
             if a.attrs.get(pfx + ".reason") == fp and
-                "64/zlib.cpython-39.so" in a.attrs[pfx + ".file"]
+                f"64/zlib.cpython-{PYV_CURRENT}.so" in a.attrs[pfx + ".file"]
         ]
         self.assertTrue(len(acts) == 1)
 

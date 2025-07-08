@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 PKGVERS_BUILTON   = 5.11
@@ -89,10 +89,6 @@ $(PUBLISHALL)MANIFESTS      = $(ALL_MANIFESTS)
 # file because those suppress the use of non-default
 # environments which are actually used as part of the
 # build. Bit of a smoke and mirrors.
-PYTHON39	  = python3.9
-PY39DIR		  = usr/lib/$(PYTHON39)
-PY39DIRVP	  = $(PY39DIR)/vendor-packages
-
 PYTHON311	  = python3.11
 PY311DIR	  = usr/lib/$(PYTHON311)
 PY311DIRVP	  = $(PY311DIR)/vendor-packages
@@ -137,8 +133,6 @@ PKGMOG_DEFVALS    = \
 	REV=$(REV) \
 	PYDIR=$(PYDIR) \
 	PYDIRVP=$(PYDIRVP) \
-	PY39DIR=$(PY39DIR) \
-	PY39DIRVP=$(PY39DIRVP) \
 	PY311DIR=$(PY311DIR) \
 	PY311DIRVP=$(PY311DIRVP) \
 	CHANGESET=$(CHANGESET) \

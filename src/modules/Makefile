@@ -29,18 +29,14 @@ EXTENSIONS = actions/_actions actions/_common _varcet _misc solver elf
 
 PYFILES:sh = find . -type f -name '*.py'
 
-all: $(EXTENSIONS:=.cpython-39.so) $(EXTENSIONS:=.cpython-311.so)
+all: $(EXTENSIONS:=.cpython-311.so)
 
-PYTHON39CFLAGS:sh =	python3.9-config --cflags
 PYTHON311CFLAGS:sh =	python3.11-config --cflags
 
-PYTHON39LDFLAGS:sh =	python3.9-config --ldflags
 PYTHON311LDFLAGS:sh =	python3.11-config --ldflags
 
-%-39.so := PYTHONCFLAGS=$(PYTHON39CFLAGS)
 %-311.so := PYTHONCFLAGS=$(PYTHON311CFLAGS)
 
-%-39.so := PYTHONLDFLAGS=$(PYTHON39LDFLAGS) -shared -zstrip-class=nonalloc
 %-311.so := PYTHONLDFLAGS=$(PYTHON311LDFLAGS) -shared -zstrip-class=nonalloc
 
 _misc.cpython-%.so: _misc.c
@@ -66,33 +62,23 @@ solver.cpython-%.so: solver/solver.c solver/py_solver.c
 $(PRIVATE_BUILD)PYCOMPILE_FLAGS = -s $(ROOT)
 
 
-$(ROOTPY39PKG)/%.so: %.so
-	$(INS.file)
-
 $(ROOTPY311PKG)/%.so: %.so
 	$(INS.file)
-
-$(ROOTPY39PKG)/%.py: %.py
-	$(INS.file.pstrip)
 
 $(ROOTPY311PKG)/%.py: %.py
 	$(INS.file.pstrip)
 
 
-ROOT39FILES = $(PYFILES:%=$(ROOTPY39PKG)/%)
 ROOT311FILES = $(PYFILES:%=$(ROOTPY311PKG)/%)
-ROOT39EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY39PKG)/%.cpython-39.so)
 ROOT311EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY311PKG)/%.cpython-311.so)
 
-install: $(ROOT39FILES) $(ROOT311FILES) $(ROOT39EXTENSIONS) $(ROOT311EXTENSIONS)
+install: $(ROOT311FILES) $(ROOT311EXTENSIONS)
 	@# substitute VERSION with mercurial revision in pkg/__init__.py
 	@hg_revision=`hg id -i`; \
 	echo "doing version substitution: $$hg_revision"; \
-	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(ROOTPY39PKG)/__init__.py; \
 	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(ROOTPY311PKG)/__init__.py
 
 	@# compile all sources to bytecode
-	$(PYTHON39) -m compileall $(PYCOMPILE_FLAGS) -j8 --invalidation-mode=checked-hash $(ROOTPY39PKG)
 	$(PYTHON311) -m compileall $(PYCOMPILE_FLAGS) -j8 --invalidation-mode=checked-hash $(ROOTPY311PKG)
 
 check:
@@ -108,6 +94,6 @@ clint: all
 lint: clint
 
 clean:
-	rm -f $(EXTENSIONS:=.cpython-39.so) $(EXTENSIONS:=.cpython-311.so)
+	rm -f $(EXTENSIONS:=.cpython-311.so)
 
 clobber: clean

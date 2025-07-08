@@ -20,16 +20,15 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 
 import os
 import sys
 
-# Set the path so that modules can be found. Force this to
-# be a relative path due to Python 3.9 issue 44070 which
-# has __file__ always returning an absolute path.
-path_to_parent = os.path.relpath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, path_to_parent)
+# Insert relative path to the 'tests' directory at the first position
+# of module search path in order to import test modules below.
+tests_path = os.path.relpath(os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, tests_path)
 
 import pkg5testenv
 
