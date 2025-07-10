@@ -47,6 +47,7 @@
 	    type='service'>
 		<service_fmri value='svc:/system/filesystem/local' />
                 <service_fmri value='svc:/milestone/network:default' />
+                <service_fmri value='svc:/system/ca-certificates:default' />
 	</dependency>
 
 	<dependent
