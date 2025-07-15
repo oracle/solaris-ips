@@ -21,7 +21,6 @@
 # Copyright (c) 2021, 2025, Oracle and/or its affiliates.
 #
 
-# TODO: replace PKGVERS with correct version once we are in the removal build
-set name=pkg.fmri value=pkg:/package/pkg-39@$(PKGVERS)
+set name=pkg.fmri value=pkg:/package/pkg-39@11.4,5.11-11.4.87.0.0.202.0
 set name=pkg.obsolete value=true
 set name=variant.arch value=i386 value=sparc
