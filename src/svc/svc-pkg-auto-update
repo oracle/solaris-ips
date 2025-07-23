@@ -92,7 +92,7 @@ def start():
             message = 'Invalid configuration: config/auto-reboot = true ' + \
                 'with config/activate-new-be = false'
             smf_include.smf_method_exit(smf_include.SMF_EXIT_ERR_CONFIG,
-                                        'invalid configuration', message)
+                                        'invalid-configuration', message)
         cmd.append('--no-be-activate')
 
     # Add any extra args that should be passed to pkg, eg for verbose output
@@ -157,9 +157,13 @@ def start():
             print('Running reboot-check-hook {0}'.format(reboot_hook))
             exitcode, output = subprocess.getstatusoutput(reboot_hook)
             if exitcode != 0:
-                print('reboot-check-hook failed')
+                message = f'Reboot Hook failed {exitcode}, see service log'
                 smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
-                                            'reboot-check-hook failed', output)
+                                            'reboot-check-hook-failed',
+                                            message)
+                print('Reboot hook output follows:')
+                print(output)
+
         print('Reboot after auto update')
         msg = myfmri + ' : automatic reboot after update'
         try:
