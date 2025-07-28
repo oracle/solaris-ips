@@ -26,3 +26,10 @@
 syntax: regexp
 \.png$
 \.so(.\d)?$
+
+# While the following are not binary files, they are not Unicode
+# encoded and thus might break some cdm checks.
+tests/ro_data/88591enc.copyright$
+tests/ro_data/badencoding.relnote$
+tests/ro_data/pkg.help.eucJP.expected.out$
+tests/ro_data/unsupported.copyright$
