@@ -20,12 +20,31 @@
 #
 
 #
-# Copyright (c) 2019, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2025, Oracle and/or its affiliates.
 #
-re:src/(?!(man/.*$|modules/choose\.py$|modules/cpiofile\.py$|modules/flavor/depthlimitedmf\.py$)|modules/solver/.*$|pkg/external_deps.*$|pkg/license_files/(?!lic_CDDL).*$|util/apache2/sysrepo/.*mako|util/apache22/sysrepo/.*.mako|tests/ro_data/.*|tests/bandit-baseline.json|tests/baseline-.*|po/LINGUAS|po/POTFILES.*).+
+
+# Files matched below *should* include the CDDL block comment.
+
+re:src/(?!modules/(choose\.py|cpiofile\.py|flavor/depthlimitedmf\.py)$).+\.py$
+re:src/(?!modules/solver/(solver\.c|solver\.h|vec\.h)$).+\.[ch]$
+
 glob:*Makefile*
-glob:src/tests/*.py$
-glob:src/*\.py$
 glob:exception_lists/*
+glob:src/pkg/manifests/*
+glob:src/pkg/transforms/*
+glob:src/po/*\.po
+glob:src/scripts/*
+glob:src/svc/*
+glob:src/zoneproxy/*
 glob:tools/*
-src/tests/ro_data/signing_certs/generate_certs.py
+
+re:src/util/(?!(apache2|misc)).+
+re:src/util/apache2/(?!(depot/depot_httpd_ssl_protocol.conf$|sysrepo)).+
+src/util/apache2/sysrepo/sysrepo_publisher_response.mako
+
+re:src/web/(?!(robots.txt|_themes/(pkg-block-logo.svg|yui-reset-font-grids_base-min.css))$).+
+
+src/pkg/ips-pkglintrc
+src/pkg/license_files/lic_CDDL
+src/tests/banditrc
+src/tests/pylintrc
