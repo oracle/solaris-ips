@@ -28,6 +28,7 @@ import copy
 import datetime as dt
 import errno
 import http.client
+import itertools
 import os
 import rapidjson as json
 import tempfile
@@ -2340,10 +2341,14 @@ class Transport:
         if versions:
             versions = sorted(versions, reverse=True)
 
+        if count == 0:
+            # Zero has a special meaning to iterate forever.
+            iterator = itertools.count(1)
+        else:
+            iterator = range(1, count + 1)
+
         fail = None
-        iteration = 0
-        for i in range(count):
-            iteration += 1
+        for iteration in iterator:
             rslist = self.stats.get_repostats(repolist, origins)
             if prefer_remote:
                 rslist.sort(key=cmp_to_key(remote_first))
