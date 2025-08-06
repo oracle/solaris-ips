@@ -3661,6 +3661,14 @@ publisher\tprefix\t""
             repo_path, ta_dir))
         self.pkgrepo("-s {0} verify".format(repo_path), exit=0)
 
+    def test_42_verify_zero_timeout(self):
+        """Verify that PKG_CLIENT_MAX_TIMEOUT set to zero works as expected
+        and that empty TransportFailures exception is not raised."""
+        repo_path = self.dc.get_repodir()
+        env = {"PKG_CLIENT_MAX_TIMEOUT": "0"}
+
+        self.pkgrepo(f"contents -s {repo_path}", env_arg=env)
+
 
 class TestPkgrepoMultiRepo(pkg5unittest.ManyDepotTestCase):
     # Only start/stop the depot once (instead of for every test)
