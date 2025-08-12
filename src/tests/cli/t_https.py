@@ -450,10 +450,10 @@ echo "12345"
 
         # Anything below TLS 1.2 is not allowed.
         self.assertRaisesRegex(ssl.SSLError,
-                               r"ALERT_PROTOCOL_VERSION|NO_CIPHERS_AVAILABLE",
+                               r"NO_PROTOCOLS_AVAILABLE",
                                test_tls_version, ssl.TLSVersion.TLSv1_1)
         self.assertRaisesRegex(ssl.SSLError,
-                               r"ALERT_PROTOCOL_VERSION|NO_CIPHERS_AVAILABLE",
+                               r"NO_PROTOCOLS_AVAILABLE",
                                test_tls_version, ssl.TLSVersion.TLSv1)
         self.assertRaisesRegex(ssl.SSLError,
                                r"NO_PROTOCOLS_AVAILABLE",
