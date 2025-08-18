@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2019, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2025, Oracle and/or its affiliates.
 #
 
 import pkg.no_site_packages
@@ -34,8 +34,8 @@ def start():
     keep = int(smf.get_prop(os.getenv('SMF_FMRI'), 'config/keep'))
     candidates = []
     # beadm list sorts by the first field so include created date
-    with subprocess.Popen(['beadm', 'list', '-Ho', 'created,policy,fmri'],
-                          stdout=subprocess.PIPE) as beadm_out:
+    cmd = ['/usr/sbin/beadm', 'list', '-Ho', 'created,policy,fmri']
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE) as beadm_out:
         for be in beadm_out.stdout.readlines():
             creation, policy, be_fmri = be.decode().strip().split(';')
             if 'auto' in policy.split(','):
@@ -45,7 +45,7 @@ def start():
         remove_bes = candidates[:len(candidates) - keep]
         print('Removing the following boot environments:', *remove_bes)
         for be in remove_bes:
-            subprocess.call(['beadm', 'destroy', '-fF', be])
+            subprocess.call(['/usr/sbin/beadm', 'destroy', '-fF', be])
 
 
 smf_include.smf_main()

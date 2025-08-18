@@ -89,6 +89,9 @@ $(ROOTSMFPROFILE)/%: %
 $(ROOTSVCMETHOD)/%: %
 	$(INS.file.strip)
 
+$(ROOTSVCMETHOD)/%: %.py
+	$(INS.file.strip)
+
 $(ROOTSVCSHARE)/%: %
 	$(INS.file.strip)
 

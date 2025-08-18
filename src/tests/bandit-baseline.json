@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2024-11-21T14:05:14Z",
+  "generated_at": "2025-08-15T13:35:37Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0,
@@ -583,7 +583,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1119,
+      "loc": 1124,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -934,7 +934,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2619,
+      "loc": 2624,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -960,7 +960,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 768,
+      "loc": 760,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1259,7 +1259,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 34,
+      "loc": 43,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1337,7 +1337,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 1,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2158,
+      "loc": 2151,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1913,6 +1913,45 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "./svc/svc-pkg-auto-update-cleanup.py": {
+      "CONFIDENCE.HIGH": 3,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 3,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 20,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./svc/svc-pkg-auto-update.py": {
+      "CONFIDENCE.HIGH": 4,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 1,
+      "SEVERITY.LOW": 3,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 114,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./svc/svc-pkg-oci-config.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 40,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "./sysrepo.py": {
       "CONFIDENCE.HIGH": 2,
       "CONFIDENCE.LOW": 0,
@@ -2143,7 +2182,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 280,
+      "loc": 272,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2252,15 +2291,15 @@
       "skipped_tests": 0
     },
     "_totals": {
-      "CONFIDENCE.HIGH": 130,
+      "CONFIDENCE.HIGH": 137,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 14,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 19,
-      "SEVERITY.LOW": 98,
+      "SEVERITY.HIGH": 20,
+      "SEVERITY.LOW": 104,
       "SEVERITY.MEDIUM": 27,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 94376,
+      "loc": 94546,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -2457,7 +2496,7 @@
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "838             else:\n839                 h = logging.StreamHandler(eval(\"sys.{0}\".format(\n840                     dest)))\n841 \n",
+      "code": "839             else:\n840                 h = logging.StreamHandler(eval(\"sys.{0}\".format(\n841                     dest)))\n842 \n",
       "col_offset": 42,
       "end_col_offset": 26,
       "filename": "./depot.py",
@@ -2468,17 +2507,17 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Use of possibly insecure function - consider using safer ast.literal_eval.",
-      "line_number": 839,
+      "line_number": 840,
       "line_range": [
-        839,
-        840
+        840,
+        841
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b307-eval",
       "test_id": "B307",
       "test_name": "blacklist"
     },
     {
-      "code": "843             h.setFormatter(cherrypy._cplogging.logfmt)\n844             log_obj = eval(\"cherrypy.log.{0}\".format(\n845                 log_type_map[log_type][\"attr\"]))\n846             log_obj.addHandler(h)\n",
+      "code": "844             h.setFormatter(cherrypy._cplogging.logfmt)\n845             log_obj = eval(\"cherrypy.log.{0}\".format(\n846                 log_type_map[log_type][\"attr\"]))\n847             log_obj.addHandler(h)\n",
       "col_offset": 22,
       "end_col_offset": 48,
       "filename": "./depot.py",
@@ -2489,10 +2528,10 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Use of possibly insecure function - consider using safer ast.literal_eval.",
-      "line_number": 844,
+      "line_number": 845,
       "line_range": [
-        844,
-        845
+        845,
+        846
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_calls.html#b307-eval",
       "test_id": "B307",
@@ -2603,7 +2642,7 @@
       "test_name": "hashlib"
     },
     {
-      "code": "277         if \"password\" in copy:\n278             copy[\"password\"] = \"\"\n279         self.password_file.updatevalue(copy)\n",
+      "code": "276         if \"password\" in copy:\n277             copy[\"password\"] = \"\"\n278         self.password_file.updatevalue(copy)\n",
       "col_offset": 17,
       "end_col_offset": 27,
       "filename": "./modules/cfgfiles.py",
@@ -2614,16 +2653,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: ''",
-      "line_number": 278,
+      "line_number": 277,
       "line_range": [
-        278
+        277
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "285         if \"password\" in copy:\n286             copy[\"password\"] = \"x\"\n287         self.password_file.setvalue(copy)\n",
+      "code": "284         if \"password\" in copy:\n285             copy[\"password\"] = \"x\"\n286         self.password_file.setvalue(copy)\n",
       "col_offset": 17,
       "end_col_offset": 27,
       "filename": "./modules/cfgfiles.py",
@@ -2634,9 +2673,9 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: 'x'",
-      "line_number": 286,
+      "line_number": 285,
       "line_range": [
-        286
+        285
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
@@ -3616,7 +3655,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "774                 name)\n775             p = subprocess.Popen(cmd.split(),\n776                 stdin=subprocess.PIPE,\n777                 stdout=subprocess.PIPE,\n778                 stderr=subprocess.PIPE)\n779             pobj = p.stdout\n",
+      "code": "769                 name)\n770             p = subprocess.Popen(cmd.split(),\n771                 stdin=subprocess.PIPE,\n772                 stdout=subprocess.PIPE,\n773                 stderr=subprocess.PIPE)\n774             pobj = p.stdout\n",
       "col_offset": 16,
       "end_col_offset": 39,
       "filename": "./modules/cpiofile.py",
@@ -3627,12 +3666,12 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 775,
+      "line_number": 770,
       "line_range": [
-        775,
-        776,
-        777,
-        778
+        770,
+        771,
+        772,
+        773
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
@@ -4932,6 +4971,146 @@
       "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
+    },
+    {
+      "code": "27 import pkg.smf as smf\n28 import subprocess\n29 import smf_include\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./svc/svc-pkg-auto-update-cleanup.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 28,
+      "line_range": [
+        28
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "37     cmd = ['/usr/sbin/beadm', 'list', '-Ho', 'created,policy,fmri']\n38     with subprocess.Popen(cmd, stdout=subprocess.PIPE) as beadm_out:\n39         for be in beadm_out.stdout.readlines():\n",
+      "col_offset": 9,
+      "end_col_offset": 54,
+      "filename": "./svc/svc-pkg-auto-update-cleanup.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 38,
+      "line_range": [
+        38
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "47         for be in remove_bes:\n48             subprocess.call(['/usr/sbin/beadm', 'destroy', '-fF', be])\n49 \n",
+      "col_offset": 12,
+      "end_col_offset": 70,
+      "filename": "./svc/svc-pkg-auto-update-cleanup.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 48,
+      "line_range": [
+        48
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "30 import os\n31 import subprocess\n32 import rapidjson as json\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "./svc/svc-pkg-auto-update.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 31,
+      "line_range": [
+        31
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "120         print('Running:', ' '.join(cmd), flush=True)\n121         pkg_status = subprocess.call(cmd)\n122         if pkg_status != pkgdefs.EXIT_LOCKED:\n",
+      "col_offset": 21,
+      "end_col_offset": 41,
+      "filename": "./svc/svc-pkg-auto-update.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 121,
+      "line_range": [
+        121
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "157             print('Running reboot-check-hook {0}'.format(reboot_hook))\n158             exitcode, output = subprocess.getstatusoutput(reboot_hook)\n159             if exitcode != 0:\n",
+      "col_offset": 31,
+      "end_col_offset": 70,
+      "filename": "./svc/svc-pkg-auto-update.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "HIGH",
+      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
+      "line_number": 158,
+      "line_range": [
+        158
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b605_start_process_with_a_shell.html",
+      "test_id": "B605",
+      "test_name": "start_process_with_a_shell"
+    },
+    {
+      "code": "172             grace_period = 60\n173         subprocess.call(['/usr/sbin/shutdown', '-yrg', grace_period, msg])\n174     elif not new_be_created:\n",
+      "col_offset": 8,
+      "end_col_offset": 74,
+      "filename": "./svc/svc-pkg-auto-update.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 173,
+      "line_range": [
+        173
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.7.10/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
     },
     {
       "code": "683 \n684         httpd_conf_template = Template(\n685             filename=httpd_conf_template_path)\n686 \n",

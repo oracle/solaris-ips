@@ -4,5 +4,6 @@ modules/arch.py
 modules/sysattr.py
 modules/syscallat.py
 modules/sha512_t.py
-svc/svc-pkg-auto-update
-svc/svc-pkg-auto-update-cleanup
+svc/svc-pkg-auto-update.py
+svc/svc-pkg-auto-update-cleanup.py
+svc/svc-pkg-oci-config.py
