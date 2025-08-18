@@ -170,7 +170,7 @@ def start():
             grace_period = smf.get_prop(myfmri, 'config/shutdown-grace-period')
         except smf.NonzeroExitException:
             grace_period = 60
-        subprocess.call(['shutdown', '-yrg', grace_period, msg])
+        subprocess.call(['/usr/sbin/shutdown', '-yrg', grace_period, msg])
     elif not new_be_created:
         print('Auto update completed, no reboot needed')
 

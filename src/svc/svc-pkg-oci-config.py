@@ -39,6 +39,7 @@ HEADERS = {'Authorization': 'Bearer Oracle'}
 MDURL = 'http://169.254.169.254/opc/v2/instance/'
 CLIENT_VERSION = 83
 
+
 def write_config(metadata):
     ''' Write out or clear the ocids '''
     imgcfg = pkg.client.imageconfig.ImageConfig('/var/pkg/pkg5.image', '/')
@@ -52,6 +53,7 @@ def write_config(metadata):
                 pass
     imgcfg.write()
 
+
 def start():
     ''' Cache OCIDs from metadata service into image props '''
 
@@ -62,8 +64,9 @@ def start():
     else:
         metadata = mdret.json()
     write_config(metadata)
-    
+
     return smf_include.SMF_EXIT_OK
+
 
 def stop():
     ''' Remove any cached OCI ocids '''
@@ -71,5 +74,6 @@ def stop():
     write_config(None)
 
     return smf_include.SMF_EXIT_OK
+
 
 smf_include.smf_main()
