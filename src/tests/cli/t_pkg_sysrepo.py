@@ -2615,13 +2615,13 @@ SSLRandomSeed connect builtin
         # Combined product CA certs for client verification
         SSLCACertificateFile {server-ca-cert}
 
-	SSLVerifyClient require
+        SSLVerifyClient require
 
         <Location />
                 SSLVerifyDepth 1
 
-	        # The client's certificate must pass verification, and must have
-	        # a CN which matches this repository.
+                # The client's certificate must pass verification, and must have
+                # a CN which matches this repository.
                 SSLRequire ( {ssl-special} =~ m/{server-ca-taname}/ )
 
                 # set max to number of threads in depot

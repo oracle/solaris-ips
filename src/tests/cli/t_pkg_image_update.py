@@ -514,20 +514,20 @@ class TestIDROps(pkg5unittest.SingleDepotTestCase):
     need_ro_data = True
 
     idr_comb = """
-            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115559Z 
+            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115559Z
             add set name=pkg.description value="test package"
             add dir path=foo/hello owner=root group=sys mode=555
             close
-            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1.1697.1:20160225T115610Z 
+            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1.1697.1:20160225T115610Z
             add set name=pkg.description value="test package"
             add dir path=foo/hello owner=root group=sys mode=555
             add depend type=require fmri=idr1697@1
             close
-            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115616Z 
+            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.2.2.1103,5.11-0.1:20160225T115616Z
             add set name=pkg.description value="test package"
             add dir path=foo/hello owner=root group=sys mode=555
             close
-            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.3.2.906,5.11-0.1:20160225T115622Z 
+            open pkg://test/management/em-sysmgmt-ecpc/em-oc-common@12.3.2.906,5.11-0.1:20160225T115622Z
             add set name=pkg.description value="test package"
             add dir path=foo/hello owner=root group=sys mode=555
             close

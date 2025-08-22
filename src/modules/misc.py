@@ -1296,7 +1296,7 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
 def load_trust_anchors(trust_anchor_loc, trust_anchors, bad_trust_anchors=[]):
     """Load all trust anchors in given directory; each
     certificate file may have multiple trust certificates."""
-    ca_list = [] 
+    ca_list = []
 
     for fn in os.listdir(trust_anchor_loc):
         pth = os.path.join(trust_anchor_loc, fn)
@@ -1313,7 +1313,7 @@ def load_trust_anchors(trust_anchor_loc, trust_anchors, bad_trust_anchors=[]):
             for cert in raw.split(begin_cert)[1:]:
                 ca_list.append(x509.load_pem_x509_certificate(begin_cert+cert, \
                     default_backend()))
-        except (ValueError, IOError) as e: 
+        except (ValueError, IOError) as e:
             bad_trust_anchors.append((pth, str(e)))
         else:
             # We store certificates internally by

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -1395,7 +1395,7 @@ set name=variant.arch value=PPC value=ARM\
         shutil.rmtree(repodir)
 
     def test_9_dependency(self):
-        """Test dependency actions duplication detection. 
+        """Test dependency actions duplication detection.
         """
         repodir = os.path.join(self.test_root, "9dependency")
         self.create_repo(repodir)

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 # The portable module provide access to methods that require operating system-
@@ -86,9 +86,9 @@ def get_file_type(actions):
 def get_group_by_name(name, dirpath, use_file):
     """ Return the group ID for a group name.
     If use_file is true, an OS-specific file from within the file tree
-    rooted by dirpath will be consulted, if it exists. Otherwise, the 
+    rooted by dirpath will be consulted, if it exists. Otherwise, the
     group ID is retrieved from the operating system.
-    Exceptions:        
+    Exceptions:
         KeyError if the specified group does not exist"""
     raise NotImplementedError
 
@@ -96,7 +96,7 @@ def get_group_by_name(name, dirpath, use_file):
 def get_user_by_name(name, dirpath, use_file):
     """ Return the user ID for a user name.
     If use_file is true, an OS-specific file from within the file tree
-    rooted by dirpath will be consulted, if it exists. Otherwise, the 
+    rooted by dirpath will be consulted, if it exists. Otherwise, the
     user ID is retrieved from the operating system.
     Exceptions:
         KeyError if the specified group does not exist"""
@@ -106,7 +106,7 @@ def get_user_by_name(name, dirpath, use_file):
 def get_name_by_gid(gid, dirpath, use_file):
     """ Return the group name for a group ID.
     If use_file is true, an OS-specific file from within the file tree
-    rooted by dirpath will be consulted, if it exists. Otherwise, the 
+    rooted by dirpath will be consulted, if it exists. Otherwise, the
     group name is retrieved from the operating system.
     Exceptions:
         KeyError if the specified group does not exist"""
@@ -116,7 +116,7 @@ def get_name_by_gid(gid, dirpath, use_file):
 def get_name_by_uid(uid, dirpath, use_file):
     """ Return the user name for a user ID.
     If use_file is true, an OS-specific file from within the file tree
-    rooted by dirpath will be consulted, if it exists. Otherwise, the 
+    rooted by dirpath will be consulted, if it exists. Otherwise, the
     user name is retrieved from the operating system.
     Exceptions:
         KeyError if the specified group does not exist"""
@@ -155,7 +155,7 @@ def chown(path, owner, group):
     """ Change ownership of a file in an OS-specific way.
     The owner and group ownership information should be applied to
     the given file, if applicable on the current runtime OS.
-    Exceptions:        
+    Exceptions:
         EnvironmentError (or subclass) if the path does not exist
         or ownership cannot be changed"""
     raise NotImplementedError
@@ -181,7 +181,7 @@ def link(src, dst):
 def remove(path):
     """ Remove the given file in an OS-specific way
     Exceptions:
-       OSError (or subclass) if the source path does not exist or 
+       OSError (or subclass) if the source path does not exist or
        the file cannot be removed"""
     raise NotImplementedError
 
@@ -199,7 +199,7 @@ def copyfile(src, dst):
 
 
 def split_path(path):
-    """ Splits a path and gives back the components of the path.  
+    """ Splits a path and gives back the components of the path.
     This is intended to hide platform-specific details about splitting
     a path into its components.  This interface is similar to
     os.path.split() except that the entire path is split, not just
@@ -212,7 +212,7 @@ def split_path(path):
 
 
 def get_root(path):
-    """ Returns the 'root' of the given path.  
+    """ Returns the 'root' of the given path.
     This should include any and all components of a path up to the first
     non-platform-specific component.  For example, on Windows,
     it should include the drive letter prefix.
@@ -226,7 +226,7 @@ def get_root(path):
 def assert_mode(path, mode):
     """ Checks that the file identified by path has the given mode to
     the extent possible by the host operating system.  Otherwise raises
-    an AssertionError where the mode attribute of the assertion is the 
+    an AssertionError where the mode attribute of the assertion is the
     mode of the file."""
     raise NotImplementedError
 

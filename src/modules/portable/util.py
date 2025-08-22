@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 import os
 import platform
@@ -28,7 +28,7 @@ import re
 
 
 def get_canonical_os_type():
-    """ 
+    """
     Return a standardized, lower case version of the "type" of OS family.
     """
     if os.name == 'posix':
@@ -45,7 +45,7 @@ def get_canonical_os_type():
 def get_canonical_os_name():
     """
     Return a standardized, lower case version of the name of the OS.  This is
-    useful to avoid the ambiguity of OS marketing names.  
+    useful to avoid the ambiguity of OS marketing names.
     """
 
     psl = platform.system().lower()
@@ -65,7 +65,7 @@ def get_os_release():
     """
     Return a standardized, sanitized version string, consisting of a
     dot-separated list of integers representing the release version of
-    this OS. 
+    this OS.
     """
 
     ostype = get_canonical_os_type()

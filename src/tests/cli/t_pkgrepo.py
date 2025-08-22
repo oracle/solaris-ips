@@ -507,7 +507,7 @@ test      repository origins          ()
 test      repository refresh-seconds  7200
 test      repository registration-uri ""
 test      repository related-uris     ()
-"""
+"""  # noqa
             self.assertEqualDiff(expected, self.output)
         self.dc.stop()
 

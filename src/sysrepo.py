@@ -205,7 +205,7 @@ def _get_image(image_dir):
 
 
 def _clean_publisher(uri):
-    """ Remove the HTTP_PORT from the uri otherwise the rewrite rules 
+    """ Remove the HTTP_PORT from the uri otherwise the rewrite rules
     (in the mako file) will incorporate it with the subsequent use of
     libcurl, adhering to RPF7230 section 5.4, removing it and thus break
     the matching on the rewrite rules leading to the default response of

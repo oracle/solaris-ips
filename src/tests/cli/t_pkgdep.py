@@ -195,7 +195,7 @@ file NOHASH group=bin mode=0755 owner=root path=foo/bar.py
 
     err_manf_1 = """\
 Couldn't find 'usr/xpg4/lib/libcurses.so.1' in any of the specified search directories:
-	{0}
+\t{0}
 """
     res_manf_2 = """\
 depend {pfx}.file=libc.so.1 {pfx}.path=lib {pfx}.path=usr/lib fmri={dummy_fmri} type=require {pfx}.reason=usr/xpg4/lib/libcurses.so.1 variant.arch=foo {pfx}.type=elf
@@ -407,12 +407,12 @@ dummy_fmri=base.Dependency.DUMMY_FMRI
 
     miss_payload_manf_error = """\
 Couldn't find '{payload}' needed for 'foo/bar.py' in any of the specified search directories:
-	{path_pref}
+\t{path_pref}
 """
 
     empty_payload_manf_error = """\
 Couldn't find 'foo/bar.py' in any of the specified search directories:
-	{path_pref}
+\t{path_pref}
 """
 
     double_plat_error = """\
@@ -490,8 +490,8 @@ file NOHASH path=platform/foo/baz/no_such_named_file
     run_path_errors = """\
 The file dependency depend fmri={dummy_fmri} {pfx}.file=no_such_named_file {pfx}.path=platform/foo/baz {pfx}.path=platform/bar/baz {pfx}.path=lib {pfx}.path=usr/lib {pfx}.reason=foo/bar {pfx}.type=elf type=require delivered in pkg:/collision_manf has paths which resolve to multiple packages.
 The actions are:
-	depend fmri=pkg:/sat_bar_libc {pfx}.file=platform/bar/baz/no_such_named_file {pfx}.reason=foo/bar {pfx}.type=elf type=require
-	depend fmri=pkg:/sat_foo_libc {pfx}.file=platform/foo/baz/no_such_named_file {pfx}.reason=foo/bar {pfx}.type=elf type=require
+\tdepend fmri=pkg:/sat_bar_libc {pfx}.file=platform/bar/baz/no_such_named_file {pfx}.reason=foo/bar {pfx}.type=elf type=require
+\tdepend fmri=pkg:/sat_foo_libc {pfx}.file=platform/foo/baz/no_such_named_file {pfx}.reason=foo/bar {pfx}.type=elf type=require
 {unresolved_path} has unresolved dependency '
     depend type=require fmri=__TBD {pfx}.file=no_such_named_file \\
         {pfx}.reason=foo/bar {pfx}.type=elf \\

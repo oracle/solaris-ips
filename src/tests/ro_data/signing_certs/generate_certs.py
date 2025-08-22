@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 # This script will generate the certificates needed for testing.
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         fhr.close()
     fhw.close()
 
-    # Create certificate files with multiple certificates...using 
+    # Create certificate files with multiple certificates...using
     # certificate files we've just generated
     os.mkdir("{0}/ta1ta3".format(output_dir))
     multi_cert_file = "{0}/ta1ta3/ta1ta3_cert.pem".format(output_dir)
