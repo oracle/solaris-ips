@@ -1177,7 +1177,7 @@ uri_basic =
 uri_default = http://example.com/
 urilist_basic =
 urilist_default = http://example.com/,file:/example/path
-uuid_basic = 
+uuid_basic =
 uuid_default = 16fd2706-8baf-433b-82eb-8c7fada847da
 """.format(uni_escape=TH_PACKAGE,
 uni_txt=TH_PACKAGE),
@@ -1267,7 +1267,7 @@ str_basic =
 bool_basic = False
 str_basic = 
 
-""", str(conf))
+""", str(conf))  # noqa
 
         conf.set_property("first_section", "str_basic", TH_PACKAGE)
         self.assertEqualDiff("""\
@@ -1286,7 +1286,7 @@ str_basic = {0}
 bool_basic = False
 str_basic = 
 
-""", str(conf))
+""", str(conf))  # noqa
 
         conf.set_property("first_section", "str_basic", TH_PACKAGE)
         self.assertEqualDiff("""\

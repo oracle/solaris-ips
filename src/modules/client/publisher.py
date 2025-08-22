@@ -2119,7 +2119,7 @@ pkg unset-publisher {0}
     def refresh(self, full_refresh=False, immediate=False, progtrack=None,
         include_updates=False):
         """Refreshes the publisher's metadata, returning a tuple
-        containing a boolean value indicating whether any updates to the 
+        containing a boolean value indicating whether any updates to the
         publisher's metadata occurred and an error object, which is
         either a CatalogOriginRefreshException containing all the failed
         origins for this publisher or None.

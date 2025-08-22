@@ -717,7 +717,7 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional predicate=pkg:/b@2,5.11-1 variant.n
         expected_txt = """
 The following fmris matched a pattern in a constraint file but were not used in
 dependency resolution:
-	example2_pkg
+\texample2_pkg
 """
         # Test that extraneous packages are properly displayed when -E
         # is used.

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 """
@@ -188,7 +188,7 @@ def get_trashdir(path):
 
 def move_to_trash(path):
     """
-    Move the file to a trash folder within its containing image. If the 
+    Move the file to a trash folder within its containing image. If the
     file is not in an image, just return without moving it. If the file
     cannot be removed, raise an OSError exception.
     """

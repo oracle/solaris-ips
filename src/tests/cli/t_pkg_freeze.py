@@ -108,20 +108,20 @@ class TestPkgFreeze(pkg5unittest.SingleDepotTestCase):
 pkg freeze: The following packages were frozen at two different versions by
 the patterns provided.  The package stem and the versions it was frozen at are
 provided:
-	foo	foo@1.2 foo@1.3
+\tfoo\tfoo@1.2 foo@1.3
 The following patterns contained wildcards but matched no
 installed packages.
-	z*
+\tz*
 The following patterns attempted to freeze the listed packages
 at a version different from the version at which the packages are installed.
-	b*@1.1
-		bar
-		baz
-	pkg4@1.2
+\tb*@1.1
+\t\tbar
+\t\tbaz
+\tpkg4@1.2
 The following patterns don't match installed packages and
 contain no version information.  Uninstalled packages can only be frozen by
 providing a version at which to freeze them.
-	foo
+\tfoo
 """
         self.assertEqualDiff(expected, self.errout)
 

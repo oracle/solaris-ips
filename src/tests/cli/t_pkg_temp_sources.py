@@ -758,7 +758,7 @@ link path=usr/local/bin/soft-foo target=usr/bin/foo
         expected = """\
 empty origin online F {0}/
 test 
-""".format(self.empty_rurl)
+""".format(self.empty_rurl)  # noqa
         output = self.reduceSpaces(self.output)
         self.assertEqualDiff(expected, output)
 
@@ -826,7 +826,7 @@ test
 empty origin online F {0}/
 test 
 test2 
-""".format(self.empty_rurl)
+""".format(self.empty_rurl)  # noqa
         output = self.reduceSpaces(self.output)
         self.assertEqualDiff(expected, output)
 

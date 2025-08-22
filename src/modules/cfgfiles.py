@@ -40,7 +40,7 @@ import pkg.lockfile as lockfile
 # registers the id/name mappings.
 #
 # Following other platforms behaviour:
-#   https://en.wikipedia.org/wiki/User_identifier 
+#   https://en.wikipedia.org/wiki/User_identifier
 #
 # 100-499 will be used for actions where no uid/gid provided.
 MIN_DYNAMIC_ID = 100

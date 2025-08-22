@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -119,35 +119,35 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
     p5i_bobcat = """{
   "packages": [
-    "pkg:/bar@1.0,5.11-0", 
+    "pkg:/bar@1.0,5.11-0",
     "baz"
-  ], 
+  ],
   "publishers": [
     {
-      "alias": "cat", 
-      "name": "bobcat", 
+      "alias": "cat",
+      "name": "bobcat",
       "packages": [
         "pkg:/foo@1.0,5.11-0"
-      ], 
+      ],
       "repositories": [
         {
-          "collection_type": "core", 
-          "description": "xkcd.net/325", 
+          "collection_type": "core",
+          "description": "xkcd.net/325",
           "legal_uris": [
             "http://xkcd.com/license.html"
-          ], 
-          "mirrors": [], 
-          "name": "source", 
+          ],
+          "mirrors": [],
+          "name": "source",
           "origins": [
             "%REAL_ORIGIN%/"
-          ], 
-          "refresh_seconds": 43200, 
-          "registration_uri": "", 
+          ],
+          "refresh_seconds": 43200,
+          "registration_uri": "",
           "related_uris": []
         }
       ]
     }
-  ], 
+  ],
   "version": 1
 }
 """
