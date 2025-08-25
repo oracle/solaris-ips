@@ -87,7 +87,7 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
             ["pkg: no subcommand specified",
             "pkg [options] command [cmd_options] [operands]",
             "For more info, run: pkg help <command>"],
-            unexpected = ["PKG_IMAGE"])
+            unexpected=["PKG_IMAGE"])
 
         # help for a subcommand should only print that subcommand usage
         for option in ["property --help", "--help property",

@@ -2979,8 +2979,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         # by one of the previous operations, then log it as
         # ending now.
         if self._img.history.operation_name:
-            self.log_operation_end(release_notes=
-                self._img.imageplan.pd.release_notes_name)
+            self.log_operation_end(
+                release_notes=self._img.imageplan.pd.release_notes_name)
         self.__executed = True
 
     def set_plan_license_status(self, pfmri, plicense, accepted=None,
@@ -4740,10 +4740,8 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
                 query.set_info(num_to_return=q.num_to_return,
                     start_point=q.start_point,
                     index_dir=self._img.index_dir,
-                    get_manifest_path=\
-                        self._img.get_manifest_path,
-                    gen_installed_pkg_names=\
-                        self._img.gen_installed_pkg_names,
+                    get_manifest_path=self._img.get_manifest_path,
+                    gen_installed_pkg_names=self._img.gen_installed_pkg_names,
                     case_sensitive=q.case_sensitive)
                 res = query.search(
                     self._img.gen_installed_pkgs,

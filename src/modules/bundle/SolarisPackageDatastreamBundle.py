@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 import os
@@ -157,7 +157,7 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
                 group=mapline.group, path=mapline.pathname,
                 timestamp=misc.time_to_timestamp(int(mapline.modtime)))
         elif mapline.type in "dx":
-            act = directory.DirectoryAction(mode = mapline.mode,
+            act = directory.DirectoryAction(mode=mapline.mode,
                 owner=mapline.owner, group=mapline.group,
                 path=mapline.pathname)
         elif mapline.type == "s":

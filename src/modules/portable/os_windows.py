@@ -197,7 +197,7 @@ def move_to_trash(path):
         return
     if not os.path.exists(trashdir):
         os.mkdir(trashdir)
-    tdir = tempfile.mkdtemp(dir = trashdir)
+    tdir = tempfile.mkdtemp(dir=trashdir)
     # this rename will raise an exception if the file is
     # locked and cannot be renamed.
     os.rename(path, os.path.join(tdir, os.path.basename(path)))

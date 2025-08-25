@@ -718,8 +718,7 @@ class ImagePlan:
                     reject_set=reject_set,
                     trim_proposed_installed=False,
                     relax_all=li_sync_op,
-                    ignore_inst_parent_deps=\
-                        ignore_inst_parent_deps,
+                    ignore_inst_parent_deps=ignore_inst_parent_deps,
                     exact_install=exact_install,
                     installed_dict_tmp=installed_dict_tmp)
 
@@ -1303,8 +1302,7 @@ class ImagePlan:
                     self.image.get_frozen_list(),
                     proposed_removals,
                     self.__new_excludes,
-                    ignore_inst_parent_deps=\
-                        ignore_inst_parent_deps)
+                    ignore_inst_parent_deps=ignore_inst_parent_deps)
 
             return solver, new_vector, new_avoid_obs
 
@@ -1384,8 +1382,7 @@ class ImagePlan:
                         excludes=self.__new_excludes,
                         reject_set=reject_set,
                         trim_proposed_installed=False,
-                        ignore_inst_parent_deps=\
-                            ignore_inst_parent_deps)
+                        ignore_inst_parent_deps=ignore_inst_parent_deps)
             else:
                 # Updating all installed packages requires a
                 # different solution path.

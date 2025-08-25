@@ -473,8 +473,8 @@ class DepotHTTP(_Depot):
         raise cherrypy.HTTPError(http.client.NOT_FOUND, "Version '{0}' not "
             "supported for operation '{1}'\n".format(ver, op))
 
-    @cherrypy.tools.response_headers(headers=\
-        [("Content-Type", "text/plain; charset=utf-8")])
+    @cherrypy.tools.response_headers(
+        headers=[("Content-Type", "text/plain; charset=utf-8")])
     def versions_0(self, *tokens):
         """Output a text/plain list of valid operations, and their
         versions, supported by the repository."""
@@ -1191,8 +1191,8 @@ class DepotHTTP(_Depot):
                "Another operation is already in progress; try "
                "again later.")
 
-    @cherrypy.tools.response_headers(headers=\
-        [("Content-Type", "text/plain; charset=utf-8")])
+    @cherrypy.tools.response_headers(
+        headers=[("Content-Type", "text/plain; charset=utf-8")])
     def info_0(self, *tokens):
         """ Output a text/plain summary of information about the
             specified package. The request is an encoded pkg FMRI.  If
@@ -1289,8 +1289,7 @@ License:
 ver.branch, ver.get_timestamp().strftime("%c"), misc.bytes_to_str(size),
 misc.bytes_to_str(csize), pfmri, lsummary.read())
 
-    @cherrypy.tools.response_headers(headers=[(
-        "Content-Type", p5i.MIME_TYPE)])
+    @cherrypy.tools.response_headers(headers=[("Content-Type", p5i.MIME_TYPE)])
     def publisher_0(self, *tokens):
         """Returns a pkg(7) information datastream based on the
         repository configuration's publisher information."""
@@ -1319,8 +1318,7 @@ misc.bytes_to_str(csize), pfmri, lsummary.read())
         # Page handlers MUST return bytes.
         return misc.force_bytes(buf.getvalue())
 
-    @cherrypy.tools.response_headers(headers=[(
-        "Content-Type", p5i.MIME_TYPE)])
+    @cherrypy.tools.response_headers(headers=[("Content-Type", p5i.MIME_TYPE)])
     def publisher_1(self, *tokens):
         """Returns a pkg(7) information datastream based on the
         the request's publisher or all if not specified."""
@@ -1400,8 +1398,7 @@ misc.bytes_to_str(csize), pfmri, lsummary.read())
         buf.seek(0)
         return buf.getvalue()
 
-    @cherrypy.tools.response_headers(headers=[(
-        "Content-Type", p5i.MIME_TYPE)])
+    @cherrypy.tools.response_headers(headers=[("Content-Type", p5i.MIME_TYPE)])
     def p5i_0(self, *tokens):
         """Returns a pkg(7) information datastream for the provided full
         or partial FMRI using the repository configuration's publisher
@@ -1457,8 +1454,8 @@ misc.bytes_to_str(csize), pfmri, lsummary.read())
         # Page handlers MUST return bytes.
         return misc.force_bytes(output)
 
-    @cherrypy.tools.response_headers(headers=\
-        [("Content-Type", "application/json; charset=utf-8")])
+    @cherrypy.tools.response_headers(
+        headers=[("Content-Type", "application/json; charset=utf-8")])
     def status_0(self, *tokens):
         """Return a JSON formatted dictionary containing statistics
         information for the repository being served."""
@@ -1664,8 +1661,8 @@ class NastyDepotHTTP(DepotHTTP):
     # Disable the before handler for this request.
     nasty._cp_config = { "tools.nasty_before.on": False }
 
-    @cherrypy.tools.response_headers(headers=\
-        [("Content-Type", "text/plain; charset=utf-8")])
+    @cherrypy.tools.response_headers(
+        headers=[("Content-Type", "text/plain; charset=utf-8")])
     def versions_0(self, *tokens):
         """Output a text/plain list of valid operations, and their
         versions, supported by the repository."""

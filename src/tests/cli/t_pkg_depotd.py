@@ -152,9 +152,9 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 continue
 
             try:
-                self.pkgsend(durl, line, exit = 0)
+                self.pkgsend(durl, line, exit=0)
             except:
-                self.pkgsend(durl, "close -A", exit = 0)
+                self.pkgsend(durl, "close -A", exit=0)
                 raise
 
             if not line == "close":

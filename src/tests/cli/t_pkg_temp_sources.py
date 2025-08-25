@@ -150,7 +150,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                   "ch1_ta1_cert.pem"),
               i2=os.path.join(self.chain_certs_dir,
                   "ch2_ta1_cert.pem"),
-              i3= os.path.join(self.chain_certs_dir,
+              i3=os.path.join(self.chain_certs_dir,
                   "ch3_ta1_cert.pem"),
               i4=os.path.join(self.chain_certs_dir,
                   "ch4_ta1_cert.pem"),

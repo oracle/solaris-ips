@@ -879,7 +879,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         self.pkgsign(self.durl1, "-k {key} -c {cert} {name}".format(
             key=os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
               cert=os.path.join(self.test_root, "tmp/example_file"),
-              name=plist[0]), exit =1)
+              name=plist[0]), exit=1)
         self.pkg_image_create(self.durl1)
         self.pkg("set-property signature-policy verify")
         self.pkg("set-property trust-anchor-directory {0}".format(
@@ -920,8 +920,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     "ch1_ta3_cert.pem"))
         self.pkgsign(self.rurl1, sign_args)
 
-        self.pkg_image_create(additional_args=\
-            "--set-property signature-policy=require-signatures")
+        self.pkg_image_create(
+            additional_args="--set-property signature-policy=require-signatures")
         self.seed_ta_dir("ta3")
         self.pkg("set-publisher -p {0}".format(self.rurl1))
         api_obj = self.get_img_api_obj()
@@ -2505,8 +2505,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
         self.pkgsign_simple(self.rurl1, "'ex*'")
 
-        self.pkg_image_create(additional_args=
-            "--set-property signature-policy=require-signatures")
+        self.pkg_image_create(
+            additional_args="--set-property signature-policy=require-signatures")
         self.seed_ta_dir("ta3")
         self.pkg("set-publisher -p {0}".format(self.rurl1))
         api_obj = self.get_img_api_obj()
@@ -2521,8 +2521,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
         self.pkgsign_simple(self.rurl1, "'*2pk*'")
 
-        self.pkg_image_create(additional_args=
-            "--set-property signature-policy=require-signatures")
+        self.pkg_image_create(
+            additional_args="--set-property signature-policy=require-signatures")
         self.seed_ta_dir("ta3")
         self.pkg("set-publisher -p {0}".format(self.rurl1))
         api_obj = self.get_img_api_obj()
@@ -2539,8 +2539,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
         self.pkgsign_simple(self.rurl1, "pkg://test/example_pkg")
 
-        self.pkg_image_create(additional_args=
-            "--set-property signature-policy=require-signatures")
+        self.pkg_image_create(
+            additional_args="--set-property signature-policy=require-signatures")
         self.seed_ta_dir("ta3")
         self.pkg("set-publisher -p {0}".format(self.rurl1))
         api_obj = self.get_img_api_obj()
@@ -2559,8 +2559,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
         self.pkgsign_simple(self.rurl1, "pkg://pub2/example_pkg")
 
-        self.pkg_image_create(additional_args=
-            "--set-property signature-policy=require-signatures")
+        self.pkg_image_create(
+            additional_args="--set-property signature-policy=require-signatures")
         self.seed_ta_dir("ta3")
         self.pkg("set-publisher -p {0}".format(self.rurl1))
         api_obj = self.get_img_api_obj()
@@ -2578,8 +2578,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
         self.pkgsign_simple(self.rurl1, "example_pkg")
 
-        self.pkg_image_create(additional_args=
-            "--set-property signature-policy=require-signatures")
+        self.pkg_image_create(
+            additional_args="--set-property signature-policy=require-signatures")
         self.seed_ta_dir("ta3")
         self.pkg("set-publisher -p {0}".format(self.rurl1))
         api_obj = self.get_img_api_obj()

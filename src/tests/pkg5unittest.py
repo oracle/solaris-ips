@@ -159,7 +159,7 @@ ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
 
 class Pkg5CommonException(AssertionError):
-    def __init__(self, com = ""):
+    def __init__(self, com=""):
         Pkg5TestCase.failureException.__init__(self, com)
 
     topdivider = \
@@ -208,7 +208,7 @@ class Pkg5CommonException(AssertionError):
 
 
 class AssFailException(Pkg5CommonException):
-    def __init__(self, comment = None, debug=None):
+    def __init__(self, comment=None, debug=None):
         Pkg5CommonException.__init__(self, comment)
         self.__comment = comment
         self.__debug = debug
@@ -2352,7 +2352,7 @@ class UnexpectedExitCodeException(Pkg5CommonException):
 
 
 class PkgSendOpenException(Pkg5CommonException):
-    def __init__(self, com = ""):
+    def __init__(self, com=""):
         Pkg5CommonException.__init__(self, com)
 
 

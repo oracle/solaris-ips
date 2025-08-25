@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 import errno
@@ -796,8 +796,7 @@ class Indexer:
             # Move all files from the tmp directory into the index
             # dir. Note: the need for consistent_open is that
             # migrate is not an atomic action.
-            self._migrate(source_dir = tmp_index_dir,
-                fast_update=fast_update)
+            self._migrate(source_dir=tmp_index_dir, fast_update=fast_update)
             self.unlock()
 
         except:

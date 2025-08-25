@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 REQUIRE = 0
@@ -35,7 +35,7 @@ class Dependency:
 
     A package may require a minimum version of another package."""
 
-    def __init__(self, host_pkg_fmri, req_pkg_fmri, type = REQUIRE):
+    def __init__(self, host_pkg_fmri, req_pkg_fmri, type=REQUIRE):
         self.host_pkg_fmri = host_pkg_fmri
         self.req_pkg_fmri = req_pkg_fmri
 
