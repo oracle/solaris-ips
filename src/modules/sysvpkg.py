@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 """SystemV / Solaris packages.
@@ -57,7 +57,7 @@ class PkgMapLine:
     more fleshed out.
     """
 
-    def __init__(self, line, basedir = ""):
+    def __init__(self, line, basedir=""):
         array = line.split()
         try:
             self.part = int(array[0])

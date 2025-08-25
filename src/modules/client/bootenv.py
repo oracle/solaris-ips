@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 
 import os
 import shutil
@@ -140,7 +140,7 @@ class GenericBootEnv:
 
         try:
             ret = subprocess.call(cmd,
-                stdout = open(os.devnull), stderr=subprocess.STDOUT)
+                stdout=open(os.devnull), stderr=subprocess.STDOUT)
         except OSError as e:
             logger.error(_("pkg: A system error {e} was "
                 "caught executing {cmd}").format(e=e,
@@ -513,8 +513,8 @@ class BeadmV2BootEnv(GenericBootEnv):
             self.img.history.operation_new_be = self.be_clone.name
             self.img.history.operation_new_be_uuid = \
                 self.be_clone.uuid
-            self.img.history.log_operation_end(release_notes=
-                self.img.imageplan.pd.release_notes_name)
+            self.img.history.log_operation_end(
+                release_notes=self.img.imageplan.pd.release_notes_name)
 
             try:
                 self.bemgr.unmount(fmri=self.be_clone.fmri)
@@ -1095,7 +1095,7 @@ class BeadmV1BootEnv(GenericBootEnv):
 
         try:
             ret = subprocess.call(cmd,
-                stdout = open(os.devnull), stderr=subprocess.STDOUT)
+                stdout=open(os.devnull), stderr=subprocess.STDOUT)
         except OSError as e:
             logger.error(_("pkg: A system error {e} was "
                 "caught executing {cmd}").format(e=e,
@@ -1128,8 +1128,8 @@ class BeadmV1BootEnv(GenericBootEnv):
             # image's history.
             self.img.history.operation_new_be = self.be_name_clone
             self.img.history.operation_new_be_uuid = self.be_name_clone_uuid
-            self.img.history.log_operation_end(release_notes=
-                self.img.imageplan.pd.release_notes_name)
+            self.img.history.log_operation_end(
+                release_notes=self.img.imageplan.pd.release_notes_name)
 
             if be.beUnmount(self.be_name_clone) != 0:
                 logger.error(_("unable to unmount BE "

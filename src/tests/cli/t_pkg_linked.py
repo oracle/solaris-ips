@@ -506,10 +506,10 @@ class TestPkgLinked1(TestPkgLinked):
             self._pkg([0], "sync-linked", args=args, rv=rv)
             self._pkg([0], "list-linked", args=args, rv=rv)
             self._pkg([0], "update", args=args, rv=rv)
-            self._pkg([0], "install", args= \
-                "-i {0} {1}".format(lin, self.p_foo1_name[1]), rv=rv)
-            self._pkg([0], "change-variant", args= \
-                "-i {0} -v variant.foo=baz".format(lin), rv=rv)
+            self._pkg([0], "install",
+                args="-i {0} {1}".format(lin, self.p_foo1_name[1]), rv=rv)
+            self._pkg([0], "change-variant",
+                args="-i {0} -v variant.foo=baz".format(lin), rv=rv)
             # TODO: test change-facet
 
         rv = EXIT_BADOPT

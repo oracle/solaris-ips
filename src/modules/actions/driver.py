@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 """module describing a driver packaging object.
@@ -117,8 +117,8 @@ class DriverAction(generic.Action):
 
     @staticmethod
     def __call(args, fmt, fmtargs):
-        proc = subprocess.Popen(args, stdout = subprocess.PIPE,
-            stderr = subprocess.STDOUT, text=True)
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, text=True)
         buf = proc.stdout.read()
         ret = proc.wait()
 
@@ -653,7 +653,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
         myfile.close()
 
     @classmethod
-    def __get_image_data(cls, img, name, collect_errs = False):
+    def __get_image_data(cls, img, name, collect_errs=False):
         """Construct a driver action from image information.
 
         Setting 'collect_errs' to True will collect all caught
@@ -832,7 +832,7 @@ from {imgroot}/etc/driver_aliases.".format(**errdict))
         name = self.attrs["name"]
 
         onfs, errors = \
-            self.__get_image_data(img, name, collect_errs = True)
+            self.__get_image_data(img, name, collect_errs=True)
 
         for i, err in enumerate(errors):
             if isinstance(err, IOError):

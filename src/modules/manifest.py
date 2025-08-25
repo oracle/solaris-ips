@@ -2031,8 +2031,7 @@ class EmptyFactoredManifest(Manifest):
         # origin has been removed.  This is an optimization for
         # uninstall.
         return ManifestDifference([], [],
-            [(a, None) for a in origin.gen_actions(excludes=
-            origin_exclude)])
+            [(a, None) for a in origin.gen_actions(excludes=origin_exclude)])
 
     @staticmethod
     def get_directories(excludes):

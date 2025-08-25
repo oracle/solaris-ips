@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 import os
@@ -46,7 +46,7 @@ FULL_FMRI_HASH_FILE = 'full_fmri_list.hash'
 FMRI_OFFSETS_FILE = 'fmri_offsets.v1'
 
 
-def consistent_open(data_list, directory, timeout = 1):
+def consistent_open(data_list, directory, timeout=1):
     """Opens all data holders in data_list and ensures that the
     versions are consistent among all of them.
     It retries several times in case a race condition between file

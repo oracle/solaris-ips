@@ -924,7 +924,7 @@ if __name__ == "__main__":
     except PipeError:
         # We don't want to display any messages here to prevent
         # possible further broken pipe (EPIPE) errors.
-        cleanup(no_msg =True)
+        cleanup(no_msg=True)
         __ret = pkgdefs.EXIT_OOPS
     except (KeyboardInterrupt, api_errors.CanceledException):
         cleanup()

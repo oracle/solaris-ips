@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
 
 import sys
 import threading
@@ -233,8 +233,7 @@ class TermQuery(qp.TermQuery):
         try:
             try:
                 qp.TermQuery.set_info(self,
-                    gen_installed_pkg_names=\
-                        gen_installed_pkg_names,
+                    gen_installed_pkg_names=gen_installed_pkg_names,
                     get_use_slow_search=get_use_slow_search,
                     set_use_slow_search=set_use_slow_search,
                     **kwargs)

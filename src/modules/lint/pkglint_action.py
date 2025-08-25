@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -390,8 +390,7 @@ class PkgDupActionChecker(base.ActionChecker):
                     type=action.name,
                     attr=p,
                     count=len(fmris),
-                    suspects=
-                    " ".join([key for key in suspects])),
+                    suspects=" ".join([key for key in suspects])),
                     msgid=lint_id, ignore_linted=True)
             processed_dic[p] = True
 
@@ -488,8 +487,7 @@ class PkgDupActionChecker(base.ActionChecker):
                         attr_name=attr_name,
                         name=name,
                         pkgs=" ".join(plist),
-                        vars=
-                        " ".join(["{0}={1}".format(k, v)
+                        vars=" ".join(["{0}={1}".format(k, v)
                             for (k, v)
                             in sorted(fz)])),
                         msgid="{0}{1}.2".format(self.name,
@@ -538,8 +536,7 @@ class PkgDupActionChecker(base.ActionChecker):
                     _("path {path} is delivered by multiple "
                     "action types across {pkgs}").format(
                     path=p,
-                    pkgs=
-                    " ".join(plist)),
+                    pkgs=" ".join(plist)),
                     msgid=lint_id, ignore_linted=True)
         self.seen_dup_types[p] = True
 

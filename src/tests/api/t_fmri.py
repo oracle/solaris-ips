@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -59,7 +59,7 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
         self.n8 = fmri.PkgFmri(
             "pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
         self.n9 = fmri.PkgFmri("sunos/coreutils@6.8,5.11-0",
-            publisher = "opensolaris.org")
+            publisher="opensolaris.org")
         self.n10 = fmri.PkgFmri(
             "pkg://origin2/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
         # same as n10

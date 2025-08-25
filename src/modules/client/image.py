@@ -3439,7 +3439,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         return portable.get_user_by_name(name, self.root,
             self.type != IMG_USER)
 
-    def get_name_by_uid(self, uid, returnuid = False):
+    def get_name_by_uid(self, uid, returnuid=False):
         # XXX What to do about IMG_PARTIAL?
         try:
             return portable.get_name_by_uid(uid, self.root,
@@ -3457,7 +3457,7 @@ in the environment or by setting simulate_cmdpath in DebugValues.""")
         return portable.get_group_by_name(name, self.root,
             self.type != IMG_USER)
 
-    def get_name_by_gid(self, gid, returngid = False):
+    def get_name_by_gid(self, gid, returngid=False):
         try:
             return portable.get_name_by_gid(gid, self.root,
                 self.type != IMG_USER)

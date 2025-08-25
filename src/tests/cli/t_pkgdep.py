@@ -1632,8 +1632,7 @@ int main() { return 1; }
         self.pkgdepend_generate("{0} -d {1} {2}".format(
             dep_args, self.test_proto_dir, m_path))
         self.check_res(self.payload_elf_sub_stdout.format(
-            replaced_path=\
-                " {0}.path={1}".format(
+            replaced_path=" {0}.path={1}".format(
                 base.Dependency.DEPEND_DEBUG_PREFIX, replaced_path)),
             self.output)
 
@@ -3102,8 +3101,7 @@ depend fmri=pkg:/a@0,5.11-1 type=conditional
                 self.test_proto_dir, fp).format(
                     bin_ver="",
                     reason=fp,
-                    run_path=\
-                        "pkg.depend.runpath=$PKGDEPEND_RUNPATH"),
+                    run_path="pkg.depend.runpath=$PKGDEPEND_RUNPATH"),
             self.output)
         self.check_res("", self.errout)
 

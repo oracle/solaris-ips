@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -59,7 +59,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
     def testRelease(self):
         rel = util.get_os_release()
         # make sure it can be used in an fmri
-        test_fmri = fmri.PkgFmri("testpkg", build_release = rel)
+        test_fmri = fmri.PkgFmri("testpkg", build_release=rel)
 
     def testForcibleRename(self):
         # rename a file on top of another file which already exists
@@ -95,9 +95,9 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
             origins=["http://localhost:10000"], refresh_allowed=False)
         exefile = os.path.join(tdir1, 'less.com')
         shutil.copyfile(exefilesrc, exefile)
-        proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
+        proc = subprocess.Popen([exefile], stdin=subprocess.PIPE)
         self.assertRaises(OSError, os.unlink, exefile)
-        fd1, path1 = tempfile.mkstemp(dir = tdir1)
+        fd1, path1 = tempfile.mkstemp(dir=tdir1)
         os.write(fd1, b"foo")
         os.close(fd1)
         portable.rename(path1, exefile)
@@ -138,7 +138,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
             origins=["http://localhost:10000"], refresh_allowed=False)
         exefile = os.path.join(tdir1, 'less.com')
         shutil.copyfile(exefilesrc, exefile)
-        proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
+        proc = subprocess.Popen([exefile], stdin=subprocess.PIPE)
         self.assertRaises(OSError, os.unlink, exefile)
         portable.remove(exefile)
         self.assertTrue(not os.path.exists(exefile))

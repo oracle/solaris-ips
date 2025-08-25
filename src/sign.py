@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
 #
 
 try:
@@ -356,8 +356,7 @@ def main_func():
                         t.add(a)
                         for c in chain_certs:
                             t.add_file(c)
-                        t.close(add_to_catalog=
-                            add_to_catalog)
+                        t.close(add_to_catalog=add_to_catalog)
                     except:
                         if t.trans_id:
                             t.close(abandon=True)

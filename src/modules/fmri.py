@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
 #
 
 import fnmatch
@@ -237,7 +237,7 @@ class PkgFmri:
         # Otherwise just return the publisher
         return self.publisher
 
-    def set_publisher(self, publisher, preferred = False):
+    def set_publisher(self, publisher, preferred=False):
         """Set the FMRI's publisher.  If this is a preferred
         publisher, set preferred to True."""
 
@@ -486,7 +486,7 @@ class PkgFmri:
     def __le__(self, other):
         return not self > other
 
-    def get_link_path(self, stemonly = False):
+    def get_link_path(self, stemonly=False):
         """Return the escaped link (or file) path fragment for this
         FMRI."""
 
@@ -499,7 +499,7 @@ class PkgFmri:
         return "{0}@{1}".format(quote(self.pkg_name, ""),
             quote(str(self.version), ""))
 
-    def get_dir_path(self, stemonly = False):
+    def get_dir_path(self, stemonly=False):
         """Return the escaped directory path fragment for this FMRI."""
 
         if stemonly:

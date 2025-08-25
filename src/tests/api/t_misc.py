@@ -55,7 +55,7 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
 
         # make the leaf, and ONLY the leaf read-only
         act = action.fromstr("dir path={0}".format(foopath))
-        act.makedirs(foopath, mode = stat.S_IREAD)
+        act.makedirs(foopath, mode=stat.S_IREAD)
 
         # Now make sure the directories leading up the leaf
         # are read-write, and the leaf is readonly.

@@ -473,7 +473,7 @@ def main_func():
                 except (AttributeError, ValueError):
                     usage(_("{opt} takes argument of form "
                         "name=value, not {arg}").format(
-                        opt= opt, arg=arg))
+                        opt=opt, arg=arg))
             DebugValues[key] = value
         elif opt == "-h":
             usage(retcode=0)

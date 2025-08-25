@@ -3028,8 +3028,7 @@ class LinkedImageChild:
             new_be=None,
             noexecute=noexecute,
             origins=[],
-            parsable_version=\
-                global_settings.client_output_parsable_version,
+            parsable_version=global_settings.client_output_parsable_version,
             quiet=global_settings.client_output_quiet,
             refresh_catalogs=refresh_catalogs,
             reject_pats=reject_list,
@@ -3072,8 +3071,7 @@ class LinkedImageChild:
             noexecute=noexecute,
             origins=[],
             pargs=pkgs_update,
-            parsable_version=\
-                global_settings.client_output_parsable_version,
+            parsable_version=global_settings.client_output_parsable_version,
             quiet=global_settings.client_output_quiet,
             refresh_catalogs=refresh_catalogs,
             reject_pats=reject_list,
@@ -3109,8 +3107,7 @@ class LinkedImageChild:
             noexecute=noexecute,
             origins=[],
             pargs=pkgs_inst,
-            parsable_version=\
-                global_settings.client_output_parsable_version,
+            parsable_version=global_settings.client_output_parsable_version,
             quiet=global_settings.client_output_quiet,
             refresh_catalogs=refresh_catalogs,
             reject_pats=reject_list,
@@ -3143,8 +3140,7 @@ class LinkedImageChild:
             new_be=None,
             noexecute=noexecute,
             pargs=pkgs_to_uninstall,
-            parsable_version=\
-                global_settings.client_output_parsable_version,
+            parsable_version=global_settings.client_output_parsable_version,
             quiet=global_settings.client_output_quiet,
             stage=stage,
             update_index=update_index,
@@ -3190,8 +3186,7 @@ class LinkedImageChild:
             noexecute=noexecute,
             origins=[],
             pargs=varcets,
-            parsable_version=\
-                global_settings.client_output_parsable_version,
+            parsable_version=global_settings.client_output_parsable_version,
             quiet=global_settings.client_output_quiet,
             refresh_catalogs=refresh_catalogs,
             reject_pats=reject_list,

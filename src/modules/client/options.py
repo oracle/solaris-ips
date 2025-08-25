@@ -627,9 +627,8 @@ def opts_table_cb_li_recurse(api_inst, opts, opts_new):
             except LinkedImageException as e:
                 pass
         if lin is None or lin not in li_child_list:
-            raise InvalidOptionError(msg=
-                _("invalid linked image or zone name "
-                "'{0}'.").format(ulin))
+            raise InvalidOptionError(
+                msg=_("invalid linked image or zone name '{0}'.").format(ulin))
 
         return lin
 

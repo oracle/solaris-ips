@@ -1422,7 +1422,7 @@ file {0} path=/foo owner=root group=sys mode=0644 pkg.hash.rot13=caesar
             src_dir), prefix=name, mode=0o400)
 
         # Change ownership.
-        owner_id, group_id =  pkg5unittest.get_su_wrap_user(uid_gid = True)
+        owner_id, group_id = pkg5unittest.get_su_wrap_user(uid_gid=True)
         for root, folders, files in os.walk(src_dir):
             os.chown(root, owner_id, group_id)
             for f in files:
