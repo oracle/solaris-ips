@@ -448,12 +448,13 @@ echo "12345"
         test_tls_version(ssl.TLSVersion.TLSv1_3)
         test_tls_version(ssl.TLSVersion.TLSv1_2)
 
-        # Anything below TLS 1.2 is not allowed.
+        # Anything below TLS 1.2 is not allowed - the error can
+        # differ slightly depending on the OpenSSL version.
         self.assertRaisesRegex(ssl.SSLError,
-                               r"NO_PROTOCOLS_AVAILABLE",
+                               r"NO_PROTOCOLS_AVAILABLE|NO_CIPHERS_AVAILABLE",
                                test_tls_version, ssl.TLSVersion.TLSv1_1)
         self.assertRaisesRegex(ssl.SSLError,
-                               r"NO_PROTOCOLS_AVAILABLE",
+                               r"NO_PROTOCOLS_AVAILABLE|NO_CIPHERS_AVAILABLE",
                                test_tls_version, ssl.TLSVersion.TLSv1)
         self.assertRaisesRegex(ssl.SSLError,
                                r"NO_PROTOCOLS_AVAILABLE",
