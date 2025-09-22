@@ -26,7 +26,6 @@
 import pkg.no_site_packages
 import pkg.smf as smf
 import pkg.client.pkgdefs as pkgdefs
-import bemgmt
 import smf_include
 import os
 import subprocess
@@ -122,7 +121,8 @@ def start():
         pkg_status = subprocess.call(cmd)
         if pkg_status != pkgdefs.EXIT_LOCKED:
             break
-        print(f'Image locked, sleeping for {wait_secs} seconds', flush=True)
+        print('Image locked, sleeping for {0} seconds'.format(wait_secs),
+              flush=True)
         time.sleep(wait_secs)
 
     if pkg_status == pkgdefs.EXIT_NOP:
@@ -154,24 +154,15 @@ def start():
     new_be_activated = pkgplan['activate-be']
     if new_be_created and new_be_activated and auto_reboot:
         if check_before_reboot:
-            print(f'Running reboot-check-hook {reboot_hook}')
+            print('Running reboot-check-hook {0}'.format(reboot_hook))
             exitcode, output = subprocess.getstatusoutput(reboot_hook)
             if exitcode != 0:
-                print(output)
-                bename = pkgplan['be-name']
-                print(f'Reboot Hook failed {exitcode}, removing {bename}')
-                # Remove the BE as a future auto-update may create the same BE.
-                # Leaving it risks it becoming stale and surprising the
-                # admin on a manual reboot.
-                try:
-                    bemgmt.BEManager().destroy(bename)
-                except bemgmt.be_errors.BeMgmtError as e:
-                    print(f"BE destroy failed: {e}")
-                    pass
                 message = f'Reboot Hook failed {exitcode}, see service log'
                 smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
                                             'reboot-check-hook-failed',
                                             message)
+                print('Reboot hook output follows:')
+                print(output)
 
         print('Reboot after auto update')
         msg = myfmri + ' : automatic reboot after update'
