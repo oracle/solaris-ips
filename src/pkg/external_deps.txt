@@ -54,7 +54,6 @@
     # Only the variant used by pkg(7) utilities is listed here;
     # this is to avoid unnecessary circular dependencies with ON.
     pkg:/system/library/python/solaris-core-311
-    pkg:/system/python/boot-environment-utilities-311
     pkg:/system/library/security/crypto
     pkg:/system/library/smf
     pkg:/system/linker
