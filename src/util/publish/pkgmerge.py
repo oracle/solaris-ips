@@ -418,7 +418,7 @@ def main_func():
                     _("fmris matching the following patterns do"
                     " not have matching versions across all "
                     "repositories for publisher {pubs}: "
-                    "{patterns}").format(pub=pub.prefix,
+                    "{patterns}").format(pubs=pub.prefix,
                     patterns=processdict[entry]))
                 continue
 
