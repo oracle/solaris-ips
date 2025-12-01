@@ -34,6 +34,12 @@ import rapidjson as json
 import time
 
 
+def update_pkg():
+    """ Attempt an update of pkg(7) """
+    cmd = ['/usr/bin/pkg', 'update', '--deny-new-be', 'package/pkg']
+    return subprocess.call(cmd)
+
+
 def start():
     """ SMF Start/Periodic Method to update system """
 
@@ -120,6 +126,11 @@ def start():
     for wait_secs in [60, 120, 300]:
         print('Running:', ' '.join(cmd), flush=True)
         pkg_status = subprocess.call(cmd)
+        if pkg_status == pkgdefs.EXIT_PKG_OOD:
+            # Attempt update of pkg(7) and retry
+            pkg_status = update_pkg()
+            if pkg_status == pkgdefs.EXIT_OK:
+                pkg_status = subprocess.call(cmd)
         if pkg_status != pkgdefs.EXIT_LOCKED:
             break
         print(f'Image locked, sleeping for {wait_secs} seconds', flush=True)
@@ -127,6 +138,10 @@ def start():
 
     if pkg_status == pkgdefs.EXIT_NOP:
         return smf_include.SMF_EXIT_OK
+    elif pkg_status == pkgdefs.EXIT_PKG_OOD:
+        message = 'pkg(7) appears to be out of date, and should be updated.'
+        smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
+                                    'constrained', message)
     elif pkg_status == pkgdefs.EXIT_CONSTRAINED:
         message = 'Updates available but no solution found'
         smf_include.smf_method_exit(smf_include.SMF_EXIT_DEGRADED,
