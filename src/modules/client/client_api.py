@@ -57,7 +57,8 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import (
     API_STAGE_DEFAULT, API_STAGE_EXECUTE, API_STAGE_PLAN, API_STAGE_PREPARE,
     EXIT_ACTUATOR, EXIT_BADOPT, EXIT_CONSTRAINED, EXIT_LICENSE, EXIT_LOCKED,
-    EXIT_NOP, EXIT_NOTLIVE, EXIT_OK, EXIT_OOPS, EXIT_PARTIAL,  MSG_ERROR,
+    EXIT_NOP, EXIT_NOTLIVE, EXIT_OK, EXIT_OOPS, EXIT_PARTIAL, EXIT_PKG_OOD,
+    MSG_ERROR,
     PKG_OP_ATTACH, PKG_OP_CHANGE_FACET, PKG_OP_CHANGE_VARIANT, PKG_OP_DEHYDRATE,
     PKG_OP_DETACH, PKG_OP_EXACT_INSTALL, PKG_OP_FIX, PKG_OP_INSTALL,
     PKG_OP_REHYDRATE, PKG_OP_REVERT, PKG_OP_SYNC, PKG_OP_UNINSTALL,
@@ -1124,7 +1125,7 @@ running {op}.  Please update pkg(7) by executing 'pkg install
 pkg:/package/pkg' as a privileged user and then retry the {op}."""
             ).format(**locals())}
         errors_json.append(error)
-        return __prepare_json(EXIT_OOPS, errors=errors_json)
+        return __prepare_json(EXIT_PKG_OOD, errors=errors_json)
     if e_type == api_errors.CatalogRefreshException:
         _collect_catalog_failures(e, errors=errors_json)
         return __prepare_json(EXIT_OOPS, errors=errors_json)

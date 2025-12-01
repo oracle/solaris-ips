@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
 #
 
 """
@@ -39,6 +39,7 @@ EXIT_LICENSE   =  6 # License acceptance required for requested op.
 EXIT_LOCKED    =  7 # Image is currently locked by another process
 EXIT_ACTUATOR  =  8 # Actuator timed out
 EXIT_CONSTRAINED = 9 # Overly constrained
+EXIT_PKG_OOD   = 10 # pkg is out of date
 EXIT_FATAL     = 99 # An unanticipated exception occurred
 
 # private pkg exit codes

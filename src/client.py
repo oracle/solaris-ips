@@ -1639,7 +1639,7 @@ WARNING: pkg(7) appears to be out of date, and should be updated before
 running {op}.  Please update pkg(7) by executing 'pkg install
 pkg:/package/pkg' as a privileged user and then retry the {op}."""
             ).format(**locals()))
-        return EXIT_OOPS
+        return EXIT_PKG_OOD
     if e_type == api_errors.NonLeafPackageException:
         error("\n" + str(e), cmd=op)
         return EXIT_OOPS
