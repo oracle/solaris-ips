@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2016, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2013, 2025, Oracle and/or its affiliates.
 #
 
 # Load SMF constants and functions
@@ -30,70 +30,67 @@
 CHOWN=/usr/bin/chown
 ZFS=/usr/sbin/zfs
 
-result=$SMF_EXIT_ERR_FATAL
-
 case "$1" in
 'start')
-	# check if we already have a mounted /var/share/pkg/repositories
-	readmnttab /var/share/pkg/repositories < /etc/mnttab
-	if [ "$fstype" = zfs ] ; then
+	vs_pkg_path=/var/share/pkg/repositories
+
+	# check if we already have a mounted /var/share/pkg/repositories.
+	# $fstype set by readmnttab() in /lib/svc/share/fs_include.sh
+	readmnttab $vs_pkg_path < /etc/mnttab
+	if [ "$fstype" = zfs ]; then
 		exit $SMF_EXIT_OK
-	else
-		readmnttab / < /etc/mnttab
-		if [ "$fstype" = zfs ] ; then
-			#
-			# $special gets set by readmnttab in
-			# /lib/svc/share/fs_include.sh
-			#
-			be=$special
-			rpool=$(print $be | cut -d / -f1)			
-		else
-			# we're on a LiveCD, so exit immediately.
-			exit $SMF_EXIT_OK
-		fi
-
-		DS="$rpool/VARSHARE/pkg/repositories"
-
-		# If the dataset exists, we mount it along with any child
-		# datasets, then exit.
-		$ZFS list "$DS" > /dev/null 2>&1
-		if [ $? -eq 0 ] ; then
-			child_fs_mount=0
-			for child in $($ZFS list -H -r -t filesystem \
-			    -o name "$DS"); do
-				$ZFS mount "$child"
-				child_fs_mount=$(( $child_fs_mount + $? ))
-			done
-			if [ $child_fs_mount -eq 0 ] ; then
-				exit $SMF_EXIT_OK
-			else
-				check_failure 1 \
-				    "Unable to mount child datasets of $DS" \
-				    $SMF_FMRI exit
-			fi
-		fi
-
-		# Otherwise, we need to create the dataset, taking care to set
-		# canmount=noauto, to allow multiple bootable rpools to coexist
-		# on the same system.
-		$ZFS create -p $DS
-		check_failure $? "Unable to create $DS" $SMF_FMRI exit
-
-		for fs in "$rpool/VARSHARE/pkg" \
-		    "$rpool/VARSHARE/pkg/repositories" ; do
-			$ZFS set canmount=noauto $fs
-		done
-
-		$ZFS allow pkg5srv create,mount,canmount,snapshot "$DS"
-		check_failure $? \
-		    "Unable to delegate ZFS permissions on $DS" \
-		    $SMF_FMRI exit
-
-		$CHOWN pkg5srv:pkg5srv /var/share/pkg/repositories
-		check_failure $? \
-		    "Unable to chown /var/share/pkg/repositories" \
-		    $SMF_FMRI exit
 	fi
+
+	readmnttab / < /etc/mnttab
+	if [ "$fstype" != zfs ]; then
+		# we're on a LiveCD, so exit immediately.
+		exit $SMF_EXIT_OK
+	fi
+
+	# $special set by readmnttab()
+	rpool=${special%%/*}
+	vs_pkg=$rpool/VARSHARE/pkg
+	vs_pkg_repo=$vs_pkg/repositories
+
+	# If the 'repositories' dataset exists, we mount it along with any child
+	# datasets, then exit.
+	if $ZFS list $vs_pkg_repo >/dev/null 2>&1; then
+		# Must mount the parent explicitly due to the canmount property
+		# set to "noauto".
+		$ZFS mount $vs_pkg
+		check_failure $? "Unable to mount $vs_pkg" $SMF_FMRI exit
+
+		child_fs_mount=0
+		for child in $($ZFS list -H -r -t filesystem \
+		    -o name $vs_pkg_repo); do
+			$ZFS mount "$child"
+			child_fs_mount=$((child_fs_mount + $?))
+		done
+		[ $child_fs_mount -eq 0 ]
+		check_failure $? \
+		    "Unable to mount child datasets of $vs_pkg_repo" \
+		    $SMF_FMRI exit
+		exit $SMF_EXIT_OK
+	fi
+
+	# Otherwise, we need to create the datasets, taking care to set
+	# canmount=noauto, to allow multiple bootable rpools to coexist on the
+	# same system.
+	$ZFS create -p $vs_pkg_repo
+	check_failure $? "Unable to create $vs_pkg_repo" $SMF_FMRI exit
+
+	for fs in $vs_pkg $vs_pkg_repo; do
+		$ZFS set canmount=noauto $fs
+		check_failure $? \
+		    "Unable to set canmount=noauto for $fs" $SMF_FMRI exit
+	done
+
+	$ZFS allow pkg5srv create,mount,canmount,snapshot $vs_pkg_repo
+	check_failure $? "Unable to delegate ZFS permissions on $vs_pkg_repo" \
+	    $SMF_FMRI exit
+
+	$CHOWN pkg5srv:pkg5srv $vs_pkg_path
+	check_failure $? "Unable to chown $vs_pkg_path" $SMF_FMRI exit
 	;;
 esac
 
