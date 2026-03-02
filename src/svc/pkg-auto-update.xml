@@ -52,24 +52,6 @@
                 <service_fmri value='svc:/milestone/network:default' />
 	</dependency>
 
-	<property_group type='application' name='config'>
-		<propval type='boolean' name='activate-new-be' value='true' />
-		<propval type='boolean' name='auto-reboot' value='true' />
-		<property type='boolean' name='backup-be' />
-		<property name='packages' type='astring'>
-			<!-- Set an empty value so it is visible with editprop -->
-			<astring_list>
-				<value_node value='' />
-			</astring_list>
-		</property>
-		<property type='astring' name='pkg_extra_args' />
-		<propval type='astring' name='pkg_image' value='/'/>
-		<property type='astring' name='postupdate-hook' />
-		<property type='astring' name='reboot-check-hook' />
-		<property type='boolean' name='require-new-be' />
-		<propval type='count' name='shutdown-grace-period' value='60' />
-	</property_group>
-
 	<instance name='default' enabled='false'>
 		<scheduled_method
 			interval='day'
@@ -83,6 +65,30 @@
 					user='root' group='root' />
 			    </method_context>
 		</scheduled_method>
+		<!--
+		   These should really be defined on the service but because
+		   they were originally on the instance they can not be moved
+		   otherwise SMF will not preserve any 'admin' layer settings
+		   for them on upgrade.
+		-->
+		<property_group type='application' name='config'>
+			<propval type='boolean' name='activate-new-be' value='true' />
+			<propval type='boolean' name='auto-reboot' value='true' />
+			<property type='boolean' name='backup-be' />
+			<property name='packages' type='astring'>
+				<!-- Set an empty value so it is visible with editprop -->
+				<astring_list>
+					<value_node value='' />
+				</astring_list>
+			</property>
+			<property type='astring' name='pkg_extra_args' />
+			<propval type='astring' name='pkg_image' value='/'/>
+			<property type='astring' name='postupdate-hook' />
+			<property type='astring' name='reboot-check-hook' />
+			<property type='boolean' name='require-new-be' />
+			<propval type='count' name='shutdown-grace-period' value='60' />
+		</property_group>
+
 	</instance>
 
 	<instance name='cleanup' enabled='false'>
