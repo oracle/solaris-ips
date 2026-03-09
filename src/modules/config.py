@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2026, Oracle and/or its affiliates.
 #
 
 """The pkg.config module provides a set of classes for managing both 'flat'
@@ -47,7 +47,6 @@ manipulation of configuration data is needed.
 """
 
 import ast
-import codecs
 import configparser
 import copy
 import errno
@@ -1489,8 +1488,7 @@ class FileConfig(Config):
         cp.optionxform = lambda x: x
 
         try:
-            efile = codecs.open(self._target, mode="rb",
-                encoding="utf-8")
+            efile = open(self._target, mode="r", encoding="utf-8")
         except EnvironmentError as e:
             if e.errno == errno.ENOENT:
                 # Assume default configuration.

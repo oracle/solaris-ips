@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2011, 2026, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -768,7 +768,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
         # Extract all of the existing content.
         arc = ptf.PkgTarFile(name=arc_path, mode="r")
-        arc.extractall(ext_dir)
+        arc.extractall(ext_dir, filter='data')
         arc.close()
 
         # Create a new archive.
@@ -817,7 +817,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
         # Extract all of the existing content.
         arc = ptf.PkgTarFile(name=arc_path, mode="r")
-        arc.extractall(ext_dir)
+        arc.extractall(ext_dir, filter='data')
         arc.close()
 
         # Now verify archive can still be used when index file

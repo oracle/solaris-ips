@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2026, Oracle and/or its affiliates.
 #
 
 PKGVERS_BUILTON   = 5.11
@@ -93,6 +93,10 @@ PYTHON311	  = python3.11
 PY311DIR	  = usr/lib/$(PYTHON311)
 PY311DIRVP	  = $(PY311DIR)/vendor-packages
 
+PYTHON313	  = python3.13
+PY313DIR	  = usr/lib/$(PYTHON313)
+PY313DIRVP	  = $(PY313DIR)/vendor-packages
+
 PYDIR		  = usr/lib/$(PYTHON311)
 PYDIRVP		  = $(PYDIR)/vendor-packages
 PKGCMDENV         = \
@@ -135,6 +139,8 @@ PKGMOG_DEFVALS    = \
 	PYDIRVP=$(PYDIRVP) \
 	PY311DIR=$(PY311DIR) \
 	PY311DIRVP=$(PY311DIRVP) \
+	PY313DIR=$(PY313DIR) \
+	PY313DIRVP=$(PY313DIRVP) \
 	CHANGESET=$(CHANGESET) \
 	PKGPUBLISHER_LOCALIZABLE=$(PKGPUBLISHER_LOCALIZABLE)
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)

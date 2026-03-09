@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2026, Oracle and/or its affiliates.
 #
 
 import rapidjson as json
@@ -30,7 +30,7 @@ import os
 import sys
 from functools import reduce
 
-assert sys.version_info.major == 3 and sys.version_info.minor in (11,)
+assert sys.version_info.major == 3 and sys.version_info.minor in (11, 13)
 
 # We need cwd to be the same dir as our program.
 cwd = os.getcwd()
@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     # Suppress deprecation warnings for known occurrences
     # outside of the pkg codebase.
-    warnings.filterwarnings('ignore', module="bemgmt|rad.encodings.xdr",
+    warnings.filterwarnings("ignore", message="datetime.datetime.utc",
                             category=DeprecationWarning)
 
     # Suppress ResourceWarning: unclosed file.
@@ -112,9 +112,7 @@ if __name__ == "__main__":
     # Apply similar filters in subprocesses as well
     os.environ["PYTHONWARNINGS"] = ",".join((
         "error",
-        "ignore::DeprecationWarning:bemgmt",
-        "ignore::DeprecationWarning:rad.encodings.xdr",
-        "ignore::DeprecationWarning:cherrypy.lib.httputil",
+        "ignore:datetime.datetime.utc:DeprecationWarning",
         "ignore::ResourceWarning",
     ))
 
