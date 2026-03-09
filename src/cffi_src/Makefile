@@ -20,16 +20,17 @@
 #
 
 #
-# Copyright (c) 2024, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2024, 2026, Oracle and/or its affiliates.
 #
 
 include ../Makefile.constants
 
 EXTENSIONS = _arch _sha512_t _sysattr _syscallat
 
-all: $(EXTENSIONS:=.cpython-311.so)
+all: $(EXTENSIONS:=.cpython-311.so) $(EXTENSIONS:=.cpython-313.so)
 
 %-311.so := PYTHON=$(PYTHON311)
+%-313.so := PYTHON=$(PYTHON313)
 
 _arch.cpython-%.so: build_arch.py
 	CC=$(GCC) $(PYTHON) $^
@@ -44,10 +45,14 @@ _syscallat.cpython-%.so: build_syscallat.py
 	CC=$(GCC) $(PYTHON) $^
 
 ROOT311EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY311PKG)/%.cpython-311.so)
+ROOT313EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY313PKG)/%.cpython-313.so)
 
-install: $(ROOT311EXTENSIONS)
+install: $(ROOT311EXTENSIONS) $(ROOT313EXTENSIONS)
 
 $(ROOTPY311PKG)/%.so: %.so
+	$(INS.file)
+
+$(ROOTPY313PKG)/%.so: %.so
 	$(INS.file)
 
 check:

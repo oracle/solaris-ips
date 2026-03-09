@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2024, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2024, 2026, Oracle and/or its affiliates.
 #
 
 include ../Makefile.constants
@@ -29,15 +29,19 @@ EXTENSIONS = actions/_actions actions/_common _varcet _misc solver elf
 
 PYFILES:sh = find . -type f -name '*.py'
 
-all: $(EXTENSIONS:=.cpython-311.so)
+all: $(EXTENSIONS:=.cpython-311.so) $(EXTENSIONS:=.cpython-313.so)
 
 PYTHON311CFLAGS:sh =	python3.11-config --cflags
+PYTHON313CFLAGS:sh =	python3.13-config --cflags
 
 PYTHON311LDFLAGS:sh =	python3.11-config --ldflags
+PYTHON313LDFLAGS:sh =	python3.13-config --ldflags
 
 %-311.so := PYTHONCFLAGS=$(PYTHON311CFLAGS)
+%-313.so := PYTHONCFLAGS=$(PYTHON313CFLAGS)
 
 %-311.so := PYTHONLDFLAGS=$(PYTHON311LDFLAGS) -shared -zstrip-class=nonalloc
+%-313.so := PYTHONLDFLAGS=$(PYTHON313LDFLAGS) -shared -zstrip-class=nonalloc
 
 _misc.cpython-%.so: _misc.c
 	$(GCC) $^ $(PYTHONCFLAGS) $(PYTHONLDFLAGS) -o $@
@@ -65,21 +69,31 @@ $(PRIVATE_BUILD)PYCOMPILE_FLAGS = -s $(ROOT)
 $(ROOTPY311PKG)/%.so: %.so
 	$(INS.file)
 
+$(ROOTPY313PKG)/%.so: %.so
+	$(INS.file)
+
 $(ROOTPY311PKG)/%.py: %.py
+	$(INS.file.pstrip)
+
+$(ROOTPY313PKG)/%.py: %.py
 	$(INS.file.pstrip)
 
 
 ROOT311FILES = $(PYFILES:%=$(ROOTPY311PKG)/%)
+ROOT313FILES = $(PYFILES:%=$(ROOTPY313PKG)/%)
 ROOT311EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY311PKG)/%.cpython-311.so)
+ROOT313EXTENSIONS = $(EXTENSIONS:%=$(ROOTPY313PKG)/%.cpython-313.so)
 
-install: $(ROOT311FILES) $(ROOT311EXTENSIONS)
+install: $(ROOT311FILES) $(ROOT313FILES) $(ROOT311EXTENSIONS) $(ROOT313EXTENSIONS)
 	@# substitute VERSION with mercurial revision in pkg/__init__.py
 	@hg_revision=`hg id -i`; \
 	echo "doing version substitution: $$hg_revision"; \
-	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(ROOTPY311PKG)/__init__.py
+	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(ROOTPY311PKG)/__init__.py; \
+	$(GSED) -i "s|VERSION = \"unknown\"|VERSION = \"$$hg_revision\"|" $(ROOTPY313PKG)/__init__.py
 
 	@# compile all sources to bytecode
 	$(PYTHON311) -m compileall $(PYCOMPILE_FLAGS) -j8 --invalidation-mode=checked-hash $(ROOTPY311PKG)
+	$(PYTHON313) -m compileall $(PYCOMPILE_FLAGS) -j8 --invalidation-mode=checked-hash $(ROOTPY313PKG)
 
 check:
 
@@ -94,6 +108,6 @@ clint: all
 lint: clint
 
 clean:
-	rm -f $(EXTENSIONS:=.cpython-311.so)
+	rm -f $(EXTENSIONS:=.cpython-311.so) $(EXTENSIONS:=.cpython-313.so)
 
 clobber: clean

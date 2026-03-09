@@ -21,13 +21,12 @@
 #
 
 #
-# Copyright (c) 2010, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2026, Oracle and/or its affiliates.
 #
 
 try:
     import pkg.no_site_packages
     import argparse
-    import codecs
     import logging
     import sys
     import gettext
@@ -241,8 +240,8 @@ def read_manifests(names, lint_logger):
         linecnts = []   # tuples of starting line no., ending line no
         linecounter = 0 # running total
         try:
-            f = codecs.open(filename, "rb", "utf-8")
-            data = f.read()
+            with open(filename, mode="r", encoding="utf-8") as ifile:
+                data = ifile.read()
         except UnicodeDecodeError as e:
             lint_logger.critical(_("Invalid file {file}: "
                 "manifest not encoded in UTF-8: {err}").format(

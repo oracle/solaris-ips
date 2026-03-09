@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2013, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2013, 2026, Oracle and/or its affiliates.
 #
 
 #
@@ -151,6 +151,7 @@ SetEnv PKG5_TEST_PROTO {3}
 WSGIDaemonProcess pkgdepot processes=1 threads=21 user=pkg5srv group=pkg5srv display-name=pkg5_depot inactivity-timeout=300
 """)
 %>
+WSGIApplicationGroup %{GLOBAL}
 WSGIProcessGroup pkgdepot
 WSGISocketPrefix ${runtime_dir}/wsgi
 # don't accept requests over 100k

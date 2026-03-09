@@ -10,38 +10,54 @@
     pkg:/library/python/bandit
     pkg:/library/python/cffi
     pkg:/library/python/cffi-311
+    pkg:/library/python/cffi-313
     pkg:/library/python/cherrypy
     pkg:/library/python/cherrypy-311
+    pkg:/library/python/cherrypy-313
     pkg:/library/python/coverage
     pkg:/library/python/coverage-311
+    pkg:/library/python/coverage-313
     pkg:/library/python/cryptography
     pkg:/library/python/cryptography-311
+    pkg:/library/python/cryptography-313
     pkg:/library/python/jsonrpclib
     pkg:/library/python/jsonrpclib-311
+    pkg:/library/python/jsonrpclib-313
     pkg:/library/python/jsonschema
     pkg:/library/python/jsonschema-311
+    pkg:/library/python/jsonschema-313
     pkg:/library/python/mako
     pkg:/library/python/mako-311
+    pkg:/library/python/mako-313
     pkg:/library/python/ply
     pkg:/library/python/ply-311
+    pkg:/library/python/ply-313
     pkg:/library/python/portend
     pkg:/library/python/portend-311
+    pkg:/library/python/portend-313
     pkg:/library/python/prettytable
     pkg:/library/python/prettytable-311
+    pkg:/library/python/prettytable-313
     pkg:/library/python/pybonjour
     pkg:/library/python/pybonjour-311
+    pkg:/library/python/pybonjour-313
     pkg:/library/python/pycodestyle
     pkg:/library/python/pycurl
     pkg:/library/python/pycurl-311
+    pkg:/library/python/pycurl-313
     pkg:/library/python/pyopenssl
     pkg:/library/python/pyopenssl-311
+    pkg:/library/python/pyopenssl-313
     pkg:/library/python/rapidjson
     pkg:/library/python/rapidjson-311
+    pkg:/library/python/rapidjson-313
     pkg:/library/python/requests
     pkg:/library/python/requests-311
+    pkg:/library/python/requests-313
     pkg:/library/python/rpdb
     pkg:/package/svr4
     pkg:/runtime/python-311
+    pkg:/runtime/python-313
     pkg:/service/network/dns/mdns
     pkg:/system/network/avahi
     pkg:/shell/ksh
@@ -68,3 +84,4 @@
     pkg:/web/server/apache-24/module/apache-ssl
     pkg:/web/server/apache-24/module/apache-wsgi
     pkg:/web/server/apache-24/module/apache-wsgi-311
+    pkg:/web/server/apache-24/module/apache-wsgi-313

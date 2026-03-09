@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2026, Oracle and/or its affiliates.
 
 #
 # Define the basic classes that all test cases are inherited from.
@@ -117,10 +117,10 @@ OUTPUT_PARSEABLE = 2    # Machine readable
 PYVER_CURRENT = f"{sys.version_info.major}.{sys.version_info.minor}"
 PYVER_OTHER = "3.11"
 if PYVER_CURRENT == PYVER_OTHER:
-    PYVER_OTHER = None
+    PYVER_OTHER = "3.13"
 
 PYV_CURRENT = PYVER_CURRENT.replace(".", "")
-PYV_OTHER = None
+PYV_OTHER = PYVER_OTHER.replace(".", "")
 
 
 class TestStopException(Exception):
@@ -1176,7 +1176,7 @@ class _CombinedResult(_OverTheWireResults):
             setattr(self, n, v)
 
 
-class _Pkg5TestResult(unittest._TextTestResult):
+class _Pkg5TestResult(unittest.TextTestResult):
     baseline = None
     machsep = "|"
 

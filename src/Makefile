@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2026, Oracle and/or its affiliates.
 #
 
 include Makefile.constants
@@ -301,10 +301,15 @@ dist:
 test-311:
 	$(PYTHON311) tests/run.py -j ${JOBS} -v
 
+test-313:
+	$(PYTHON313) tests/run.py -j ${JOBS} -v
+
 test:
 	$(MAKE) -k test-311 JOBS=${JOBS}
+	$(MAKE) -k test-313 JOBS=${JOBS}
 
 test-generate:
 	$(PYTHON311) tests/run.py test -g
+	$(PYTHON313) tests/run.py test -g
 
 FRC:

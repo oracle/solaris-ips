@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2025, Oracle and/or its affiliates.
+# Copyright (c) 2025, 2026, Oracle and/or its affiliates.
 #
 
 # Default version used for single-version targets
@@ -29,6 +29,7 @@ PYVERSION = 3.11
 # Common programs and commands
 GCC = /usr/gcc/14/bin/gcc
 PYTHON311 = /usr/bin/python3.11
+PYTHON313 = /usr/bin/python3.13
 PYTHON = /usr/bin/python$(PYVERSION)
 
 PYCODESTYLE = /usr/bin/pycodestyle
@@ -59,6 +60,7 @@ ROOTLIBSVC =	$(ROOT)/lib/svc
 ROOTETCSVC =	$(ROOT)/etc/svc
 
 ROOTPY311PKG =	$(ROOT)/usr/lib/python3.11/vendor-packages/pkg
+ROOTPY313PKG =	$(ROOT)/usr/lib/python3.13/vendor-packages/pkg
 ROOTPYPKG =	$(ROOT)/usr/lib/python$(PYVERSION)/vendor-packages/pkg
 
 

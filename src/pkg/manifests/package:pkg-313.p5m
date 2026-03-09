@@ -1,0 +1,221 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2023, 2026, Oracle and/or its affiliates.
+#
+
+set name=pkg.fmri value=pkg:/package/pkg-313@$(PKGVERS)
+set name=pkg.summary \
+    value="Python 3.13 support modules for the Image Packaging System"
+set name=pkg.description \
+    value="Python 3.13 support modules for the Image Packaging System. The Image Packaging System (IPS), or pkg(7), is the software delivery system used on Oracle Solaris.  This package contains the core command-line components and pkg.depotd server."
+set name=info.classification \
+    value=org.opensolaris.category.2008:System/Packaging
+set name=variant.arch value=$(ARCH)
+dir  path=$(PY313DIR)
+dir  path=$(PY313DIRVP)
+dir  path=$(PY313DIRVP)/pkg
+file path=$(PY313DIRVP)/pkg/__init__.py
+file path=$(PY313DIRVP)/pkg/_arch.cpython-313.so
+file path=$(PY313DIRVP)/pkg/_misc.cpython-313.so
+file path=$(PY313DIRVP)/pkg/_sha512_t.cpython-313.so
+file path=$(PY313DIRVP)/pkg/_sysattr.cpython-313.so
+file path=$(PY313DIRVP)/pkg/_syscallat.cpython-313.so
+file path=$(PY313DIRVP)/pkg/_varcet.cpython-313.so
+dir  path=$(PY313DIRVP)/pkg/actions
+# pkgdepend doesn't understand the relative import syntax "from .x import y",
+# so we have to bypass generating dependencies on those files.
+file path=$(PY313DIRVP)/pkg/actions/__init__.py
+file path=$(PY313DIRVP)/pkg/actions/_actions.cpython-313.so
+file path=$(PY313DIRVP)/pkg/actions/_common.cpython-313.so
+file path=$(PY313DIRVP)/pkg/actions/attribute.py
+file path=$(PY313DIRVP)/pkg/actions/depend.py
+file path=$(PY313DIRVP)/pkg/actions/directory.py
+file path=$(PY313DIRVP)/pkg/actions/driver.py
+file path=$(PY313DIRVP)/pkg/actions/file.py
+file path=$(PY313DIRVP)/pkg/actions/generic.py
+file path=$(PY313DIRVP)/pkg/actions/group.py
+file path=$(PY313DIRVP)/pkg/actions/hardlink.py
+file path=$(PY313DIRVP)/pkg/actions/legacy.py
+file path=$(PY313DIRVP)/pkg/actions/license.py
+file path=$(PY313DIRVP)/pkg/actions/link.py
+file path=$(PY313DIRVP)/pkg/actions/signature.py
+file path=$(PY313DIRVP)/pkg/actions/unknown.py
+file path=$(PY313DIRVP)/pkg/actions/user.py
+file path=$(PY313DIRVP)/pkg/altroot.py
+file path=$(PY313DIRVP)/pkg/api_common.py
+file path=$(PY313DIRVP)/pkg/arch.py
+dir  path=$(PY313DIRVP)/pkg/bundle
+file path=$(PY313DIRVP)/pkg/bundle/DirectoryBundle.py
+file path=$(PY313DIRVP)/pkg/bundle/SolarisPackageDatastreamBundle.py
+file path=$(PY313DIRVP)/pkg/bundle/SolarisPackageDirBundle.py
+file path=$(PY313DIRVP)/pkg/bundle/TarBundle.py
+file path=$(PY313DIRVP)/pkg/bundle/__init__.py
+file path=$(PY313DIRVP)/pkg/catalog.py
+file path=$(PY313DIRVP)/pkg/cfgfiles.py
+file path=$(PY313DIRVP)/pkg/choose.py
+dir  path=$(PY313DIRVP)/pkg/client
+file path=$(PY313DIRVP)/pkg/client/__init__.py
+file path=$(PY313DIRVP)/pkg/client/actuator.py
+file path=$(PY313DIRVP)/pkg/client/api.py
+file path=$(PY313DIRVP)/pkg/client/api_errors.py
+#
+# Don't worry about the libbe or bemgmt import; the python code is graceful
+# in the face of their absence. This allows us to deliver this package before
+# bemgmt is available, breaking the circular dependency.
+#
+file path=$(PY313DIRVP)/pkg/client/bootenv.py \
+    pkg.depend.bypass-generate=.*bemgmt.* pkg.depend.bypass-generate=.*libbe.*
+file path=$(PY313DIRVP)/pkg/client/client_api.py
+file path=$(PY313DIRVP)/pkg/client/debugvalues.py
+file path=$(PY313DIRVP)/pkg/client/firmware.py
+file path=$(PY313DIRVP)/pkg/client/history.py
+file path=$(PY313DIRVP)/pkg/client/image.py
+file path=$(PY313DIRVP)/pkg/client/imageconfig.py
+file path=$(PY313DIRVP)/pkg/client/imageplan.py
+file path=$(PY313DIRVP)/pkg/client/imagetypes.py
+file path=$(PY313DIRVP)/pkg/client/indexer.py
+dir  path=$(PY313DIRVP)/pkg/client/linkedimage
+file path=$(PY313DIRVP)/pkg/client/linkedimage/__init__.py
+file path=$(PY313DIRVP)/pkg/client/linkedimage/common.py
+file path=$(PY313DIRVP)/pkg/client/linkedimage/system.py
+file path=$(PY313DIRVP)/pkg/client/linkedimage/zone.py
+file path=$(PY313DIRVP)/pkg/client/options.py
+file path=$(PY313DIRVP)/pkg/client/pkg_solver.py
+file path=$(PY313DIRVP)/pkg/client/pkgdefs.py
+file path=$(PY313DIRVP)/pkg/client/pkgplan.py
+file path=$(PY313DIRVP)/pkg/client/pkgremote.py
+file path=$(PY313DIRVP)/pkg/client/plandesc.py
+file path=$(PY313DIRVP)/pkg/client/printengine.py
+file path=$(PY313DIRVP)/pkg/client/progress.py
+file path=$(PY313DIRVP)/pkg/client/publisher.py
+file path=$(PY313DIRVP)/pkg/client/query_parser.py
+file path=$(PY313DIRVP)/pkg/client/rad_pkg.py
+file path=$(PY313DIRVP)/pkg/client/sigpolicy.py
+dir  path=$(PY313DIRVP)/pkg/client/transport
+file path=$(PY313DIRVP)/pkg/client/transport/__init__.py
+file path=$(PY313DIRVP)/pkg/client/transport/engine.py
+file path=$(PY313DIRVP)/pkg/client/transport/exception.py
+file path=$(PY313DIRVP)/pkg/client/transport/fileobj.py
+file path=$(PY313DIRVP)/pkg/client/transport/mdetect.py
+file path=$(PY313DIRVP)/pkg/client/transport/repo.py
+file path=$(PY313DIRVP)/pkg/client/transport/stats.py
+file path=$(PY313DIRVP)/pkg/client/transport/transport.py
+file path=$(PY313DIRVP)/pkg/config.py
+file path=$(PY313DIRVP)/pkg/cpiofile.py
+file path=$(PY313DIRVP)/pkg/dependency.py
+file path=$(PY313DIRVP)/pkg/depotcontroller.py
+file path=$(PY313DIRVP)/pkg/digest.py
+file path=$(PY313DIRVP)/pkg/elf.cpython-313.so
+file path=$(PY313DIRVP)/pkg/facet.py
+dir  path=$(PY313DIRVP)/pkg/file_layout
+file path=$(PY313DIRVP)/pkg/file_layout/__init__.py
+# pkgdepend doesn't understand the pretty unusual way the
+# collections.abc is imported. We need to bypass it hence.
+file path=$(PY313DIRVP)/pkg/file_layout/file_manager.py \
+    pkg.depend.bypass-generate=.*collections.*
+file path=$(PY313DIRVP)/pkg/file_layout/layout.py
+dir  path=$(PY313DIRVP)/pkg/flavor
+file path=$(PY313DIRVP)/pkg/flavor/__init__.py
+file path=$(PY313DIRVP)/pkg/flavor/base.py
+file path=$(PY313DIRVP)/pkg/flavor/depthlimitedmf.py
+file path=$(PY313DIRVP)/pkg/flavor/elf.py
+file path=$(PY313DIRVP)/pkg/flavor/hardlink.py
+file path=$(PY313DIRVP)/pkg/flavor/python.py
+file path=$(PY313DIRVP)/pkg/flavor/script.py
+#
+# Don't worry about the solaris.smf.manifests import; the python code is
+# graceful in the face of their absence. This allows us to deliver this package
+# before solaris-core is available, breaking the circular dependency.
+#
+file path=$(PY313DIRVP)/pkg/flavor/smf_manifest.py \
+    pkg.depend.bypass-generate=.*solaris.*
+file path=$(PY313DIRVP)/pkg/fmri.py
+file path=$(PY313DIRVP)/pkg/indexer.py
+dir  path=$(PY313DIRVP)/pkg/lint
+file path=$(PY313DIRVP)/pkg/lint/__init__.py
+file path=$(PY313DIRVP)/pkg/lint/base.py
+file path=$(PY313DIRVP)/pkg/lint/config.py
+file path=$(PY313DIRVP)/pkg/lint/engine.py
+file path=$(PY313DIRVP)/pkg/lint/log.py
+file path=$(PY313DIRVP)/pkg/lint/opensolaris.py
+file path=$(PY313DIRVP)/pkg/lint/pkglint_action.py
+file path=$(PY313DIRVP)/pkg/lint/pkglint_manifest.py
+file path=$(PY313DIRVP)/pkg/lockfile.py
+file path=$(PY313DIRVP)/pkg/manifest.py
+file path=$(PY313DIRVP)/pkg/mediator.py
+file path=$(PY313DIRVP)/pkg/misc.py
+file path=$(PY313DIRVP)/pkg/mogrify.py
+dir  path=$(PY313DIRVP)/pkg/no_site_packages
+file path=$(PY313DIRVP)/pkg/no_site_packages/__init__.py
+file path=$(PY313DIRVP)/pkg/nrlock.py
+file path=$(PY313DIRVP)/pkg/p5i.py
+file path=$(PY313DIRVP)/pkg/p5p.py
+file path=$(PY313DIRVP)/pkg/p5s.py
+file path=$(PY313DIRVP)/pkg/pipeutils.py
+file path=$(PY313DIRVP)/pkg/pkggzip.py
+file path=$(PY313DIRVP)/pkg/pkgtarfile.py
+dir  path=$(PY313DIRVP)/pkg/portable
+file path=$(PY313DIRVP)/pkg/portable/__init__.py
+file path=$(PY313DIRVP)/pkg/portable/os_aix.py
+# Python on Solaris doesn't deliver the macostools module.
+file path=$(PY313DIRVP)/pkg/portable/os_darwin.py \
+    pkg.depend.bypass-generate=.*macostools.*
+file path=$(PY313DIRVP)/pkg/portable/os_sunos.py
+file path=$(PY313DIRVP)/pkg/portable/os_unix.py
+# Python on Solaris doesn't deliver the win32api module.
+file path=$(PY313DIRVP)/pkg/portable/os_windows.py \
+    pkg.depend.bypass-generate=.*win32api.*
+file path=$(PY313DIRVP)/pkg/portable/util.py
+dir  path=$(PY313DIRVP)/pkg/publish
+file path=$(PY313DIRVP)/pkg/publish/__init__.py
+file path=$(PY313DIRVP)/pkg/publish/dependencies.py
+file path=$(PY313DIRVP)/pkg/publish/transaction.py
+file path=$(PY313DIRVP)/pkg/query_parser.py
+file path=$(PY313DIRVP)/pkg/search_errors.py
+file path=$(PY313DIRVP)/pkg/search_storage.py
+dir  path=$(PY313DIRVP)/pkg/server
+file path=$(PY313DIRVP)/pkg/server/__init__.py
+file path=$(PY313DIRVP)/pkg/server/api.py
+file path=$(PY313DIRVP)/pkg/server/api_errors.py
+file path=$(PY313DIRVP)/pkg/server/depot.py
+file path=$(PY313DIRVP)/pkg/server/face.py
+file path=$(PY313DIRVP)/pkg/server/feed.py
+file path=$(PY313DIRVP)/pkg/server/query_parser.py
+file path=$(PY313DIRVP)/pkg/server/repository.py
+file path=$(PY313DIRVP)/pkg/server/transaction.py
+file path=$(PY313DIRVP)/pkg/sha512_t.py
+file path=$(PY313DIRVP)/pkg/smf.py
+file path=$(PY313DIRVP)/pkg/solver.cpython-313.so
+file path=$(PY313DIRVP)/pkg/sysattr.py
+file path=$(PY313DIRVP)/pkg/syscallat.py
+file path=$(PY313DIRVP)/pkg/sysvpkg.py
+file path=$(PY313DIRVP)/pkg/variant.py
+file path=$(PY313DIRVP)/pkg/version.py
+license lic_gustaebel license="MIT (Lars Gustaebel)" \
+    com.oracle.info.baid=17831 \
+    com.oracle.info.description="portions of the tarfile module from Python 2.4" \
+    com.oracle.info.name=tarfile com.oracle.info.version=2.4
+license lic_minisat license="MIT (MiniSAT)" com.oracle.info.baid=17890 \
+    com.oracle.info.description="MiniSAT 1.14.1" com.oracle.info.name=MiniSAT \
+    com.oracle.info.version=1.14.1
+license cr_Oracle license=cr_Oracle
+# CFFI import is done in C code, so it isn't picked up by pkgdepend
+depend type=require fmri=library/python/cffi-313@1.17.1
