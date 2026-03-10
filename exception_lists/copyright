@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2009, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2026, Oracle and/or its affiliates.
 #
 
 syntax: glob
@@ -29,6 +29,7 @@ syntax: glob
 CONTRIBUTING.md
 LICENSE.txt
 SECURITY.md
+src/modules/ply
 src/pkg/external_deps.txt
 src/tests/bandit-baseline.json
 src/tests/ro_data/*

@@ -29,9 +29,6 @@
     pkg:/library/python/mako
     pkg:/library/python/mako-311
     pkg:/library/python/mako-313
-    pkg:/library/python/ply
-    pkg:/library/python/ply-311
-    pkg:/library/python/ply-313
     pkg:/library/python/portend
     pkg:/library/python/portend-311
     pkg:/library/python/portend-313

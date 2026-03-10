@@ -280,6 +280,9 @@ dir  path=var/log/pkg/mirror
 group groupname=pkg5srv gid=97
 user username=pkg5srv ftpuser=false gcos-field="pkg(7) server UID" \
     group=pkg5srv password=NP uid=97
+license lic_ply license="BSD (PLY)" com.oracle.info.baid=369142 \
+    com.oracle.info.description="PLY 3.11-9d7c400" com.oracle.info.name=PLY \
+    com.oracle.info.version=3.11-9d7c400
 license lic_yui license="BSD (YUI)" com.oracle.info.baid=174547 \
     com.oracle.info.description="two css files from YUI 2.7.0" \
     com.oracle.info.name=YUI com.oracle.info.version=2.7.0
