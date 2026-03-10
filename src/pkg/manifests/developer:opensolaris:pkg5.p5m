@@ -43,7 +43,6 @@ depend type=require fmri=pkg:/library/python/cryptography
 depend type=require fmri=pkg:/library/python/jsonrpclib
 depend type=require fmri=pkg:/library/python/jsonschema
 depend type=require fmri=pkg:/library/python/mako
-depend type=require fmri=pkg:/library/python/ply
 depend type=require fmri=pkg:/library/python/portend
 depend type=require fmri=pkg:/library/python/prettytable
 depend type=require fmri=pkg:/library/python/pybonjour

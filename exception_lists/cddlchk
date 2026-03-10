@@ -20,12 +20,12 @@
 #
 
 #
-# Copyright (c) 2019, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2026, Oracle and/or its affiliates.
 #
 
 # Files matched below *should* include the CDDL block comment.
 
-re:src/(?!modules/(choose\.py|cpiofile\.py|flavor/depthlimitedmf\.py)$).+\.py$
+re:src/(?!modules/(choose\.py|cpiofile\.py|flavor/depthlimitedmf\.py|ply/.*\.py)$).+\.py$
 re:src/(?!modules/solver/(solver\.c|solver\.h|vec\.h)$).+\.[ch]$
 
 glob:*Makefile*

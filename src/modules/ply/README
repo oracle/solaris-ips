@@ -1,0 +1,4 @@
+PLY is a 100% Python implementation of the common parsing tools lex and yacc.
+
+Files are taken from latest upstream sources before the repository was
+archived on Dec 21, 2025 (commit 9d7c400).

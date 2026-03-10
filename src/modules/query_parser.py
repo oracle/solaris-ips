@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2026, Oracle and/or its affiliates.
 #
 
 import os
@@ -33,8 +33,8 @@ import copy
 import itertools
 import errno
 
-import ply.lex as lex
-import ply.yacc as yacc
+import pkg.ply.lex as lex
+import pkg.ply.yacc as yacc
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
 import pkg.fmri as fmri
@@ -345,7 +345,7 @@ class QueryParser:
     def __init__(self, lexer):
         """Build a parser using the lexer given as an argument."""
         self.lexer = lexer
-        self.parser = yacc.yacc(module=self, debug=0, write_tables=0)
+        self.parser = yacc.yacc(module=self)
         # Store the classes used to build the AST so that child classes
         # can replace them where needed with alternate classes.
         self.query_objs = {

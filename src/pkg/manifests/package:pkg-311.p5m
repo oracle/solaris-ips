@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2023, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2023, 2026, Oracle and/or its affiliates.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg-311@$(PKGVERS)
@@ -169,6 +169,10 @@ file path=$(PY311DIRVP)/pkg/p5s.py
 file path=$(PY311DIRVP)/pkg/pipeutils.py
 file path=$(PY311DIRVP)/pkg/pkggzip.py
 file path=$(PY311DIRVP)/pkg/pkgtarfile.py
+dir  path=$(PY311DIRVP)/pkg/ply
+file path=$(PY311DIRVP)/pkg/ply/__init__.py
+file path=$(PY311DIRVP)/pkg/ply/lex.py
+file path=$(PY311DIRVP)/pkg/ply/yacc.py
 dir  path=$(PY311DIRVP)/pkg/portable
 file path=$(PY311DIRVP)/pkg/portable/__init__.py
 file path=$(PY311DIRVP)/pkg/portable/os_aix.py
