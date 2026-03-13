@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2026, Oracle and/or its affiliates.
 #
 
 import errno
@@ -333,12 +333,12 @@ certificate is being used and that the support contract for the product being
 accessed is still valid.
 """)
 
-        license_err_msg = N_("""
+        license_err_msg = _("""
 The license agreement required to access this repository has not been
 accepted yet or the license agreement for the product has changed. Please go to
-https://pkg-register.oracle.com and accept the license for the product you are
+{} and accept the license for the product you are
 trying to access.
-""")
+""").format("https://pkg-register.oracle.com")
 
         server_err_msg = N_("""
 Repository access is currently unavailable due to service issues. Please retry

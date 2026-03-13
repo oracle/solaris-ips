@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2026, Oracle and/or its affiliates.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2016-10-12 22:04-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nLanguage: \nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -3430,31 +3430,32 @@ msgstr "L'une des sources du référentiel de package pour {0} ne fournit aucune
 msgid "Unknown repository origin '{0}'"
 msgstr "Référentiel d'origine inconnu : {0}"
 
-#: ../modules/client/api_errors.py:2158
-msgid ""
-"The following URIs use unsupported schemes.  Supported schemes are file://, "
-"http://, and https://."
-msgstr "Les URI suivants utilisent des schémas non pris en charge.  Les schémas pris en charge sont : file://, http://, et https://."
+#: ../modules/client/api_errors.py:2217
+#, python-brace-format
+msgid "Supported schemes are {}, {}, and {}."
+msgstr "Les schémas pris en charge sont {}, {}, et {}."
 
-#: ../modules/client/api_errors.py:2162
+#: ../modules/client/api_errors.py:2221
+#, python-brace-format
+msgid "The following URIs use unsupported schemes.  {cont}"
+msgstr "Les URI suivants utilisent des schémas non pris en charge.  {cont}"
+
+#: ../modules/client/api_errors.py:2224
 #, python-brace-format
 msgid ""
 "\n"
 "  {uri} (scheme: {scheme})"
 msgstr "\n  {uri} (schéma : {scheme})"
 
-#: ../modules/client/api_errors.py:2167
+#: ../modules/client/api_errors.py:2230
 #, python-brace-format
-msgid ""
-"The URI '{uri}' uses the unsupported scheme '{scheme}'.  Supported schemes "
-"are file://, http://, and https://."
-msgstr "L'URI '{uri}' utilise un schéma non pris en charge '{scheme}'. Les schémas pris en charge sont : file://, http:// et https://."
+msgid "The URI '{uri}' uses the unsupported scheme '{scheme}'.  {cont}"
+msgstr "L'URI '{uri}' utilise un schéma non pris en charge '{scheme}'. {cont}"
 
-#: ../modules/client/api_errors.py:2171
-msgid ""
-"The specified URI uses an unsupported scheme.  Supported schemes are: "
-"file://, http://, and https://."
-msgstr "L'URI spécifié utilise un schéma non pris en charge. Les schémas pris en charge sont : file://, http://, et https://."
+#: ../modules/client/api_errors.py:2233
+#, python-brace-format
+msgid "The specified URI uses an unsupported scheme.  {cont}"
+msgstr "L'URI spécifié utilise un schéma non pris en charge. {cont}"
 
 #: ../modules/client/api_errors.py:2181
 #, python-brace-format
@@ -5912,15 +5913,15 @@ msgid ""
 msgstr "\nCe compte n'est pas autorisé à accéder à ce référentiel. Vérifiez que le certificat\ncorrect est utilisé et que le contrat de support du produit auquel vous accédez\nest toujours valide.\n"
 
 #: ../modules/client/transport/repo.py:336
+#, python-brace-format
 msgid ""
 "\n"
 "The license agreement required to access this repository has not been\n"
 "accepted yet or the license agreement for the product has changed. Please go "
 "to\n"
-"https://pkg-register.oracle.com and accept the license for the product you "
-"are\n"
+"{} and accept the license for the product you are\n"
 "trying to access.\n"
-msgstr "\nL'accord de licence requis pour accéder à ce référentiel n'a pas encore\nété accepté, ou l'accord de licence du produit a changé. Rendez-vous sur\nhttps://pkg-register.oracle.com et acceptez la licence du produit que vous\ntentez d'utiliser.\n"
+msgstr "\nL'accord de licence requis pour accéder à ce référentiel n'a pas encore\nété accepté, ou l'accord de licence du produit a changé. Rendez-vous sur\n{} et acceptez la licence du produit que vous\ntentez d'utiliser.\n"
 
 #: ../modules/client/transport/repo.py:343
 msgid ""
