@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2026, Oracle and/or its affiliates.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2016-10-12 22:04-0700\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nLanguage: \nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -3430,31 +3430,32 @@ msgstr "Una delle origini del repository del pacchetto per {0} non fornisce info
 msgid "Unknown repository origin '{0}'"
 msgstr "Origine repository '{0}' sconosciuta"
 
-#: ../modules/client/api_errors.py:2158
-msgid ""
-"The following URIs use unsupported schemes.  Supported schemes are file://, "
-"http://, and https://."
-msgstr "I seguenti URI utilizzano schemi non supportati. Gli schemi supportati sono file://, http:// e https://."
+#: ../modules/client/api_errors.py:2217
+#, python-brace-format
+msgid "Supported schemes are {}, {}, and {}."
+msgstr "Gli schemi supportati sono {}, {} e {}."
 
-#: ../modules/client/api_errors.py:2162
+#: ../modules/client/api_errors.py:2221
+#, python-brace-format
+msgid "The following URIs use unsupported schemes.  {cont}"
+msgstr "I seguenti URI utilizzano schemi non supportati. {cont}"
+
+#: ../modules/client/api_errors.py:2224
 #, python-brace-format
 msgid ""
 "\n"
 "  {uri} (scheme: {scheme})"
 msgstr "\n  {uri} (schema: {scheme})"
 
-#: ../modules/client/api_errors.py:2167
+#: ../modules/client/api_errors.py:2230
 #, python-brace-format
-msgid ""
-"The URI '{uri}' uses the unsupported scheme '{scheme}'.  Supported schemes "
-"are file://, http://, and https://."
-msgstr "L'URI '{uri}' utilizza lo schema non supportato '{scheme}'. Gli schemi supportati sono file://, http:// e https://."
+msgid "The URI '{uri}' uses the unsupported scheme '{scheme}'.  {cont}"
+msgstr "L'URI '{uri}' utilizza lo schema non supportato '{scheme}'. {cont}"
 
-#: ../modules/client/api_errors.py:2171
-msgid ""
-"The specified URI uses an unsupported scheme.  Supported schemes are: "
-"file://, http://, and https://."
-msgstr "L'URI specificato utilizza uno schema non supportato. Gli schemi supportati sono: file://, http:// e https://."
+#: ../modules/client/api_errors.py:2233
+#, python-brace-format
+msgid "The specified URI uses an unsupported scheme.  {cont}"
+msgstr "L'URI specificato utilizza uno schema non supportato. {cont}"
 
 #: ../modules/client/api_errors.py:2181
 #, python-brace-format
@@ -5912,15 +5913,15 @@ msgid ""
 msgstr "\nNon è possibile accedere al repository tramite questo account. Assicurarsi di utilizzare il certificato\ncorretto e che il contratto di supporto del prodotto\nin uso sia ancora valido.\n"
 
 #: ../modules/client/transport/repo.py:336
+#, python-brace-format
 msgid ""
 "\n"
 "The license agreement required to access this repository has not been\n"
 "accepted yet or the license agreement for the product has changed. Please go "
 "to\n"
-"https://pkg-register.oracle.com and accept the license for the product you "
-"are\n"
+"{} and accept the license for the product you are\n"
 "trying to access.\n"
-msgstr "\nIl contratto di licenza necessario per accedere a questo repository non è ancora stato\naccettato oppure il contratto di licenza per il prodotto è stato modificato. Visitare il sito\nhttps://pkg-register.oracle.com e accettare la licenza per il prodotto a cui si desidera\naccedere.\n"
+msgstr "\nIl contratto di licenza necessario per accedere a questo repository non è ancora stato\naccettato oppure il contratto di licenza per il prodotto è stato modificato. Visitare il sito\n{} e accettare la licenza per il prodotto a cui si desidera\naccedere.\n"
 
 #: ../modules/client/transport/repo.py:343
 msgid ""
