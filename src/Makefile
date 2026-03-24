@@ -35,7 +35,6 @@ clint := TARGET = clint
 pylint := TARGET = pylint
 check := TARGET = check
 test := TARGET = test
-test-verbose := TARGET = test-verbose
 test-generate := TARGET = test-generate
 
 JOBS = 4
@@ -299,10 +298,10 @@ dist:
 	hg archive -r default -p pkg7-%h ../pkg7-%h.tar.bz2
 
 test-311:
-	$(PYTHON311) tests/run.py -j ${JOBS} -v
+	$(PYTHON311) -B tests/run.py -j ${JOBS} -v
 
 test-313:
-	$(PYTHON313) tests/run.py -j ${JOBS} -v
+	$(PYTHON313) -B tests/run.py -j ${JOBS} -v
 
 test:
 	$(MAKE) -k test-311 JOBS=${JOBS}
