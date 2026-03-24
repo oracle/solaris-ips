@@ -37,8 +37,7 @@ cwd = os.getcwd()
 if cwd != os.path.dirname(__file__):
     os.chdir(os.path.dirname(__file__))
 
-    os.putenv('PYEXE', sys.executable)
-    cmd = [sys.executable, "run.py"]
+    cmd = [sys.executable, "-B", "run.py"]
     import subprocess
     cmd.extend(sys.argv[1:])  # Skip argv[0]
     sys.exit(subprocess.call(cmd))
@@ -115,6 +114,8 @@ if __name__ == "__main__":
         "ignore:datetime.datetime.utc:DeprecationWarning",
         "ignore::ResourceWarning",
     ))
+    # Prevent creation of root owned pyc files
+    os.environ["PYTHONDONTWRITEBYTECODE"] = "True"
 
     try:
         opts, pargs = getopt.getopt(sys.argv[1:], "a:c:dfghj:lpqtuvxb:o:s:z:",
