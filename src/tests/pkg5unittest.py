@@ -812,81 +812,46 @@ if __name__ == "__main__":
     #
     # The following are utility functions for use by testcases.
     #
-    def c_compile(self, prog_text, opts, outputfile, obj_files=None):
-        """Given a C program (as a string), compile it into the
-        executable given by outputfile.  Outputfile should be
-        given as a relative path, and will be located below the
-        test prefix path.  Additional compiler options should be
-        passed in 'opts'.  Suitable for compiling small test
-        programs."""
+    def c_compile(self, program_text, opts, outfile, infile=None):
+        """Given either a C program (as a string) or source file, compile it
+        into the executable given by 'outfile'.  Outfile should be given as
+        a relative path, and will be located below the test prefix path.
+        Additional compiler options can be passed with 'opts'."""
 
-        #
-        # We use a series of likely compilers.  At present we support
-        # this testing with SunStudio.
-        #
-        assert obj_files is not None or prog_text is not None
-        assert obj_files is None or prog_text is None
-        if os.path.dirname(outputfile) != "":
-            try:
-                os.makedirs(os.path.dirname(outputfile))
-            except OSError as e:
-                if e.errno != errno.EEXIST:
-                    raise
-        if prog_text:
-            c_fd, c_path = tempfile.mkstemp(suffix=".c",
-                dir=self.test_root)
-            c_fh = os.fdopen(c_fd, "w")
-            c_fh.write(prog_text)
-            c_fh.close()
-        else:
-            c_path = " ".join(obj_files)
+        assert (program_text is None) != (infile is None), \
+            "either 'program_text' or 'infile' must be set"
 
-        found = False
-        outpath = os.path.join(self.test_root, outputfile)
-        compilers = ["/usr/bin/cc", "cc", "$CC"]
-        for compiler in compilers:
-            cmd = [compiler, "-o", outpath]
-            cmd.extend(opts)
-            cmd.append(c_path)
-            try:
-                # Make sure to use shell=True so that env.
-                # vars and $PATH are evaluated.
-                self.debugcmd(" ".join(cmd))
-                s = subprocess.Popen(" ".join(cmd),
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-                sout, serr = s.communicate()
-                rc = s.returncode
-                if rc != 0 and rc != 127:
-                    try:
-                        os.remove(outpath)
-                    except OSError:
-                        pass
-                    try:
-                        os.remove(c_path)
-                    except OSError:
-                        pass
-                    raise RuntimeError(
-                        "Compile failed: {0} --> {1:d}\n{2}".format(
-                        cmd, rc, sout))
-                if rc == 127:
-                    self.debug("[{0} not found]".format(compiler))
-                    continue
-                # so rc == 0
-                found = True
-                break
-            except OSError:
-                continue
+        # Use compiler given via environment, default to /usr/bin/gcc.
+        compiler = os.environ.get("CC", default="/usr/bin/gcc")
+        if not os.path.exists(compiler) or not os.access(compiler, os.X_OK):
+            raise RuntimeException(
+                f"Compiler '{compiler}' either doesn't exist or is not "
+                "executable. Try setting $CC to a valid compiler.")
+
+        outpath = os.path.join(self.test_root, outfile)
+        if os.path.dirname(outfile) != "":
+            os.makedirs(os.path.dirname(outpath), exist_ok=True)
+
+        if program_text:
+            fd, infile = tempfile.mkstemp(suffix=".c", dir=self.test_root)
+            with open(fd, "w") as ofile:
+                ofile.write(program_text)
+
         try:
-            os.remove(c_path)
-        except OSError:
-            pass
-        if not found:
-            raise TestSkippedException(
-                "No suitable Sun Studio compiler found. "
-                "Tried: {0}.  Try setting $CC to a valid"
-                "compiler.".format(compilers))
+            cmd = [compiler, "-o", outpath, *opts, infile]
+            self.debugcmd(" ".join(cmd))
+            subprocess.run(" ".join(cmd), shell=True, check=True,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as err:
+            try:
+                os.remove(outpath)
+            except OSError:
+                pass
+            raise RuntimeError(
+                "Compile failed: {0} --> {1:d}\n{2}".format(
+                    err.cmd, err.returncode, err.stdout))
+        finally:
+            os.remove(infile)
 
     def make_file(self, path, content, mode=0o644, copy=False):
         if not os.path.exists(os.path.dirname(path)):
