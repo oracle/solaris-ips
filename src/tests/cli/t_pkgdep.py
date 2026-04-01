@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2026, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -36,7 +36,6 @@ import unittest
 import pkg.actions as actions
 import pkg.flavor.base as base
 import pkg.flavor.depthlimitedmf as mf
-import pkg.misc as misc
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
@@ -1103,39 +1102,45 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
         contents = contents + "\n"
         self.make_misc_files({ path: contents }, prefix="proto")
 
-    def make_elf(self, run_paths=[], output_path="elf_test", bit64=False,
-        deferred_libs=misc.EmptyI, filter_files=misc.EmptyI,
-        lazy_libs=misc.EmptyI, mapfile=None, no_link=False, obj_files=None,
-        optional_filters=misc.EmptyI, program_text=None, shared_lib=False,
+    def make_elf(self, run_paths=None, output_path="elf_test", bit64=False,
+        deferred_libs=None, filter_files=None,
+        lazy_libs=None, mapfile=None, no_link=False, obj_file=None,
+        optional_filters=None, program_text=None, shared_lib=False,
         record_audit=False):
-        assert obj_files is None or program_text is None
-        if obj_files is None and program_text is None:
+
+        assert obj_file is None or program_text is None
+        if obj_file is None and program_text is None:
             program_text = "int main(){}\n"
         out_file = os.path.join(self.test_proto_dir, output_path)
 
+        opts = ["-m64"] if bit64 else ["-m32"]
+
         # Make sure to quote the runpaths, as they may contain tokens
         # like $PLATFORM which we do not want the shell to evaluate.
-        opts = ["-R'{0}'".format(rp) for rp in run_paths]
-        if bit64:
-            opts.append("-m64")
+        if run_paths:
+            opts.extend([f"-R'{rp}'" for rp in run_paths])
         if shared_lib:
             # Always link to libc; the compiler may not.
             opts.append("-lc")
-            opts.append("-G")
+            opts.append("-shared")
         if no_link:
             opts.append("-c")
+            opts.append("-fPIC")
         if mapfile:
-            opts.append("-M{0}".format(mapfile))
+            opts.append(f"-Wl,-M,{mapfile}")
         if record_audit:
             opts.append("-Wl,-paudit.so.1")
 
-        opts.extend(["-F{0}".format(f) for f in filter_files])
-        opts.extend(["-f{0}".format(f) for f in optional_filters])
-        opts.extend(["-z deferred"] +  list(deferred_libs) +
-            ["-z nodeferred"])
-        opts.extend(["-z lazyload {0}".format(f) for f in lazy_libs])
-        self.c_compile(program_text, opts, out_file,
-            obj_files=obj_files)
+        if filter_files:
+            opts.extend([f"-Wl,-F,{file}" for file in filter_files])
+        if optional_filters:
+            opts.extend([f"-Wl,-f,{file}" for file in optional_filters])
+        if deferred_libs:
+            opts.extend(["-Wl,-z,deferred", *deferred_libs, "-Wl,-z,nodeferred"])
+        if lazy_libs:
+            opts.extend([f"-Wl,-z,lazyload,{lib}" for lib in lazy_libs])
+
+        self.c_compile(program_text, opts, out_file, infile=obj_file)
 
         return out_file[len(self.test_proto_dir)+1:]
 
@@ -1280,7 +1285,7 @@ SYMBOL_SCOPE {
             program_text=foo_c)
         self.make_elf(output_path=so_path, run_paths=[base_dir],
             filter_files=[bar_path], shared_lib=True,
-            obj_files=[foo_path])
+            obj_file=foo_path)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
             mp, [self.test_proto_dir], {}, [], convert=False)
@@ -1296,7 +1301,7 @@ SYMBOL_SCOPE {
         self.make_elf(output_path=foo_path, no_link=True,
             program_text=foo_c)
         self.make_elf(output_path=so_path, run_paths=[base_dir],
-            mapfile=mapfile_1_path, obj_files=[foo_path],
+            mapfile=mapfile_1_path, obj_file=foo_path,
             shared_lib=True)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
@@ -1312,7 +1317,7 @@ SYMBOL_SCOPE {
         self.make_elf(output_path=foo_path, no_link=True,
             program_text=foo_c)
         self.make_elf(output_path=so_path, run_paths=[base_dir],
-            optional_filters=["xxx.so"], obj_files=[foo_path],
+            optional_filters=["xxx.so"], obj_file=foo_path,
             shared_lib=True)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
@@ -1329,7 +1334,7 @@ SYMBOL_SCOPE {
         self.make_elf(output_path=foo_path, no_link=True,
             program_text=foo_c)
         self.make_elf(output_path=so_path, run_paths=[base_dir],
-            mapfile=mapfile_2_path, obj_files=[foo_path],
+            mapfile=mapfile_2_path, obj_file=foo_path,
             shared_lib=True)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
@@ -1347,7 +1352,7 @@ SYMBOL_SCOPE {
             program_text=foo_c)
         self.make_elf(output_path=so_path, run_paths=[base_dir],
             deferred_libs=[bar_path], shared_lib=True,
-            obj_files=[foo_path])
+            obj_file=foo_path)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
             mp, [self.test_proto_dir], {}, [], convert=False)
@@ -1363,7 +1368,7 @@ SYMBOL_SCOPE {
             program_text=foo_c)
         self.make_elf(output_path=so_path, run_paths=[base_dir],
             lazy_libs=[bar_path], shared_lib=True,
-            obj_files=[foo_path])
+            obj_file=foo_path)
 
         ds, es, ws, ms, pkg_attrs = dependencies.list_implicit_deps(
             mp, [self.test_proto_dir], {}, [], convert=False)

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2009, 2026, Oracle and/or its affiliates.
 
 from . import testutils
 if __name__ == "__main__":
@@ -1152,7 +1152,7 @@ file NOHASH group=sys mode=0755 owner=root path={runpath_mod_test_path}
     def make_elf(self, final_path, static=False):
         out_file = os.path.join(self.proto_dir, final_path)
 
-        opts = []
+        opts = ["-m32"]
         # In some cases we want to generate an elf binary with no
         # dependencies of its own.  We use -c (suppress linking) for
         # this purpose.
