@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2010, 2026, Oracle and/or its affiliates.
 #
 
 # Some pkg(7) specific lint manifest checks
@@ -120,6 +120,11 @@ class PkgManifestChecker(base.ManifestChecker):
         * error if pkg.description or pkg.summary are set.
         * warn if other packages have non-incorporate dependencies on
           this package.
+        The boolean pkglint parameter pkglint.manifest001.report_errors can be
+        set to True to force the obsolete package dependency check to issue
+        errors instead of warnings.
+        This is done via the pkglintrc config file:
+          pkglint.manifest001.report_errors = True
         """
 
         if manifest.get("pkg.obsolete", "false") != "true":
@@ -176,7 +181,6 @@ class PkgManifestChecker(base.ManifestChecker):
         # determine whether other packages we know about have
         # dependencies on this obsolete package.
         obsolete_depends = set()
-        lint_id = "{0}{1}.3".format(self.name, pkglint_id)
 
         depends = set(
             self.dependencies.get(manifest.fmri.get_name(), []))
@@ -187,14 +191,27 @@ class PkgManifestChecker(base.ManifestChecker):
                 if p.get("pkg.obsolete", None) != "true":
                     obsolete_depends.add(p.fmri)
         if obsolete_depends:
-            # this is only a warning, because at install-time the
-            # solver may still be able to find a non-obsolete
-            # version of a package.
-            engine.warning("obsolete package {pkg} is depended "
+            # Report this as a warning, unless otherwise instructed, because
+            # at install-time the solver may still be able to find a
+            # non-obsolete version of a package.
+            lint_id = "{0}{1}".format(self.name, pkglint_id)
+            report_errors = engine.get_param("{}.report_errors".format(
+                lint_id), action=action, manifest=manifest)
+            # the parameter might not exist
+            if not report_errors:
+                report_errors = False
+
+            if report_errors and report_errors.lower() == "true":
+                lint_report = engine.error
+                lint_subid = "4"
+            else:
+                lint_report = engine.warning
+                lint_subid = "3"
+            lint_report("obsolete package {pkg} is depended "
                 "upon by the following packages: "
                 "{deps}".format(pkg=manifest.fmri, deps=" ".join(
                 [str(fmri) for fmri in obsolete_depends])),
-                msgid=lint_id)
+                msgid="{}.{}".format(lint_id, lint_subid))
 
     obsoletion.pkglint_desc = _(
         "Obsolete packages should have valid contents.")
