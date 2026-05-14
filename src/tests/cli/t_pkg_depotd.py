@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2026, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -43,7 +43,7 @@ from urllib.parse import quote, urljoin
 from urllib.request import urlopen
 
 import pkg.client.publisher as publisher
-import pkg.depotcontroller as dc
+import depotcontroller as dc
 import pkg.fmri as fmri
 import pkg.manifest as man
 import pkg.misc as misc

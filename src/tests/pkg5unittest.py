@@ -144,7 +144,7 @@ class TestSkippedException(Exception):
 #
 # Errors for which the traceback is likely not useful.
 #
-import pkg.depotcontroller as depotcontroller
+import depotcontroller
 import pkg.portable as portable
 import pkg.client.api
 import pkg.client.progress
@@ -3154,7 +3154,7 @@ class CliTestCase(Pkg5TestCase):
 
         # Note that this must be deferred until after PYTHONPATH
         # is set up.
-        import pkg.depotcontroller as depotcontroller
+        import depotcontroller
 
         self.debug("prep_depot: set depot port {0:d}".format(port))
         self.debug("prep_depot: set depot repository {0}".format(repodir))

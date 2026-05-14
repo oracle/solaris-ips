@@ -121,7 +121,6 @@ file path=$(PY313DIRVP)/pkg/client/transport/transport.py
 file path=$(PY313DIRVP)/pkg/config.py
 file path=$(PY313DIRVP)/pkg/cpiofile.py
 file path=$(PY313DIRVP)/pkg/dependency.py
-file path=$(PY313DIRVP)/pkg/depotcontroller.py
 file path=$(PY313DIRVP)/pkg/digest.py
 file path=$(PY313DIRVP)/pkg/elf.cpython-313.so
 file path=$(PY313DIRVP)/pkg/facet.py
