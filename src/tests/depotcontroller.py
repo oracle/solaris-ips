@@ -19,8 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2008, 2026, Oracle and/or its affiliates.
 #
+
+# Note this file used to be delivered but has always been part of
+# the test infrastructure.
 
 import http.client
 import os

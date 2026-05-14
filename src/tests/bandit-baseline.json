@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-03-10T14:01:26Z",
+  "generated_at": "2026-05-14T08:29:40Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0,
@@ -977,19 +977,6 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "./modules/depotcontroller.py": {
-      "CONFIDENCE.HIGH": 6,
-      "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 3,
-      "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 1,
-      "SEVERITY.LOW": 2,
-      "SEVERITY.MEDIUM": 6,
-      "SEVERITY.UNDEFINED": 0,
-      "loc": 450,
-      "nosec": 0,
-      "skipped_tests": 0
-    },
     "./modules/digest.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -1285,7 +1272,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 545,
+      "loc": 560,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2330,15 +2317,15 @@
       "skipped_tests": 0
     },
     "_totals": {
-      "CONFIDENCE.HIGH": 142,
+      "CONFIDENCE.HIGH": 136,
       "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 14,
+      "CONFIDENCE.MEDIUM": 11,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 21,
-      "SEVERITY.LOW": 107,
-      "SEVERITY.MEDIUM": 28,
+      "SEVERITY.HIGH": 20,
+      "SEVERITY.LOW": 105,
+      "SEVERITY.MEDIUM": 22,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 96611,
+      "loc": 96176,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -3735,191 +3722,6 @@
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "29 import ssl\n30 import subprocess\n31 import sys\n",
-      "col_offset": 0,
-      "end_col_offset": 17,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 30,
-      "line_range": [
-        30
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
-      "test_id": "B404",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "64         self.__file_root = None\n65         self.__logpath = \"/tmp/depot.log\"\n66         self.__mirror = False\n",
-      "col_offset": 25,
-      "end_col_offset": 41,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "MEDIUM",
-      "issue_cwe": {
-        "id": 377,
-        "link": "https://cwe.mitre.org/data/definitions/377.html"
-      },
-      "issue_severity": "MEDIUM",
-      "issue_text": "Probable insecure usage of temp file/directory.",
-      "line_number": 65,
-      "line_range": [
-        65
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b108_hardcoded_tmp_directory.html",
-      "test_id": "B108",
-      "test_name": "hardcoded_tmp_directory"
-    },
-    {
-      "code": "261                 \"nasty/{0:d}\".format(self.__nasty))\n262             url = urlopen(nastyurl)\n263             url.close()\n",
-      "col_offset": 18,
-      "end_col_offset": 35,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 22,
-        "link": "https://cwe.mitre.org/data/definitions/22.html"
-      },
-      "issue_severity": "MEDIUM",
-      "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
-      "line_number": 262,
-      "line_range": [
-        262
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
-      "test_id": "B310",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "289             # if the depot is running.\n290             url = urlopen(repourl,\n291                 context=ssl._create_unverified_context())\n292             url.close()\n",
-      "col_offset": 18,
-      "end_col_offset": 57,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 22,
-        "link": "https://cwe.mitre.org/data/definitions/22.html"
-      },
-      "issue_severity": "MEDIUM",
-      "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
-      "line_number": 290,
-      "line_range": [
-        290,
-        291
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
-      "test_id": "B310",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "290             url = urlopen(repourl,\n291                 context=ssl._create_unverified_context())\n292             url.close()\n",
-      "col_offset": 24,
-      "end_col_offset": 56,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 295,
-        "link": "https://cwe.mitre.org/data/definitions/295.html"
-      },
-      "issue_severity": "MEDIUM",
-      "issue_text": "By default, Python will create a secure, verified ssl context for use in such classes as HTTPSConnection. However, it still allows using an insecure context via the _create_unverified_context that  reverts to the previous behavior that does not validate certificates or perform hostname checks.",
-      "line_number": 291,
-      "line_range": [
-        291
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b323-unverified-context",
-      "test_id": "B323",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "422         newenv.update(self.__env)\n423         self.__depot_handle = subprocess.Popen(pargs, env=newenv,\n424             stdin=subprocess.PIPE,\n425             stdout=self.__output,\n426             stderr=self.__output,\n427             close_fds=True)\n428         if self.__depot_handle is None:\n",
-      "col_offset": 30,
-      "end_col_offset": 27,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 423,
-      "line_range": [
-        423,
-        424,
-        425,
-        426,
-        427
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "592             print()\n593             f = open(\"/tmp/depot.log\", \"r\")\n594             print(f.read())\n",
-      "col_offset": 21,
-      "end_col_offset": 37,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "MEDIUM",
-      "issue_cwe": {
-        "id": 377,
-        "link": "https://cwe.mitre.org/data/definitions/377.html"
-      },
-      "issue_severity": "MEDIUM",
-      "issue_text": "Probable insecure usage of temp file/directory.",
-      "line_number": 593,
-      "line_range": [
-        593
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b108_hardcoded_tmp_directory.html",
-      "test_id": "B108",
-      "test_name": "hardcoded_tmp_directory"
-    },
-    {
-      "code": "602 if __name__ == \"__main__\":\n603     __testdir = \"/tmp/depotcontrollertest.{0:d}\".format(os.getpid())\n604     try:\n",
-      "col_offset": 16,
-      "end_col_offset": 48,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "MEDIUM",
-      "issue_cwe": {
-        "id": 377,
-        "link": "https://cwe.mitre.org/data/definitions/377.html"
-      },
-      "issue_severity": "MEDIUM",
-      "issue_text": "Probable insecure usage of temp file/directory.",
-      "line_number": 603,
-      "line_range": [
-        603
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b108_hardcoded_tmp_directory.html",
-      "test_id": "B108",
-      "test_name": "hardcoded_tmp_directory"
-    },
-    {
-      "code": "607         pass\n608     os.system(\"rm -fr {0}\".format(__testdir))\n609     print(\"\\nDone\")\n",
-      "col_offset": 4,
-      "end_col_offset": 45,
-      "filename": "./modules/depotcontroller.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "HIGH",
-      "issue_text": "Starting a process with a shell, possible injection detected, security issue.",
-      "line_number": 608,
-      "line_range": [
-        608
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b605_start_process_with_a_shell.html",
-      "test_id": "B605",
-      "test_name": "start_process_with_a_shell"
     },
     {
       "code": "28 import re\n29 import subprocess\n30 import sys\n",

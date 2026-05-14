@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2019, 2026, Oracle and/or its affiliates.
 #
 
 # Files matched below are allowed to include the executable bit.
@@ -30,7 +30,7 @@ src/cffi_src/build_*
 src/client.py
 src/depot-config.py
 src/depot.py
-src/modules/depotcontroller.py
+src/tests/depotcontroller.py
 src/pkgdep.py
 src/pkgrepo.py
 src/publish.py
