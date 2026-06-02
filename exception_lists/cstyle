@@ -20,24 +20,8 @@
 #
 
 #
-# Copyright (c) 2009, 2026, Oracle and/or its affiliates.
+# Copyright (c) 2026, Oracle and/or its affiliates.
 #
 
-syntax: glob
-
-.arclint
-CONTRIBUTING.md
-LICENSE.txt
-SECURITY.md
-src/modules/ply
-src/modules/solver/vec.h
-src/modules/solver/solver.*
-src/pkg/external_deps.txt
-src/tests/bandit-baseline.json
-src/tests/ro_data/*
-src/util/apache2/sysrepo/*.mako
-doc/*
-src/tests/*.txt
-src/po/LINGUAS
-src/po/POTFILES.*
-src/pkg/license_files/lic_*
+modules/solver/vec\.h$
+modules/solver/solver\.(c|h)$
