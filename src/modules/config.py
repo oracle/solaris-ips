@@ -1766,24 +1766,23 @@ class SMFConfig(Config):
         time.
         """
 
-        doorpath = ""
+        env = None
         if self.__doorpath:
-            doorpath = "LIBSCF_DOORPATH={0} ".format(
-                self.__doorpath)
+            env = os.environ.copy()
+            env["LIBSCF_DOORPATH"] = self.__doorpath
 
-        cmd = "{0}/usr/bin/svcprop -c -t {1}".format(doorpath,
-            self._target)
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        out, err = p.communicate()
-        status, result = p.returncode, misc.force_str(out)
-        if status:
-            raise SMFReadError(self._target,
-                "{cmd}: {result}".format(**locals()))
+        cmd = ["/usr/bin/svcprop", "-c", "-t", self._target]
+        try:
+            res = subprocess.run(cmd, check=True, env=env, text=True,
+                                 capture_output=True, encoding="utf-8")
+        except subprocess.CalledProcessError as err:
+            cmdstr = " ".join(err.cmd)
+            errstr = err.stderr.strip("\n")
+            raise SMFReadError(self._target, f"{cmdstr}: {errstr}") from None
 
         cfgdata = {}
         prop = None
-        for line in result.split("\n"):
+        for line in res.stdout.split("\n"):
             if prop is None:
                 prop = line
             else:
