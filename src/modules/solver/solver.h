@@ -66,10 +66,6 @@ typedef struct solver_t solver;
 
 extern solver* solver_new(void);
 
-#ifdef SOLVER_COPY
-extern solver* solver_copy(solver* s);
-#endif
-
 extern void    solver_delete(solver* s);
 
 extern bool    solver_addclause(solver* s, lit* begin, lit* end);

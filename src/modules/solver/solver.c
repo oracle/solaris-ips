@@ -83,13 +83,6 @@ static inline lit*  clause_begin      (clause* c)          { return c->lits; }
 static inline int   clause_learnt     (clause* c)          { return c->size_learnt & 1; }
 static inline float clause_activity   (clause* c)          { return *((float*)&c->lits[c->size_learnt>>1]); }
 static inline void  clause_setactivity(clause* c, float a) { *((float*)&c->lits[c->size_learnt>>1]) = a; }
-static inline int   clause_bytesize   (clause *c)
-{
-  return clause_size(c) * sizeof (lit) + 
-    clause_learnt(c) * sizeof (float) + 
-       sizeof (clause);
-}
-
 
 //=================================================================================================
 // Encode literals in clause pointers:
@@ -114,18 +107,6 @@ static inline void    vecp_remove(vecp* v, void* e)
     vecp_resize(v,vecp_size(v)-1);
 }
 
-#ifdef SOLVER_COPY
-static inline void    vecp_replace(vecp* v, void *old, void *new)
-{
-    void** ws = vecp_begin(v);
-    int    j  = 0;
-
-    for (j = 0;j < vecp_size(v); j++)
-      if (ws[j] == old)
-	ws[j] = new;
-}
-#endif
-      
 //=================================================================================================
 // Variable order functions:
 
@@ -948,87 +929,6 @@ solver* solver_new(void)
 
     return s;
 }
-
-#ifdef SOLVER_COPY
-/*
- * Copy an existing solver instance; useful to
- * try alternatives w/o expensse of reloading
- */
-void *dupalloc(void *ptr, size_t s)
-{
-    return (memcpy(malloc(s), ptr, s));
-}
-
-solver *solver_copy(solver* s)
-{
-    /*
-     * duplicate base solver structure
-     */
-    solver *ns;
-    int i;
-
-    ns = (solver*)malloc(sizeof(solver));
-    *ns = *s;
-    /*
-     * duplicate first level structures
-     */
-    ns->binary    = (clause*) dupalloc(s->binary, sizeof(clause) + sizeof(lit)*2);    
-
-    if (s->wlists != NULL) {
-      ns->wlists    = (vecp*)   dupalloc(s->wlists,   sizeof(vecp)*s->cap*2);
-      ns->activity  = (double*) dupalloc(s->activity, sizeof(double)*s->cap);
-      ns->assigns   = (lbool*)  dupalloc(s->assigns,  sizeof(lbool)*s->cap);
-      ns->orderpos  = (int*)    dupalloc(s->orderpos, sizeof(int)*s->cap);
-      ns->reasons   = (clause**)dupalloc(s->reasons,  sizeof(clause*)*s->cap);
-      ns->levels    = (int*)    dupalloc(s->levels,   sizeof(int)*s->cap);
-      ns->tags      = (lbool*)  dupalloc(s->tags,     sizeof(lbool)*s->cap);
-      ns->trail     = (lit*)    dupalloc(s->trail,    sizeof(lit)*s->cap);
-    }
-
-
-    veci_dup(&ns->order,     &s->order);
-    veci_dup(&ns->trail_lim, &s->trail_lim);
-    veci_dup(&ns->tagged,    &s->tagged);
-    veci_dup(&ns->stack,     &s->stack);
-    veci_dup(&ns->model,     &s->model);
-
-    /*
-     * duplicate clause vectors
-     */
-
-    /*    XXX need to replace clause vectors in wlists
-	  note that not all wlist entries are real clauses
-	  iteration over clause vector required; non-clauses
-	  can stay as they're not pointers 
-
-
-    vecp_push(solver_read_wlist(s,lit_neg(begin[0])),(void*)(size > 2 ? c : clause_from_lit(begin[1])));
-    vecp_push(solver_read_wlist(s,lit_neg(begin[1])),(void*)(size > 2 ? c : clause_from_lit(begin[0])));
-
-
-
-    */
-    vecp_dup(&ns->clauses, &s->clauses);
-
-    for (i = 0; i < vecp_size(&s->clauses); i++) {
-      clause *old = (clause *)vecp_begin(&s->clauses)[i];
-      clause *new = (clause *)dupalloc(old, clause_bytesize(old));
-
-      vecp_replace(solver_read_wlist(s, lit_neg(old->lits[0])), old, new);
-      vecp_begin(&ns->clauses)[i] = new;
-    }
-
-    vecp_dup(&ns->learnts, &s->learnts);
-
-    for (i = 0; i < vecp_size(&s->learnts); i++) {
-      clause *old = (clause *)vecp_begin(&s->learnts)[i];
-      clause *new = (clause *)dupalloc(old, clause_bytesize(old));
-
-      vecp_replace(solver_read_wlist(s, lit_neg(old->lits[0])), old, new);
-      vecp_begin(&ns->learnts)[i] = new;
-    }
-}
-#endif
 
 void solver_delete(solver* s)
 {
