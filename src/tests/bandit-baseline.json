@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-05-14T08:29:40Z",
+  "generated_at": "2026-05-21T16:34:44Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0,
@@ -943,11 +943,11 @@
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 1,
-      "SEVERITY.LOW": 1,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1386,
+      "loc": 1385,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2321,11 +2321,11 @@
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 11,
       "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 20,
-      "SEVERITY.LOW": 105,
+      "SEVERITY.HIGH": 19,
+      "SEVERITY.LOW": 106,
       "SEVERITY.MEDIUM": 22,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 96176,
+      "loc": 96175,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -3660,25 +3660,25 @@
       "test_name": "blacklist"
     },
     {
-      "code": "1775             self._target)\n1776         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,\n1777             stderr=subprocess.PIPE)\n1778         out, err = p.communicate()\n",
-      "col_offset": 12,
-      "end_col_offset": 35,
+      "code": "1775         try:\n1776             res = subprocess.run(cmd, check=True, env=env, text=True,\n1777                                  capture_output=True, encoding=\"utf-8\")\n1778         except subprocess.CalledProcessError as err:\n",
+      "col_offset": 18,
+      "end_col_offset": 71,
       "filename": "./modules/config.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 78,
         "link": "https://cwe.mitre.org/data/definitions/78.html"
       },
-      "issue_severity": "HIGH",
-      "issue_text": "subprocess call with shell=True identified, security issue.",
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
       "line_number": 1776,
       "line_range": [
         1776,
         1777
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b602_subprocess_popen_with_shell_equals_true.html",
-      "test_id": "B602",
-      "test_name": "subprocess_popen_with_shell_equals_true"
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
     },
     {
       "code": "41 import struct\n42 import subprocess\n43 \n",
