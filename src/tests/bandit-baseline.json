@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-05-21T16:34:44Z",
+  "generated_at": "2026-06-02T11:48:04Z",
   "metrics": {
     "./cffi_src/build_arch.py": {
       "CONFIDENCE.HIGH": 0,
@@ -1108,15 +1108,15 @@
       "skipped_tests": 0
     },
     "./modules/flavor/python.py": {
-      "CONFIDENCE.HIGH": 3,
+      "CONFIDENCE.HIGH": 2,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 0,
       "SEVERITY.LOW": 2,
-      "SEVERITY.MEDIUM": 1,
+      "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 222,
+      "loc": 223,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1766,7 +1766,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 545,
+      "loc": 548,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -2317,15 +2317,15 @@
       "skipped_tests": 0
     },
     "_totals": {
-      "CONFIDENCE.HIGH": 136,
+      "CONFIDENCE.HIGH": 135,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 11,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 19,
       "SEVERITY.LOW": 106,
-      "SEVERITY.MEDIUM": 22,
+      "SEVERITY.MEDIUM": 21,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 96175,
+      "loc": 96179,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -3724,7 +3724,7 @@
       "test_name": "subprocess_without_shell_equals_true"
     },
     {
-      "code": "28 import re\n29 import subprocess\n30 import sys\n",
+      "code": "29 import re\n30 import subprocess\n31 import sys\n",
       "col_offset": 0,
       "end_col_offset": 17,
       "filename": "./modules/flavor/python.py",
@@ -3735,16 +3735,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 29,
+      "line_number": 30,
       "line_range": [
-        29
+        30
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
       "test_id": "B404",
       "test_name": "blacklist"
     },
     {
-      "code": "306     try:\n307         sp = subprocess.Popen(cmd, env=newenv, stdout=subprocess.PIPE,\n308             stderr=subprocess.PIPE, encoding=\"utf-8\")\n309     except Exception as e:\n",
+      "code": "307     try:\n308         sp = subprocess.Popen(cmd, env=newenv, stdout=subprocess.PIPE,\n309             stderr=subprocess.PIPE, encoding=\"utf-8\")\n310     except Exception as e:\n",
       "col_offset": 13,
       "end_col_offset": 53,
       "filename": "./modules/flavor/python.py",
@@ -3755,34 +3755,14 @@
       },
       "issue_severity": "LOW",
       "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 307,
+      "line_number": 308,
       "line_range": [
-        307,
-        308
+        308,
+        309
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
       "test_id": "B603",
       "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "321             try:\n322                 names, dirs = eval(l[4:])\n323             except Exception:\n",
-      "col_offset": 30,
-      "end_col_offset": 41,
-      "filename": "./modules/flavor/python.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "MEDIUM",
-      "issue_text": "Use of possibly insecure function - consider using safer ast.literal_eval.",
-      "line_number": 322,
-      "line_range": [
-        322
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b307-eval",
-      "test_id": "B307",
-      "test_name": "blacklist"
     },
     {
       "code": "27 import os.path\n28 import xml.dom.minidom as minidom\n29 import xml.parsers\n",
