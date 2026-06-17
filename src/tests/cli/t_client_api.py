@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2015, 2023, Oracle and/or its affiliates.
+# Copyright (c) 2015, 2026, Oracle and/or its affiliates.
 #
 
 from . import testutils
@@ -30,8 +30,10 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import unittest.mock
 import pkg.client.client_api as cli_api
 import pkg.client.progress as progress
+import pkg.misc as misc
 import rapidjson as json
 import jsonschema
 
@@ -144,6 +146,21 @@ class TestClientApi(pkg5unittest.ManyDepotTestCase):
         retjson = cli_api._pkg_invoke(subcommand=subcommand,
             pargs_json=json.dumps(args), opts_json=json.dumps(opts))
         return retjson
+
+    def test_00_noexecute_plan_stage_error_status(self):
+        """Dry-run plan-stage errors must be reflected in exit status."""
+
+        os.environ["PKG_IMAGE"] = self.img_path()
+        pkgs = ["verifypkg@1.0"]
+        opts = {
+            "noexecute": True,
+            "stage": cli_api.API_STAGE_PLAN,
+        }
+
+        with unittest.mock.patch.object(misc, "spaceavail", return_value=0):
+            retjson = self.__call_cmd("install", pkgs, opts)
+
+        self.assertEqual(retjson["status"], cli_api.EXIT_OOPS, retjson)
 
     def test_01_invalid_pkg_invoke_args(self):
         """Test invalid pkg_invoke args is handled correctly."""

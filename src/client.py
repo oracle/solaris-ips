@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2026, Oracle and/or its affiliates.
 #
 
 #
@@ -1900,7 +1900,7 @@ def _verify_exit_code(api_inst):
     plan = api_inst.describe()
     for item_id, parent_id, msg_time, msg_level, msg_type, msg_text in \
         plan.gen_item_messages():
-        if msg_type == MSG_ERROR:
+        if msg_level == MSG_ERROR:
             return EXIT_OOPS
     return EXIT_OK
 
@@ -1941,7 +1941,9 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
             return _verify_exit_code(_api_inst)
         if _api_inst.planned_nothingtodo():
             return EXIT_NOP
-        if _noexecute or _stage == API_STAGE_PLAN:
+        if _noexecute:
+            return _verify_exit_code(_api_inst)
+        if _stage == API_STAGE_PLAN:
             return EXIT_OK
     else:
         assert _stage in [API_STAGE_PREPARE, API_STAGE_EXECUTE]
