@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2025, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2026, Oracle and/or its affiliates.
 #
 
 from collections import defaultdict, namedtuple
@@ -3837,21 +3837,18 @@ class ImagePlan:
 
         # Verify that there is enough space for the change.
         if self.pd._bytes_added > self.pd._bytes_avail:
-            # During a dry run log a warning and continue to run the
-            # solver to produce any further warnings/errors.
+            err = api_errors.ImageInsufficentSpace(
+                self.pd._bytes_added,
+                self.pd._bytes_avail,
+                _("Root filesystem"))
             if self.__noexecute:
-                msg = api_errors.ImageInsufficentSpace(
-                          self.pd._bytes_added,
-                          self.pd._bytes_avail,
-                          _("Root filesystem"))
+                # During a dry run log a warning and continue to run the solver
+                # to produce any further warnings/errors.
                 timestamp = misc.time_to_timestamp(time.time())
                 self.pd.add_item_message("errors",
-                    timestamp, MSG_ERROR, _(msg))
+                    timestamp, MSG_ERROR, str(err))
             else:
-                raise api_errors.ImageInsufficentSpace(
-                    self.pd._bytes_added,
-                    self.pd._bytes_avail,
-                    _("Root filesystem"))
+                raise err
 
     def evaluate(self):
         """Given already determined fmri changes,
