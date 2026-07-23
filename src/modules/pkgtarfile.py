@@ -21,9 +21,10 @@
 #
 
 #
-# Copyright (c) 2007, 2024, Oracle and/or its affiliates.
+# Copyright (c) 2007, 2026, Oracle and/or its affiliates.
 #
 
+import copy
 import os
 import stat
 import tarfile
@@ -38,26 +39,21 @@ tarfile.grp = None
 
 
 class PkgTarFile(tarfile.TarFile):
-    """PkgTarFile is a subclass of TarFile.  It implements
-    a small number of additional instance methods to improve
-    the functionality of the TarFile class for the packaging classes.
-
-    XXX - Push these changes upstream to Python maintainers?
+    """PkgTarFile extends the standard TarFile class with methods better
+    suited for the packaging classes, and uses a stricter errorlevel by
+    default.
     """
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("errorlevel", 2)
         tarfile.TarFile.__init__(self, *args, **kwargs)
 
-    def extract_to(self, member, path="", filename=""):
-        """Extract a member from the TarFile archive.  This
-        method allows you to specify a new filename and path, using
-        the filename and path arguments, where the file will be
-        extracted.  This method is similar to extract().
-        Extract() only allows the caller to prepend a directory path
-        to the filename specified in the TarInfo object,
-        whereas this method allows the caller to additionally
-        specify a file name.
+    def extract_to(self, member, path="", filename=None):
+        """Extract a member from the TarFile archive.
+
+        This method is similar to extract(), but allows the caller to
+        change the final file name.  It also creates missing parent
+        directories with a safer mode.
         """
 
         self._check("r")
@@ -67,15 +63,18 @@ class PkgTarFile(tarfile.TarFile):
         else:
             tarinfo = self.getmember(member)
 
-        if tarinfo.islnk():
-            tarinfo._link_target = \
-                os.path.join(path, tarinfo.linkname)
+        if filename:
+            # Rename the extracted file if a new filename was given.
+            tarinfo = copy.copy(tarinfo)
+            tarinfo.name = filename
 
-        if not filename:
-            filename = tarinfo.name
+        # Always use the most restrictive standard 'data' filter.
+        filter_function = tarfile.data_filter
+        filtered, _ = self._get_extract_tarinfo(tarinfo, filter_function, path)
+        if filtered is None:
+            return
 
-        upperdirs = os.path.dirname(os.path.join(path, filename))
-
+        upperdirs = os.path.dirname(os.path.join(path, filtered.name))
         if upperdirs and not os.path.exists(upperdirs):
             # The tarfile we receive contains only files, and none
             # of the containing directories.  The tarfile code will
@@ -91,21 +90,10 @@ class PkgTarFile(tarfile.TarFile):
             except EnvironmentError:
                 pass
         try:
-            self._extract_member(tarinfo, os.path.join(
-                path, filename))
-        except EnvironmentError as e:
-            if self.errorlevel > 0:
-                raise
-            else:
-                if e.filename is None:
-                    self._dbg(1, "tarfile {0}".format(
-                        e.strerror))
-                else:
-                    self._dbg(1,
-                        "tarfile: {0} {1!r}".format(
-                        e.strerror, e.filename))
+            self._extract_member(filtered, os.path.join(path, filtered.name),
+                                 filter_function=filter_function,
+                                 extraction_root=path)
+        except (OSError, UnicodeEncodeError) as e:
+            self._handle_fatal_error(e)
         except tarfile.ExtractError as e:
-            if self.errorlevel > 1:
-                raise
-            else:
-                self._dbg(1, "tarfile: {0}".format(e))
+            self._handle_nonfatal_error(e)
