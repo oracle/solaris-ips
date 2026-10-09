@@ -1,37 +1,35 @@
 <?xml version="1.0"?>
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 <!--
+  CDDL HEADER START
 
- Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+  The contents of this file are subject to the terms of the
+  Common Development and Distribution License (the "License").
+  You may not use this file except in compliance with the License.
 
- CDDL HEADER START
+  You can obtain a copy of the license at LICENSE.txt
+  or https://oss.oracle.com/licenses/.
+  See the License for the specific language governing permissions
+  and limitations under the License.
 
- The contents of this file are subject to the terms of the
- Common Development and Distribution License (the "License").
- You may not use this file except in compliance with the License.
+  When distributing Covered Code, include this CDDL HEADER in each
+  file and include the License file at LICENSE.txt.
+  If applicable, add the following below this CDDL HEADER, with the
+  fields enclosed by brackets "[]" replaced with your own identifying
+  information: Portions Copyright [yyyy] [name of copyright owner]
 
- You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- or http://www.opensolaris.org/os/licensing.
- See the License for the specific language governing permissions
- and limitations under the License.
+  CDDL HEADER END
 
- When distributing Covered Code, include this CDDL HEADER in each
- file and include the License file at usr/src/OPENSOLARIS.LICENSE.
- If applicable, add the following below this CDDL HEADER, with the
- fields enclosed by brackets "[]" replaced with your own identifying
- information: Portions Copyright [yyyy] [name of copyright owner]
+  Copyright (c) 2011, 2026, Oracle and/or its affiliates.
 
- CDDL HEADER END
+  NOTE:  This service manifest is not editable; its contents will
+  be overwritten by package or patch operations, including
+  operating system upgrade.  Make customizations in a different
+  file.
 
-    NOTE:  This service manifest is not editable; its contents will
-    be overwritten by package or patch operations, including
-    operating system upgrade.  Make customizations in a different
-    file.
-
-    NOTE: This code will add and remove its privileges as needed, but at a
-    minimum it needs to have root privs at some time so that it can zone_enter
-    and fattach the door in the proxy-client's zone.
-
+  NOTE: This code will add and remove its privileges as needed, but at a
+  minimum it needs to have root privs at some time so that it can zone_enter
+  and fattach the door in the proxy-client's zone.
 -->
 
 <service_bundle type='manifest' name='application/pkg/zones-proxyd'>
