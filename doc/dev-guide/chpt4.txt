@@ -4,13 +4,13 @@
    Common Development and Distribution License (the "License").
    You may not use this file except in compliance with the License.
 
-.. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
-   or http://www.opensolaris.org/os/licensing.
+.. You can obtain a copy of the license at LICENSE.txt
+   or https://oss.oracle.com/licenses/.
    See the License for the specific language governing permissions
    and limitations under the License.
 
 .. When distributing Covered Code, include this CDDL HEADER in each
-   file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+   file and include the License file at LICENSE.txt.
    If applicable, add the following below this CDDL HEADER, with the
    fields enclosed by brackets "[]" replaced with your own identifying
    information: Portions Copyright [yyyy] [name of copyright owner]
@@ -333,7 +333,7 @@ discussed in *Chapter 1*, and is used throughout the packaging of the OS
 itself.
 
 Oracle Solaris ships with a set of |pkgmogrify| transforms that were used to
-package the the operating system, in ``/usr/share/pkg/transforms``.  These
+package the operating system, in ``/usr/share/pkg/transforms``.  These
 transforms are discussed in more detail in *Chapter 8*.
 
 The file called ``documentation`` contains the transforms that are closest to
