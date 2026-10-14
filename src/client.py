@@ -100,7 +100,8 @@ try:
     from pkg.client.debugvalues import DebugValues
     from pkg.client.pkgdefs import (
         API_STAGE_DEFAULT, API_STAGE_EXECUTE, API_STAGE_PLAN, API_STAGE_PREPARE,
-        api_stage_values, EXIT_ACTUATOR, EXIT_BADOPT, EXIT_DIVERGED, EXIT_FATAL,
+        api_stage_values, EXIT_ACTUATOR, EXIT_BADOPT, EXIT_BE, EXIT_DIVERGED,
+        EXIT_FATAL,
         EXIT_LICENSE, EXIT_LOCKED, EXIT_NOP, EXIT_NOTLIVE, EXIT_OK, EXIT_OOPS,
         EXIT_PARTIAL, MSG_ERROR, MSG_INFO, MSG_UNPACKAGED, MSG_WARNING,
         PKG_OP_ATTACH, PKG_OP_AUDIT_LINKED, PKG_OP_CHANGE_FACET,
@@ -1539,6 +1540,9 @@ def __api_execute_plan(operation, api_inst):
     except api_errors.ImageFormatUpdateNeeded as e:
         format_update_error(e)
         rval = EXIT_OOPS
+    except api_errors.UnableToActivateBE as e:
+        error(e)
+        rval = EXIT_BE
     except api_errors.BEException as e:
         error(e)
         rval = EXIT_OOPS

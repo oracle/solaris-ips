@@ -40,6 +40,7 @@ EXIT_LOCKED    =  7 # Image is currently locked by another process
 EXIT_ACTUATOR  =  8 # Actuator timed out
 EXIT_CONSTRAINED = 9 # Overly constrained
 EXIT_PKG_OOD   = 10 # pkg is out of date
+EXIT_BE        = 11 # Updated BE could not be activated
 EXIT_FATAL     = 99 # An unanticipated exception occurred
 
 # private pkg exit codes

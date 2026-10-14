@@ -54,7 +54,8 @@ from pkg.client.api import (
 from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import (
     API_STAGE_DEFAULT, API_STAGE_EXECUTE, API_STAGE_PLAN, API_STAGE_PREPARE,
-    EXIT_ACTUATOR, EXIT_BADOPT, EXIT_CONSTRAINED, EXIT_LICENSE, EXIT_LOCKED,
+    EXIT_ACTUATOR, EXIT_BADOPT, EXIT_BE, EXIT_CONSTRAINED, EXIT_LICENSE,
+    EXIT_LOCKED,
     EXIT_NOP, EXIT_NOTLIVE, EXIT_OK, EXIT_OOPS, EXIT_PARTIAL, EXIT_PKG_OOD,
     MSG_ERROR,
     PKG_OP_ATTACH, PKG_OP_CHANGE_FACET, PKG_OP_CHANGE_VARIANT, PKG_OP_DEHYDRATE,
@@ -1036,6 +1037,9 @@ def __api_execute_plan(operation, api_inst):
     except api_errors.ImageFormatUpdateNeeded as e:
         _format_update_error(e, errors_json=errors_json)
         rval = __prepare_json(EXIT_OOPS, errors=errors_json)
+    except api_errors.UnableToActivateBE as e:
+        _error_json(e, errors_json=errors_json)
+        rval = __prepare_json(EXIT_BE, errors=errors_json)
     except api_errors.BEException as e:
         _error_json(e, errors_json=errors_json)
         rval = __prepare_json(EXIT_OOPS, errors=errors_json)

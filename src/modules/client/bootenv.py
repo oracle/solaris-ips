@@ -502,10 +502,9 @@ class BeadmV2BootEnv(GenericBootEnv):
             if set_active:
                 try:
                     self.bemgr.activate(fmri=self.be_clone.fmri)
-                except Exception:
-                    logger.error(_("pkg: unable to activate "
-                        "{0}").format(self.be_clone.name))
-                    return
+                except Exception as e:
+                    raise api_errors.UnableToActivateBE(
+                        self.be_clone.name) from e
 
             # Consider the last operation a success, and log it as
             # ending here so that it will be recorded in the new
@@ -589,7 +588,13 @@ beadm activate {be_name_clone}
             self.img.lock()
 
         if caught_exception:
-            self.img.history.log_operation_error(error=e)
+            # UnableToActivateBE will be re-raised in the caller
+            # after restoring the original BE state. So avoid logging it
+            # twice.
+            if not isinstance(caught_exception,
+                api_errors.UnableToActivateBE):
+                self.img.history.log_operation_error(
+                    error=caught_exception)
             raise caught_exception
 
     def restore_image(self):
@@ -1117,11 +1122,14 @@ class BeadmV1BootEnv(GenericBootEnv):
         """
 
         def activate_live_be():
-            if set_active and \
-                be.beActivate(self.be_name_clone) != 0:
-                logger.error(_("pkg: unable to activate "
-                    "{0}").format(self.be_name_clone))
-                return
+            if set_active:
+                try:
+                    activated = be.beActivate(self.be_name_clone)
+                except Exception as e:
+                    raise api_errors.UnableToActivateBE(
+                        self.be_name_clone) from e
+                if activated != 0:
+                    raise api_errors.UnableToActivateBE(self.be_name_clone)
 
             # Consider the last operation a success, and log it as
             # ending here so that it will be recorded in the new
@@ -1202,7 +1210,10 @@ beadm activate {be_name_clone}
             self.img.lock()
 
         if caught_exception:
-            self.img.history.log_operation_error(error=e)
+            if not isinstance(caught_exception,
+                api_errors.UnableToActivateBE):
+                self.img.history.log_operation_error(
+                    error=caught_exception)
             raise caught_exception
 
     def restore_image(self):
