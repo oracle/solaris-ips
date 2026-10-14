@@ -31,7 +31,12 @@ import importlib
 import unittest
 import os
 import sys
+import unittest.mock
+from types import SimpleNamespace
+import pkg.client.api as api
 import pkg.client.api_errors as api_errors
+import pkg.client.client_api as client_api
+from pkg.client import pkgdefs
 import pkg.client.bootenv as bootenv
 
 
@@ -98,6 +103,104 @@ class TestBootEnv(pkg5unittest.Pkg5TestCase):
         self.assertRaises(api_errors.InvalidBENameException,
             bootenv.BootEnv.check_be_name,
             "rpool/ROOT/a1b2c3d4e5f6g7h8i9j0")
+
+
+class TestBootEnvActivation(pkg5unittest.Pkg5TestCase):
+    def _check_activation_failure(self, backend, activate, unmount):
+        backend.img = unittest.mock.Mock()
+        backend.img.locked = False
+        backend.is_live_BE = True
+        backend.progress_tracker = None
+        backend.clone_dir = "/mounted/clone"
+
+        with unittest.mock.patch.object(backend, "_store_image_state"), \
+            unittest.mock.patch.object(backend, "_reset_image_state") as reset:
+            with self.assertRaises(api_errors.UnableToActivateBE) as caught:
+                backend.activate_image()
+
+        self.assertIn("beadm activate new-be", str(caught.exception))
+        activate.assert_called_once()
+        unmount.assert_not_called()
+        backend.img.history.log_operation_end.assert_not_called()
+        backend.img.history.log_operation_error.assert_not_called()
+        reset.assert_called_once_with(failure=caught.exception)
+
+    def test_bemgmt_activation_failure(self):
+        backend = object.__new__(bootenv.BeadmV2BootEnv)
+        backend.be_clone = SimpleNamespace(name="new-be", fmri="new-fmri")
+        backend.bemgr = unittest.mock.Mock()
+        backend.bemgr.activate.side_effect = RuntimeError("activation failed")
+        self._check_activation_failure(backend, backend.bemgr.activate,
+            backend.bemgr.unmount)
+
+    def test_bemgmt_activation_disabled(self):
+        backend = object.__new__(bootenv.BeadmV2BootEnv)
+        backend.be_clone = SimpleNamespace(
+            name="new-be", fmri="new-fmri", uuid="new-uuid")
+        backend.be_name = "old-be"
+        backend.be_name_clone = "new-be"
+        backend.clone_dir = "/mounted/clone"
+        backend.img = unittest.mock.Mock()
+        backend.img.locked = False
+        backend.is_live_BE = True
+        backend.progress_tracker = None
+        backend.bemgr = unittest.mock.Mock()
+
+        with unittest.mock.patch.object(backend, "_store_image_state"), \
+            unittest.mock.patch.object(backend, "_reset_image_state"), \
+            unittest.mock.patch.object(bootenv.os, "rmdir"):
+            backend.activate_image(set_active=False)
+
+        backend.bemgr.activate.assert_not_called()
+        backend.bemgr.unmount.assert_called_once_with(fmri="new-fmri")
+        backend.img.history.log_operation_end.assert_called_once()
+
+    def test_libbe_activation_failure(self):
+        backend = object.__new__(bootenv.BeadmV1BootEnv)
+        backend.be_name_clone = "new-be"
+        with unittest.mock.patch.object(bootenv, "be", create=True) as libbe:
+            libbe.beActivate.return_value = 1
+            self._check_activation_failure(backend, libbe.beActivate,
+                libbe.beUnmount)
+
+    def test_libbe_activation_exception(self):
+        backend = object.__new__(bootenv.BeadmV1BootEnv)
+        backend.be_name_clone = "new-be"
+        with unittest.mock.patch.object(bootenv, "be", create=True) as libbe:
+            libbe.beActivate.side_effect = RuntimeError("activation failed")
+            self._check_activation_failure(backend, libbe.beActivate,
+                libbe.beUnmount)
+
+    def test_api_records_activation_failure(self):
+        failure = api_errors.UnableToActivateBE("new-be")
+        image = unittest.mock.Mock()
+        image.imageplan.state = api.plandesc.EXECUTED_OK
+        api_inst = SimpleNamespace(_img=image,
+            _ImageInterface__new_be=True,
+            _ImageInterface__be_activate=True,
+            log_operation_end=unittest.mock.Mock())
+        backend = unittest.mock.Mock()
+        backend.activate_image.side_effect = failure
+
+        with self.assertRaises(api_errors.UnableToActivateBE):
+            api.ImageInterface._ImageInterface__finished_execution(
+                api_inst, backend)
+
+        api_inst.log_operation_end.assert_called_once_with(error=failure)
+        image.cleanup_cached_content.assert_not_called()
+
+    def test_json_api_activation_status(self):
+        failure = api_errors.UnableToActivateBE("new-be")
+        api_inst = unittest.mock.Mock()
+        api_inst.execute_plan.side_effect = failure
+        api_inst.describe.return_value = SimpleNamespace(
+            salvaged=[], new_be=True)
+
+        result = getattr(client_api, "__api_execute_plan")(
+            "update", api_inst)
+
+        self.assertEqual(result["status"], pkgdefs.EXIT_BE)
+        self.assertIn("new-be", result["errors"][0]["reason"])
 
 
 if __name__ == "__main__":
