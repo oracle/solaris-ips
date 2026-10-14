@@ -26,6 +26,7 @@
 syntax: glob
 
 .arclint
+.github/pull_request_template.md
 CONTRIBUTING.md
 LICENSE.txt
 SECURITY.md
